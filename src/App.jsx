@@ -305,7 +305,7 @@ export default function App() {
     await ss(id,data);
     setClientId(id); setClientData(data);
     await loadList();
-    setNewName(""); setNewType(""); setNewAccounts("");
+    setNewName(""); setNewType(""); 
     setScreen("upload");
   }
 

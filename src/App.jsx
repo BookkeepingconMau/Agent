@@ -241,7 +241,7 @@ async function callClaude(messages, system) {
       "anthropic-version": "2023-06-01",
       "anthropic-dangerous-direct-browser-access": "true"
     },
-   body:JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:8000, system, messages }),
+   body:JSON.stringify({ model:"claude-opus-4-5", max_tokens:8000, system, messages }),
   });
   const data = await res.json();
   return data.content?.map(b=>b.text||"").join("") || "";

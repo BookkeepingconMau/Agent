@@ -444,7 +444,7 @@ export default function App() {
   const S = {
     app:{minHeight:"100vh",background:"#f4f6f9",fontFamily:"'DM Sans',system-ui,sans-serif",color:"#1a1a1a"},
     nav:{background:"#0f1f4b",padding:"0 28px",height:52,display:"flex",alignItems:"center",justifyContent:"space-between"},
-    page:{maxWidth:940,margin:"0 auto",padding:"30px 20px"},
+    page:{maxWidth:1200,margin:"0 auto",padding:"36px 28px"},
     h1:{fontSize:26,fontWeight:700,letterSpacing:"-0.5px",marginBottom:6},
     sub:{color:"#666",fontSize:13},
     card:{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:20,marginBottom:14},
@@ -521,9 +521,9 @@ export default function App() {
             </div>
             <div style={{marginTop:12,marginBottom:14}}>
               <label style={S.label}>Tipo de negocio</label>
-              <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:4}}>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginTop:4}}>
                 {BUSINESS_TYPES.map(bt=>(
-                  <button key={bt.id} className={`btype${newType===bt.id?" sel":""}`} onClick={()=>setNewType(bt.id)}>{bt.icon} {bt.label}</button>
+                  <button key={bt.id} className={`btype${newType===bt.id?" sel":""}`} onClick={()=>setNewType(bt.id)} style={{textAlign:"left",padding:"10px 14px"}}>{bt.icon} {bt.label}</button>
                 ))}
               </div>
             </div>
@@ -822,9 +822,9 @@ export default function App() {
               )}
               <div style={{marginBottom:14}}>
                 <span style={S.label}>O ELIGE CATEGORÍA MANUAL:</span>
-                <div style={{display:"flex",gap:5,flexWrap:"wrap",maxHeight:150,overflowY:"auto",marginTop:8}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginTop:8}}>
                   {cats.filter(c=>c!=="ASK TO CLIENT").map(c=>(
-                    <button key={c} className="ropt" onClick={()=>resolveAsk(c,false,"")}>{c}</button>
+                    <button key={c} className="ropt" onClick={()=>resolveAsk(c,false,"")} style={{textAlign:"left"}}>{c}</button>
                   ))}
                 </div>
               </div>

@@ -446,16 +446,16 @@ export default function App() {
     app:{minHeight:"100vh",background:"#05080f",fontFamily:"'DM Sans',system-ui,sans-serif",color:"#1a1a1a",position:"relative"},
     nav:{background:"#0f1f4b",padding:"0 36px",height:64,display:"flex",alignItems:"center",justifyContent:"space-between"},
     page:{maxWidth:1320,margin:"0 auto",padding:"44px 36px",position:"relative",zIndex:1},
-    h1:{fontSize:32,fontWeight:700,letterSpacing:"-0.5px",marginBottom:8},
+    h1:{fontSize:32,fontWeight:700,letterSpacing:"-0.5px",marginBottom:8,color:"#ffffff"},
     sub:{color:"#94a3b8",fontSize:15},
-    card:{background:"rgba(255,255,255,0.96)",borderRadius:16,border:"1px solid #e2e8f0",padding:28,marginBottom:18},
+    card:{background:"rgba(255,255,255,0.97)",borderRadius:16,border:"1px solid #e2e8f0",padding:28,marginBottom:18},
     btn:{padding:"11px 24px",borderRadius:10,border:"none",cursor:"pointer",fontSize:14,fontWeight:600,transition:"all 0.15s"},
     btnPrimary:{background:"#0f1f4b",color:"#fff"},
     btnGold:{background:"#1a56db",color:"#fff"},
     btnOutline:{background:"transparent",color:"#1a1a1a",border:"1px solid #ccc"},
     btnSm:{padding:"5px 12px",borderRadius:6,border:"none",cursor:"pointer",fontSize:11,fontWeight:600},
     input:{width:"100%",padding:"12px 16px",borderRadius:10,border:"1px solid #ddd",fontSize:15,outline:"none",fontFamily:"inherit"},
-    label:{fontSize:12,fontWeight:700,color:"#888",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:7,display:"block"},
+    label:{fontSize:12,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:7,display:"block"},
   };
 
   const levelColor = l => ({
@@ -633,8 +633,8 @@ export default function App() {
               onDrop={e=>{e.preventDefault();setDragOver(false);const f=e.dataTransfer.files[0];if(f?.type==="application/pdf")setFile(f)}}
               onClick={()=>fileRef.current.click()}>
               <div style={{fontSize:36,marginBottom:10}}>📄</div>
-              {file?(<><div style={{fontWeight:600,color:"#1a56db"}}>{file.name}</div><div style={{color:"#999",fontSize:12,marginTop:3}}>{(file.size/1024).toFixed(0)} KB</div></>)
-                   :(<><div style={{fontWeight:500}}>Arrastra el bank statement aquí</div><div style={{color:"#999",fontSize:12,marginTop:3}}>o click · Solo PDF bancario digital</div></>)}
+              {file?(<><div style={{fontWeight:600,color:"#1a56db"}}>{file.name}</div><div style={{color:"#94a3b8",fontSize:12,marginTop:3}}>{(file.size/1024).toFixed(0)} KB</div></>)
+                   :(<><div style={{fontWeight:500,color:"#1a1a1a"}}>Arrastra el bank statement aquí</div><div style={{color:"#64748b",fontSize:12,marginTop:3}}>o click · Solo PDF bancario digital</div></>)}
               <input ref={fileRef} type="file" accept=".pdf" style={{display:"none"}} onChange={e=>{const f=e.target.files[0];if(f)setFile(f)}} />
             </div>
             {file&&(
@@ -646,11 +646,11 @@ export default function App() {
           </div>
           {Object.keys(clientData.learnedMerchants||{}).length>0&&(
             <div style={S.card}>
-              <div style={{fontSize:12,fontWeight:700,marginBottom:10,color:"#666"}}>🧠 MEMORIA ({Object.keys(clientData.learnedMerchants).length} reglas)</div>
+              <div style={{fontSize:12,fontWeight:700,marginBottom:10,color:"#94a3b8"}}>🧠 MEMORIA ({Object.keys(clientData.learnedMerchants).length} reglas)</div>
               <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                 {Object.entries(clientData.learnedMerchants).map(([k,v])=>(
                   <div key={k} style={{background:"#f4f6f9",border:"1px solid #e2e8f0",borderRadius:6,padding:"3px 9px",fontSize:11}}>
-                    <span style={{fontWeight:600}}>{k}</span> → <span style={{color:"#1a56db"}}>{v}</span>
+                    <span style={{fontWeight:700,color:"#1a1a1a"}}>{k}</span> → <span style={{color:"#1a56db"}}>{v}</span>
                   </div>
                 ))}
               </div>
@@ -663,8 +663,8 @@ export default function App() {
       {screen==="extracting"&&(
         <div style={{...S.page,textAlign:"center",paddingTop:80}}>
           <div style={{fontSize:48,marginBottom:16,display:"inline-block",animation:"spin 2s linear infinite"}}>⚙️</div>
-          <h2 style={{fontSize:20,fontWeight:700,marginBottom:8}}>Procesando...</h2>
-          <p style={{color:"#888",fontSize:13}}>{progress}</p>
+          <h2 style={{fontSize:20,fontWeight:700,marginBottom:8,color:"#ffffff"}}>Procesando...</h2>
+          <p style={{color:"#94a3b8",fontSize:13}}>{progress}</p>
         </div>
       )}
 
@@ -723,7 +723,7 @@ export default function App() {
                     <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr 1fr 1fr 1fr 80px",padding:"12px 16px",alignItems:"center",background:ok?"#fff":"#fff8f8"}}>
                       <div>
                         <div style={{fontWeight:600,fontSize:13}}>{b.account_name||"Cuenta"}</div>
-                        {b.account_number&&b.account_number!=="N/A"&&<div style={{fontSize:11,color:"#999"}}>****{b.account_number}</div>}
+                        {b.account_number&&b.account_number!=="N/A"&&<div style={{fontSize:11,color:"#94a3b8"}}>****{b.account_number}</div>}
                       </div>
                       <div style={{fontSize:11,color:"#666"}}>{b.period_start||"—"}<br/>{b.period_end||""}</div>
                       <div style={{fontSize:13,fontWeight:600}}>${fmt(b.beginning_balance)}</div>

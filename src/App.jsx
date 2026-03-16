@@ -493,16 +493,13 @@ export default function App() {
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
           {clientData&&<span style={{color:"#888",fontSize:12}}>{clientData.name}</span>}
-          <button style={{...S.btn,background:"#2a2a2a",color:"#f4f6f9",padding:"5px 14px",fontSize:11,border:"1px solid #2d4a8a"}} onClick={()=>{setScreen("home");setFile(null);setTransactions([]);setBalances([])}}>
-            👥 Clientes {clients.length>0&&<span style={{background:"#1a56db",color:"#fff",borderRadius:10,padding:"1px 6px",fontSize:10,marginLeft:5}}>{clients.length}</span>}
-          </button>
         </div>
       </div>
 
       {/* HOME */}
       {screen==="home"&&(
         <div style={S.page}>
-          <div style={{marginBottom:24}}><h1 style={S.h1}>Bookkeeper Dashboard</h1><p style={S.sub}>14 tipos de negocio · Memoria persistente · Conciliación automática</p></div>
+          <div style={{marginBottom:24}}><h1 style={S.h1}>Bienvenido al Agente de Mau Bautista</h1><p style={S.sub}>14 tipos de negocio · Memoria persistente · Conciliación automática</p></div>
           <div style={S.card}>
             <h2 style={{fontSize:15,fontWeight:700,marginBottom:14}}>➕ Nuevo Cliente</h2>
             <div style={{display:"grid",gap:12,gridTemplateColumns:"1fr"}}>

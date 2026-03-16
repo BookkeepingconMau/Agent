@@ -442,15 +442,15 @@ export default function App() {
   const totalWithdrawalsAmt = withdrawals.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
 
   const S = {
-    app:{minHeight:"100vh",background:"#f7f6f2",fontFamily:"'DM Sans',system-ui,sans-serif",color:"#1a1a1a"},
-    nav:{background:"#1a1a1a",padding:"0 28px",height:52,display:"flex",alignItems:"center",justifyContent:"space-between"},
+    app:{minHeight:"100vh",background:"#f4f6f9",fontFamily:"'DM Sans',system-ui,sans-serif",color:"#1a1a1a"},
+    nav:{background:"#0f1f4b",padding:"0 28px",height:52,display:"flex",alignItems:"center",justifyContent:"space-between"},
     page:{maxWidth:940,margin:"0 auto",padding:"30px 20px"},
     h1:{fontSize:26,fontWeight:700,letterSpacing:"-0.5px",marginBottom:6},
     sub:{color:"#666",fontSize:13},
-    card:{background:"#fff",borderRadius:12,border:"1px solid #e8e4dc",padding:20,marginBottom:14},
+    card:{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:20,marginBottom:14},
     btn:{padding:"9px 20px",borderRadius:8,border:"none",cursor:"pointer",fontSize:13,fontWeight:600,transition:"all 0.15s"},
-    btnPrimary:{background:"#1a1a1a",color:"#fff"},
-    btnGold:{background:"#c8a96e",color:"#fff"},
+    btnPrimary:{background:"#0f1f4b",color:"#fff"},
+    btnGold:{background:"#1a56db",color:"#fff"},
     btnOutline:{background:"transparent",color:"#1a1a1a",border:"1px solid #ccc"},
     btnSm:{padding:"5px 12px",borderRadius:6,border:"none",cursor:"pointer",fontSize:11,fontWeight:600},
     input:{width:"100%",padding:"9px 13px",borderRadius:8,border:"1px solid #ddd",fontSize:13,outline:"none",fontFamily:"inherit"},
@@ -461,9 +461,9 @@ export default function App() {
     HARD:    {bg:"#dcfce7",color:"#166534"},
     MEMORY:  {bg:"#dbeafe",color:"#1e40af"},
     BUSINESS:{bg:"#f3e8ff",color:"#6b21a8"},
-    RESOLVED:{bg:"#fef9c3",color:"#713f12"},
+    RESOLVED:{bg:"#e8f0fe",color:"#1e40af"},
     TRANSFER:{bg:"#e0f2fe",color:"#0369a1"},
-    CHECK:   {bg:"#fef3c7",color:"#92400e"},
+    CHECK:   {bg:"#dbeafe",color:"#1e40af"},
   }[l] || {bg:"#fee2e2",color:"#991b1b"});
 
   return (
@@ -472,29 +472,29 @@ export default function App() {
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
         button:hover{opacity:0.85}
-        input:focus{border-color:#c8a96e!important;box-shadow:0 0 0 3px rgba(200,169,110,0.12)}
-        .cc:hover{background:#fafaf8!important;border-color:#c8a96e!important;cursor:pointer}
-        .btype{padding:8px 12px;border-radius:8px;border:1px solid #e8e4dc;background:#fff;cursor:pointer;font-family:inherit;font-size:12px;transition:all 0.15s}
-        .btype:hover,.btype.sel{border-color:#c8a96e;background:#fffbf4;font-weight:600}
-        .drop{border:2px dashed #e8e4dc;border-radius:12px;padding:48px 28px;text-align:center;cursor:pointer;transition:all 0.2s}
-        .drop:hover,.drop.over{border-color:#c8a96e;background:#fffbf4}
-        .ropt{padding:8px 13px;border-radius:8px;border:1px solid #e8e4dc;background:#fff;cursor:pointer;font-size:12px;font-family:inherit;transition:all 0.15s}
-        .ropt:hover{border-color:#c8a96e;background:#fffbf4}
-        .tr:hover{background:#fafaf8}
+        input:focus{border-color:#1a56db!important;box-shadow:0 0 0 3px rgba(26,86,219,0.12)}
+        .cc:hover{background:#f8faff!important;border-color:#1a56db!important;cursor:pointer}
+        .btype{padding:8px 12px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-family:inherit;font-size:12px;transition:all 0.15s}
+        .btype:hover,.btype.sel{border-color:#1a56db;background:#f0f4ff;font-weight:600}
+        .drop{border:2px dashed #e2e8f0;border-radius:12px;padding:48px 28px;text-align:center;cursor:pointer;transition:all 0.2s}
+        .drop:hover,.drop.over{border-color:#1a56db;background:#f0f4ff}
+        .ropt{padding:8px 13px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-size:12px;font-family:inherit;transition:all 0.15s}
+        .ropt:hover{border-color:#1a56db;background:#f0f4ff}
+        .tr:hover{background:#f8faff}
         ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#ddd;border-radius:2px}
         @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
       `}</style>
 
       {/* NAV */}
       <div style={S.nav}>
-        <div style={{fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:700,color:"#f7f6f2"}}>
-          Wave<span style={{color:"#c8a96e"}}>Book</span>
-          <span style={{fontSize:11,color:"#555",fontFamily:"'DM Sans',sans-serif",fontWeight:400,marginLeft:8}}>v5.4 · 14 tipos · 350+ merchants · Extracción completa de cheques</span>
+        <div style={{fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:700,color:"#f4f6f9"}}>
+          Wave<span style={{color:"#1a56db"}}>Book</span>
+          <span style={{fontSize:11,color:"#8ba3d4",fontFamily:"'DM Sans',sans-serif",fontWeight:400,marginLeft:8}}>v5.4 · 14 tipos · 350+ merchants · Extracción completa de cheques</span>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
           {clientData&&<span style={{color:"#888",fontSize:12}}>{clientData.name}</span>}
-          <button style={{...S.btn,background:"#2a2a2a",color:"#f7f6f2",padding:"5px 14px",fontSize:11,border:"1px solid #3a3a3a"}} onClick={()=>{setScreen("home");setFile(null);setTransactions([]);setBalances([])}}>
-            👥 Clientes {clients.length>0&&<span style={{background:"#c8a96e",color:"#fff",borderRadius:10,padding:"1px 6px",fontSize:10,marginLeft:5}}>{clients.length}</span>}
+          <button style={{...S.btn,background:"#2a2a2a",color:"#f4f6f9",padding:"5px 14px",fontSize:11,border:"1px solid #2d4a8a"}} onClick={()=>{setScreen("home");setFile(null);setTransactions([]);setBalances([])}}>
+            👥 Clientes {clients.length>0&&<span style={{background:"#1a56db",color:"#fff",borderRadius:10,padding:"1px 6px",fontSize:10,marginLeft:5}}>{clients.length}</span>}
           </button>
         </div>
       </div>
@@ -529,7 +529,7 @@ export default function App() {
                   const bt=BUSINESS_TYPES.find(b=>b.id===c.businessType);
                   const ml=Object.keys(c.learnedMerchants||{}).length;
                   return (
-                    <div key={c.id} className="cc" style={{padding:"12px 16px",border:"1px solid #e8e4dc",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"space-between",background:"#fff",transition:"all 0.15s"}} onClick={()=>selectClient(c.id)}>
+                    <div key={c.id} className="cc" style={{padding:"12px 16px",border:"1px solid #e2e8f0",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"space-between",background:"#fff",transition:"all 0.15s"}} onClick={()=>selectClient(c.id)}>
                       <div>
                         <div style={{fontWeight:600,fontSize:14}}>{c.name}</div>
                         <div style={{color:"#999",fontSize:12,marginTop:2}}>{bt?.icon} {bt?.label} · 🧠 {ml} aprendidas · 📄 {(c.history||[]).length} procesados</div>
@@ -558,7 +558,7 @@ export default function App() {
               onDrop={e=>{e.preventDefault();setDragOver(false);const f=e.dataTransfer.files[0];if(f?.type==="application/pdf")setFile(f)}}
               onClick={()=>fileRef.current.click()}>
               <div style={{fontSize:36,marginBottom:10}}>📄</div>
-              {file?(<><div style={{fontWeight:600,color:"#c8a96e"}}>{file.name}</div><div style={{color:"#999",fontSize:12,marginTop:3}}>{(file.size/1024).toFixed(0)} KB</div></>)
+              {file?(<><div style={{fontWeight:600,color:"#1a56db"}}>{file.name}</div><div style={{color:"#999",fontSize:12,marginTop:3}}>{(file.size/1024).toFixed(0)} KB</div></>)
                    :(<><div style={{fontWeight:500}}>Arrastra el bank statement aquí</div><div style={{color:"#999",fontSize:12,marginTop:3}}>o click · Solo PDF bancario digital</div></>)}
               <input ref={fileRef} type="file" accept=".pdf" style={{display:"none"}} onChange={e=>{const f=e.target.files[0];if(f)setFile(f)}} />
             </div>
@@ -574,8 +574,8 @@ export default function App() {
               <div style={{fontSize:12,fontWeight:700,marginBottom:10,color:"#666"}}>🧠 MEMORIA ({Object.keys(clientData.learnedMerchants).length} reglas)</div>
               <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                 {Object.entries(clientData.learnedMerchants).map(([k,v])=>(
-                  <div key={k} style={{background:"#f7f6f2",border:"1px solid #e8e4dc",borderRadius:6,padding:"3px 9px",fontSize:11}}>
-                    <span style={{fontWeight:600}}>{k}</span> → <span style={{color:"#c8a96e"}}>{v}</span>
+                  <div key={k} style={{background:"#f4f6f9",border:"1px solid #e2e8f0",borderRadius:6,padding:"3px 9px",fontSize:11}}>
+                    <span style={{fontWeight:600}}>{k}</span> → <span style={{color:"#1a56db"}}>{v}</span>
                   </div>
                 ))}
               </div>
@@ -629,11 +629,11 @@ export default function App() {
           {/* Per-account reconciliation table */}
           {balances.length>0 ? (
             <div style={{...S.card,padding:0,overflow:"hidden"}}>
-              <div style={{background:"#1a1a1a",color:"#fff",padding:"10px 16px",fontSize:12,fontWeight:700,letterSpacing:1}}>
+              <div style={{background:"#0f1f4b",color:"#fff",padding:"10px 16px",fontSize:12,fontWeight:700,letterSpacing:1}}>
                 📊 CONCILIACIÓN POR CUENTA — Extraído del estado de cuenta
               </div>
               {/* Header */}
-              <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr 1fr 1fr 1fr 80px",padding:"8px 16px",background:"#f7f6f2",borderBottom:"1px solid #e8e4dc"}}>
+              <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr 1fr 1fr 1fr 80px",padding:"8px 16px",background:"#f4f6f9",borderBottom:"1px solid #e2e8f0"}}>
                 {["CUENTA","PERÍODO","SALDO INICIAL","+ DEPÓSITOS","- RETIROS","SALDO FINAL","STATUS"].map(h=>(
                   <div key={h} style={{fontSize:10,fontWeight:700,color:"#aaa",letterSpacing:0.5}}>{h}</div>
                 ))}
@@ -644,7 +644,7 @@ export default function App() {
                 const diff       = Math.abs(calculated - ending);
                 const ok         = diff < 0.02; // allow 2 cent rounding
                 return (
-                  <div key={i} style={{borderBottom:"1px solid #f0ede8"}}>
+                  <div key={i} style={{borderBottom:"1px solid #edf2f7"}}>
                     <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr 1fr 1fr 1fr 80px",padding:"12px 16px",alignItems:"center",background:ok?"#fff":"#fff8f8"}}>
                       <div>
                         <div style={{fontWeight:600,fontSize:13}}>{b.account_name||"Cuenta"}</div>
@@ -675,7 +675,7 @@ export default function App() {
               })}
               {/* Totals row */}
               {balances.length>1&&(
-                <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr 1fr 1fr 1fr 80px",padding:"10px 16px",background:"#f7f6f2",borderTop:"2px solid #e8e4dc"}}>
+                <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr 1fr 1fr 1fr 80px",padding:"10px 16px",background:"#f4f6f9",borderTop:"2px solid #e2e8f0"}}>
                   <div style={{fontWeight:700,fontSize:12}}>TOTAL GENERAL</div>
                   <div></div>
                   <div style={{fontWeight:700,fontSize:13}}>${fmt(balances.reduce((s,b)=>s+(parseFloat(b.beginning_balance)||0),0))}</div>
@@ -718,7 +718,7 @@ export default function App() {
                     c:"#991b1b",
                   },
                 ].map(s=>(
-                  <div key={s.l} style={{background:"#f7f6f2",borderRadius:8,padding:"12px 14px"}}>
+                  <div key={s.l} style={{background:"#f4f6f9",borderRadius:8,padding:"12px 14px"}}>
                     <div style={{fontSize:10,fontWeight:700,color:"#aaa",letterSpacing:0.5,marginBottom:4}}>{s.l}</div>
                     <div style={{fontSize:16,fontWeight:700,color:s.c}}>{s.v}</div>
                   </div>
@@ -734,7 +734,7 @@ export default function App() {
                   <div style={{marginTop:12,padding:"10px 14px",borderRadius:8,background:allGood?"#dcfce7":"#fef3c7",border:`1px solid ${allGood?"#86efac":"#fde68a"}`}}>
                     {allGood
                       ? <span style={{color:"#166534",fontWeight:600,fontSize:13}}>✅ Todo cuadra — Las transacciones extraídas coinciden con los totales del banco</span>
-                      : <span style={{color:"#92400e",fontWeight:600,fontSize:13}}>
+                      : <span style={{color:"#1a56db",fontWeight:600,fontSize:13}}>
                           ⚠️ Posible diferencia — Depósitos: ${fmt(depDiff)} · Retiros: ${fmt(withDiff)} · Puede haber transacciones faltantes
                         </span>
                     }
@@ -769,11 +769,11 @@ export default function App() {
               <div><h1 style={S.h1}>Resolver Ambigüedades</h1><p style={S.sub}>{currentAsk+1} de {askQueue.length} · Respuestas se guardan en memoria</p></div>
               <button style={{...S.btn,...S.btnOutline,fontSize:12}} onClick={()=>setScreen("review")}>Saltar todos →</button>
             </div>
-            <div style={{height:4,background:"#e8e4dc",borderRadius:2,marginBottom:22,overflow:"hidden"}}>
-              <div style={{height:"100%",background:"#c8a96e",width:`${(currentAsk/askQueue.length)*100}%`,transition:"width 0.3s"}} />
+            <div style={{height:4,background:"#e2e8f0",borderRadius:2,marginBottom:22,overflow:"hidden"}}>
+              <div style={{height:"100%",background:"#1a56db",width:`${(currentAsk/askQueue.length)*100}%`,transition:"width 0.3s"}} />
             </div>
             <div style={S.card}>
-              <div style={{background:"#f7f6f2",borderRadius:8,padding:14,marginBottom:16}}>
+              <div style={{background:"#f4f6f9",borderRadius:8,padding:14,marginBottom:16}}>
                 <div style={{display:"flex",gap:14,flexWrap:"wrap"}}>
                   <div><span style={S.label}>FECHA</span><div style={{fontWeight:600}}>{ask.date}</div></div>
                   <div><span style={S.label}>MONTO</span><div style={{fontWeight:600,color:isDeposit?"#166534":"#991b1b"}}>{isDeposit?"+":""}{ask.amount}</div></div>
@@ -852,7 +852,7 @@ export default function App() {
           {askPct>15&&<div style={{background:"#fef3c7",border:"1px solid #f59e0b",borderRadius:8,padding:"9px 14px",marginBottom:12,fontSize:12,color:"#92400e"}}>⚠️ <strong>ALERTA:</strong> {askPct}% supera el límite de 15%</div>}
           <div style={{display:"flex",gap:7,marginBottom:12,flexWrap:"wrap",alignItems:"center",justifyContent:"space-between"}}>
             <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-              <button style={{...S.btn,background:"#f0ede8",color:"#1a1a1a",fontSize:11,padding:"6px 12px"}} onClick={()=>setScreen("reconcile")}>⚖️ Ver Conciliación</button>
+              <button style={{...S.btn,background:"#edf2f7",color:"#1a1a1a",fontSize:11,padding:"6px 12px"}} onClick={()=>setScreen("reconcile")}>⚖️ Ver Conciliación</button>
             </div>
             <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
               <button style={{...S.btn,...S.btnOutline,fontSize:11}} onClick={()=>downloadWave("DEPOSIT")}>⬇ Wave DEPOSITS</button>
@@ -875,24 +875,24 @@ export default function App() {
           )}
           {checkReportRows.length>0&&(
             <div style={{...S.card,padding:0,overflow:"hidden",marginBottom:12}}>
-              <div style={{background:"#92400e",color:"#fff",padding:"8px 14px",fontSize:11,fontWeight:700,letterSpacing:1}}>
+              <div style={{background:"#0f1f4b",color:"#fff",padding:"8px 14px",fontSize:11,fontWeight:700,letterSpacing:1}}>
                 📋 REPORTE DE CHEQUES — Subcontractors ({checks.length} cheques · Total: ${fmt(checks.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0))})
               </div>
               <div style={{padding:0}}>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 80px 110px",padding:"7px 14px",background:"#f7f6f2",borderBottom:"1px solid #e8e4dc"}}>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 80px 110px",padding:"7px 14px",background:"#f4f6f9",borderBottom:"1px solid #e2e8f0"}}>
                   {["NOMBRE / PAYEE","# CHEQUES","TOTAL PAGADO"].map(h=><div key={h} style={{fontSize:10,fontWeight:700,color:"#aaa",letterSpacing:1}}>{h}</div>)}
                 </div>
                 <div style={{maxHeight:300,overflowY:"auto"}}>
                   {checkReportRows.map(([name, data])=>(
-                    <div key={name} className="tr" style={{display:"grid",gridTemplateColumns:"1fr 80px 110px",padding:"9px 14px",borderBottom:"1px solid #f0ede8",alignItems:"center"}}>
+                    <div key={name} className="tr" style={{display:"grid",gridTemplateColumns:"1fr 80px 110px",padding:"9px 14px",borderBottom:"1px solid #edf2f7",alignItems:"center"}}>
                       <div style={{fontWeight:600,fontSize:13}}>{name}</div>
                       <div style={{fontSize:13,color:"#666",textAlign:"center"}}>{data.count}</div>
-                      <div style={{fontSize:13,fontWeight:700,color:"#92400e",textAlign:"right"}}>${fmt(data.total)}</div>
+                      <div style={{fontSize:13,fontWeight:700,color:"#1a56db",textAlign:"right"}}>${fmt(data.total)}</div>
                     </div>
                   ))}
                 </div>
-                <div style={{padding:"8px 14px",background:"#fef3c7",display:"flex",justifyContent:"flex-end",gap:8,alignItems:"center"}}>
-                  <span style={{fontSize:11,color:"#92400e",fontWeight:600}}>Total en cheques:</span>
+                <div style={{padding:"8px 14px",background:"#e8f0fe",display:"flex",justifyContent:"flex-end",gap:8,alignItems:"center"}}>
+                  <span style={{fontSize:11,color:"#1a56db",fontWeight:600}}>Total en cheques:</span>
                   <span style={{fontSize:15,fontWeight:700,color:"#92400e"}}>${fmt(checks.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0))}</span>
                 </div>
               </div>
@@ -920,7 +920,7 @@ export default function App() {
 function TableRows({rows,allRows,updateCategory,cats,levelColor}) {
   return (
     <div>
-      <div style={{display:"grid",gridTemplateColumns:"100px 88px 1fr 195px 55px",padding:"7px 14px",background:"#f7f6f2",borderBottom:"1px solid #e8e4dc"}}>
+      <div style={{display:"grid",gridTemplateColumns:"100px 88px 1fr 195px 55px",padding:"7px 14px",background:"#f4f6f9",borderBottom:"1px solid #e2e8f0"}}>
         {["DATE","AMOUNT","CONCEPT","CATEGORY","NIVEL"].map(h=><div key={h} style={{fontSize:10,fontWeight:700,color:"#aaa",letterSpacing:1}}>{h}</div>)}
       </div>
       <div style={{maxHeight:420,overflowY:"auto"}}>
@@ -928,12 +928,12 @@ function TableRows({rows,allRows,updateCategory,cats,levelColor}) {
           const globalIdx=allRows.indexOf(row);
           const lci=levelColor(row.level);
           return (
-            <div key={i} className="tr" style={{display:"grid",gridTemplateColumns:"100px 88px 1fr 195px 55px",padding:"7px 14px",borderBottom:"1px solid #f0ede8",alignItems:"center"}}>
+            <div key={i} className="tr" style={{display:"grid",gridTemplateColumns:"100px 88px 1fr 195px 55px",padding:"7px 14px",borderBottom:"1px solid #edf2f7",alignItems:"center"}}>
               <div style={{fontSize:12,color:"#888"}}>{row.date}</div>
               <div style={{fontSize:12,fontWeight:600,color:parseFloat(row.amount)>=0?"#166534":"#991b1b"}}>{parseFloat(row.amount)>=0?"+":""}{row.amount}</div>
               <div style={{fontSize:11,color:"#444",paddingRight:10,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}} title={row.concept}>{row.concept}</div>
               <select value={row.category} onChange={e=>updateCategory(globalIdx,e.target.value)}
-                style={{width:"100%",padding:"3px 5px",border:"1px solid #e8e4dc",borderRadius:5,fontSize:11,fontFamily:"inherit",background:row.category==="ASK TO CLIENT"?"#fee2e2":"#fff",cursor:"pointer"}}>
+                style={{width:"100%",padding:"3px 5px",border:"1px solid #e2e8f0",borderRadius:5,fontSize:11,fontFamily:"inherit",background:row.category==="ASK TO CLIENT"?"#fee2e2":"#fff",cursor:"pointer"}}>
                 {cats.map(c=><option key={c} value={c}>{c}</option>)}
               </select>
               <div style={{textAlign:"center"}}>

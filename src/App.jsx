@@ -836,6 +836,149 @@ export default function App() {
         </div>
       )}
 
+      {/* RECONCILE */}
+      {screen==="reconcile"&&(
+        <div style={S.page}>
+          <div style={{marginBottom:20,display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:10}}>
+            <div>
+              <h1 style={S.h1}>⚖️ Conciliación de Saldos</h1>
+              <p style={S.sub}>Verifica que los saldos del banco cuadren con las transacciones extraídas</p>
+            </div>
+            <div style={{display:"flex",gap:8}}>
+              <button style={{...S.btn,...S.btnOutline,fontSize:12,color:"#fff",borderColor:"#475569"}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
+                Saltar conciliación →
+              </button>
+              <button style={{...S.btn,...S.btnGold}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
+                Continuar ✓
+              </button>
+            </div>
+          </div>
+
+          {/* Summary totals */}
+          <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
+            {[
+              {l:"Transacciones",v:transactions.length,c:"#ffffff"},
+              {l:"Total Depósitos",v:`$${fmt(totalDepositsAmt)}`,c:"#22c55e"},
+              {l:"Total Retiros",v:`$${fmt(totalWithdrawalsAmt)}`,c:"#ef4444"},
+              {l:"Diferencia Neta",v:`$${fmt(totalDepositsAmt-totalWithdrawalsAmt)}`,c:totalDepositsAmt>=totalWithdrawalsAmt?"#22c55e":"#ef4444"},
+            ].map(s=>(
+              <div key={s.l} style={{...S.card,flex:1,minWidth:140,marginBottom:0,padding:"12px 16px"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"#94a3b8",letterSpacing:1,marginBottom:4}}>{s.l}</div>
+                <div style={{fontSize:18,fontWeight:700,color:s.c}}>{s.v}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Per-account table */}
+          {balances.length>0 ? (
+            <div style={{...S.card,padding:0,overflow:"hidden"}}>
+              <div style={{background:"#0f1f4b",color:"#fff",padding:"10px 16px",fontSize:12,fontWeight:700,letterSpacing:1}}>
+                📊 CONCILIACIÓN POR CUENTA — Extraído del estado de cuenta
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr 1fr 1fr 1fr 80px",padding:"8px 16px",background:"#f7f6f2",borderBottom:"1px solid #e2e8f0"}}>
+                {["CUENTA","PERÍODO","SALDO INICIAL","+ DEPÓSITOS","- RETIROS","SALDO FINAL","STATUS"].map(h=>(
+                  <div key={h} style={{fontSize:10,fontWeight:700,color:"#64748b",letterSpacing:0.5}}>{h}</div>
+                ))}
+              </div>
+              {balances.map((b,i)=>{
+                const calculated = (parseFloat(b.beginning_balance)||0) + (parseFloat(b.total_deposits)||0) - (parseFloat(b.total_withdrawals)||0);
+                const ending = parseFloat(b.ending_balance)||0;
+                const diff = Math.abs(calculated - ending);
+                const ok = diff < 0.02;
+                return (
+                  <div key={i} style={{borderBottom:"1px solid #f0ede8"}}>
+                    <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr 1fr 1fr 1fr 80px",padding:"12px 16px",alignItems:"center",background:ok?"#fff":"#fff8f8"}}>
+                      <div>
+                        <div style={{fontWeight:600,fontSize:13,color:"#1a1a1a"}}>{b.account_name||"Cuenta"}</div>
+                        {b.account_number&&b.account_number!=="N/A"&&<div style={{fontSize:11,color:"#94a3b8"}}>****{b.account_number}</div>}
+                      </div>
+                      <div style={{fontSize:11,color:"#64748b"}}>{b.period_start||"—"}<br/>{b.period_end||""}</div>
+                      <div style={{fontSize:13,fontWeight:600,color:"#1a1a1a"}}>${fmt(b.beginning_balance)}</div>
+                      <div style={{fontSize:13,fontWeight:600,color:"#22c55e"}}>+${fmt(b.total_deposits)}</div>
+                      <div style={{fontSize:13,fontWeight:600,color:"#ef4444"}}>-${fmt(b.total_withdrawals)}</div>
+                      <div>
+                        <div style={{fontSize:13,fontWeight:700,color:"#1a1a1a"}}>${fmt(b.ending_balance)}</div>
+                        {!ok&&<div style={{fontSize:10,color:"#ef4444"}}>calc: ${fmt(calculated)}</div>}
+                      </div>
+                      <div style={{textAlign:"center"}}>
+                        {ok
+                          ? <span style={{background:"#dcfce7",color:"#166534",borderRadius:6,padding:"3px 8px",fontSize:11,fontWeight:700}}>✅ OK</span>
+                          : <span style={{background:"#fee2e2",color:"#991b1b",borderRadius:6,padding:"3px 8px",fontSize:11,fontWeight:700}}>⚠️ DIF</span>
+                        }
+                      </div>
+                    </div>
+                    {!ok&&(
+                      <div style={{background:"#fef3c7",padding:"6px 16px",fontSize:11,color:"#92400e",borderTop:"1px solid #fde68a"}}>
+                        ⚠️ Diferencia de ${fmt(diff)} — Revisa si hay transacciones faltantes
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {balances.length>1&&(
+                <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr 1fr 1fr 1fr 80px",padding:"10px 16px",background:"#f7f6f2",borderTop:"2px solid #e2e8f0"}}>
+                  <div style={{fontWeight:700,fontSize:12,color:"#1a1a1a"}}>TOTAL GENERAL</div>
+                  <div></div>
+                  <div style={{fontWeight:700,fontSize:13,color:"#1a1a1a"}}>${fmt(balances.reduce((s,b)=>s+(parseFloat(b.beginning_balance)||0),0))}</div>
+                  <div style={{fontWeight:700,fontSize:13,color:"#22c55e"}}>+${fmt(balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0))}</div>
+                  <div style={{fontWeight:700,fontSize:13,color:"#ef4444"}}>-${fmt(balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0))}</div>
+                  <div style={{fontWeight:700,fontSize:13,color:"#1a1a1a"}}>${fmt(balances.reduce((s,b)=>s+(parseFloat(b.ending_balance)||0),0))}</div>
+                  <div></div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{...S.card,textAlign:"center",padding:"32px 20px"}}>
+              <div style={{fontSize:32,marginBottom:10}}>🔍</div>
+              <div style={{fontWeight:600,marginBottom:6,color:"#1a1a1a"}}>No se encontraron saldos en el PDF</div>
+              <div style={{fontSize:12,color:"#64748b"}}>Puedes continuar de todas formas.</div>
+            </div>
+          )}
+
+          {/* Comparison */}
+          {balances.length>0&&(
+            <div style={{...S.card,marginTop:14}}>
+              <div style={{fontSize:12,fontWeight:700,color:"#64748b",marginBottom:12,letterSpacing:1}}>🔎 COMPARACIÓN: BANCO vs TRANSACCIONES EXTRAÍDAS</div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:12}}>
+                {[
+                  {l:"Depósitos Banco",v:`$${fmt(balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0))}`,c:"#22c55e"},
+                  {l:"Depósitos Extraídos",v:`$${fmt(totalDepositsAmt)}`,c:"#22c55e"},
+                  {l:"Retiros Banco",v:`$${fmt(balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0))}`,c:"#ef4444"},
+                  {l:"Retiros Extraídos",v:`$${fmt(totalWithdrawalsAmt)}`,c:"#ef4444"},
+                ].map(s=>(
+                  <div key={s.l} style={{background:"#f7f6f2",borderRadius:8,padding:"12px 14px"}}>
+                    <div style={{fontSize:10,fontWeight:700,color:"#94a3b8",letterSpacing:0.5,marginBottom:4}}>{s.l}</div>
+                    <div style={{fontSize:16,fontWeight:700,color:s.c}}>{s.v}</div>
+                  </div>
+                ))}
+              </div>
+              {(()=>{
+                const bankDep  = balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
+                const bankWith = balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
+                const depDiff  = Math.abs(bankDep - totalDepositsAmt);
+                const withDiff = Math.abs(bankWith - totalWithdrawalsAmt);
+                const allGood  = depDiff < 1 && withDiff < 1;
+                return (
+                  <div style={{marginTop:12,padding:"10px 14px",borderRadius:8,background:allGood?"#dcfce7":"#fef3c7",border:`1px solid ${allGood?"#86efac":"#fde68a"}`}}>
+                    {allGood
+                      ? <span style={{color:"#166534",fontWeight:600,fontSize:13}}>✅ Todo cuadra — Las transacciones extraídas coinciden con los totales del banco</span>
+                      : <span style={{color:"#92400e",fontWeight:600,fontSize:13}}>⚠️ Posible diferencia — Depósitos: ${fmt(depDiff)} · Retiros: ${fmt(withDiff)}</span>
+                    }
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          <div style={{display:"flex",justifyContent:"flex-end",marginTop:16,gap:10}}>
+            <button style={{...S.btn,...S.btnOutline,color:"#fff",borderColor:"#475569"}} onClick={()=>setScreen("upload")}>← Volver</button>
+            <button style={{...S.btn,...S.btnGold,fontSize:14,padding:"10px 28px"}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
+              {askQueue.length>0 ? `Resolver ${askQueue.length} ambigüedades →` : "Ver transacciones →"}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* RESOLVE */}
       {screen==="resolve"&&askQueue.length>0&&(()=>{
         const ask=askQueue[currentAsk];

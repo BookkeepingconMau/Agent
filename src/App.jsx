@@ -443,9 +443,9 @@ export default function App() {
   const totalWithdrawalsAmt = withdrawals.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
 
   const S = {
-    app:{minHeight:"100vh",background:"#f4f6f9",fontFamily:"'DM Sans',system-ui,sans-serif",color:"#1a1a1a"},
+    app:{minHeight:"100vh",background:"#f4f6f9",fontFamily:"'DM Sans',system-ui,sans-serif",color:"#1a1a1a",position:"relative"},
     nav:{background:"#0f1f4b",padding:"0 36px",height:64,display:"flex",alignItems:"center",justifyContent:"space-between"},
-    page:{maxWidth:1320,margin:"0 auto",padding:"44px 36px"},
+    page:{maxWidth:1320,margin:"0 auto",padding:"44px 36px",position:"relative",zIndex:1},
     h1:{fontSize:32,fontWeight:700,letterSpacing:"-0.5px",marginBottom:8},
     sub:{color:"#666",fontSize:15},
     card:{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:28,marginBottom:18},
@@ -470,6 +470,33 @@ export default function App() {
   return (
     <div style={S.app}>
       <style>{`
+        body{background:#f4f6f9}
+        .bg-star{position:fixed;border-radius:50%;background:rgba(26,86,219,0.25);pointer-events:none;z-index:0}
+        .bg-s1{animation:twinkle1 3s ease-in-out infinite}
+        .bg-s2{animation:twinkle2 4.5s ease-in-out infinite}
+        .bg-s3{animation:twinkle3 2.5s ease-in-out infinite}
+      `}</style>
+      {/* Background starfield */}
+      <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
+        {[
+          {l:"2%",t:"5%",w:2,h:2,c:"bg-s1"},{l:"7%",t:"15%",w:1.5,h:1.5,c:"bg-s2"},{l:"13%",t:"8%",w:1,h:1,c:"bg-s3"},
+          {l:"18%",t:"25%",w:2,h:2,c:"bg-s1"},{l:"23%",t:"3%",w:1.5,h:1.5,c:"bg-s2"},{l:"29%",t:"18%",w:1,h:1,c:"bg-s3"},
+          {l:"35%",t:"10%",w:2,h:2,c:"bg-s1"},{l:"41%",t:"22%",w:1,h:1,c:"bg-s2"},{l:"47%",t:"6%",w:1.5,h:1.5,c:"bg-s3"},
+          {l:"53%",t:"14%",w:2,h:2,c:"bg-s1"},{l:"59%",t:"28%",w:1,h:1,c:"bg-s2"},{l:"65%",t:"4%",w:1.5,h:1.5,c:"bg-s3"},
+          {l:"71%",t:"20%",w:2,h:2,c:"bg-s1"},{l:"77%",t:"9%",w:1,h:1,c:"bg-s2"},{l:"83%",t:"16%",w:1.5,h:1.5,c:"bg-s3"},
+          {l:"89%",t:"7%",w:2,h:2,c:"bg-s1"},{l:"95%",t:"24%",w:1,h:1,c:"bg-s2"},{l:"5%",t:"40%",w:1.5,h:1.5,c:"bg-s3"},
+          {l:"11%",t:"55%",w:1,h:1,c:"bg-s1"},{l:"17%",t:"45%",w:2,h:2,c:"bg-s2"},{l:"33%",t:"50%",w:1,h:1,c:"bg-s3"},
+          {l:"45%",t:"60%",w:1.5,h:1.5,c:"bg-s1"},{l:"57%",t:"42%",w:1,h:1,c:"bg-s2"},{l:"69%",t:"58%",w:2,h:2,c:"bg-s3"},
+          {l:"81%",t:"48%",w:1,h:1,c:"bg-s1"},{l:"93%",t:"38%",w:1.5,h:1.5,c:"bg-s2"},{l:"8%",t:"75%",w:1,h:1,c:"bg-s3"},
+          {l:"22%",t:"80%",w:2,h:2,c:"bg-s1"},{l:"38%",t:"70%",w:1,h:1,c:"bg-s2"},{l:"52%",t:"85%",w:1.5,h:1.5,c:"bg-s3"},
+          {l:"66%",t:"72%",w:1,h:1,c:"bg-s1"},{l:"78%",t:"88%",w:2,h:2,c:"bg-s2"},{l:"91%",t:"65%",w:1,h:1,c:"bg-s3"},
+          {l:"4%",t:"90%",w:1.5,h:1.5,c:"bg-s1"},{l:"26%",t:"95%",w:1,h:1,c:"bg-s2"},{l:"48%",t:"92%",w:2,h:2,c:"bg-s3"},
+          {l:"72%",t:"96%",w:1,h:1,c:"bg-s1"},{l:"86%",t:"82%",w:1.5,h:1.5,c:"bg-s2"},{l:"97%",t:"90%",w:1,h:1,c:"bg-s3"},
+        ].map((s,i)=>(
+          <div key={i} className={`bg-star ${s.c}`} style={{left:s.l,top:s.t,width:s.w,height:s.h}} />
+        ))}
+      </div>
+      <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
         button:hover{opacity:0.85}
@@ -485,17 +512,6 @@ export default function App() {
         ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#ddd;border-radius:2px}
         @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
       `}</style>
-
-      {/* NAV */}
-      <div style={S.nav}>
-        <div style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:"#ffffff"}}>
-          Wave<span style={{color:"#1a56db"}}>Book</span>
-          <span style={{fontSize:13,color:"#8ba3d4",fontFamily:"'DM Sans',sans-serif",fontWeight:400,marginLeft:8}}>v5.4 · 14 tipos · 350+ merchants · Extracción completa de cheques</span>
-        </div>
-        <div style={{display:"flex",gap:8,alignItems:"center"}}>
-          {clientData&&<span style={{color:"#888",fontSize:12}}>{clientData.name}</span>}
-        </div>
-      </div>
 
       {/* HOME */}
       {screen==="home"&&(

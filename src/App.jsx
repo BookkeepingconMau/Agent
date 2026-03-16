@@ -503,7 +503,7 @@ export default function App() {
             <img src="/mau-agent.jpeg" alt="Mau Bautista IA" style={{width:110,height:110,objectFit:"cover",borderRadius:"50%",border:"3px solid rgba(255,255,255,0.3)",flexShrink:0}} />
             <div>
               <div style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:"#fff",marginBottom:4}}>Bienvenido al Agente de Mau Bautista</div>
-              <div style={{color:"rgba(255,255,255,0.7)",fontSize:13,marginBottom:8}}>Tu bookkeeper inteligente · Powered by Claude AI</div>
+              <div style={{color:"rgba(255,255,255,0.7)",fontSize:13,marginBottom:8}}>Tu bookkeeper inteligente</div>
               <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                 {["14 tipos de negocio","350+ merchants","Conciliación automática","Memoria persistente"].map(t=>(
                   <span key={t} style={{background:"rgba(255,255,255,0.15)",color:"#fff",borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:600}}>{t}</span>

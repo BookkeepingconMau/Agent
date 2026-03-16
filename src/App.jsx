@@ -500,9 +500,47 @@ export default function App() {
       {/* HOME */}
       {screen==="home"&&(
         <div style={S.page}>
-          <div style={{marginBottom:24,background:"linear-gradient(135deg,#0f1f4b 0%,#1a56db 100%)",borderRadius:20,padding:"36px 40px",display:"flex",alignItems:"center",gap:24,flexWrap:"wrap"}}>
-            <img src="/mau-agent.jpeg" alt="Mau Bautista IA" style={{width:140,height:140,objectFit:"cover",borderRadius:"50%",border:"4px solid rgba(255,255,255,0.3)",flexShrink:0}} />
-            <div>
+          <div style={{marginBottom:24,background:"#000008",borderRadius:20,padding:"36px 40px",display:"flex",alignItems:"center",gap:24,flexWrap:"wrap",position:"relative",overflow:"hidden"}}>
+            <div style={{position:"absolute",inset:0,borderRadius:20,background:"radial-gradient(ellipse at 20% 50%,rgba(26,86,219,0.15) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(99,102,241,0.1) 0%,transparent 50%),radial-gradient(ellipse at 60% 80%,rgba(15,31,75,0.4) 0%,transparent 60%)"}} />
+            <style>{`
+              @keyframes twinkle1{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.2;transform:scale(0.8)}}
+              @keyframes twinkle2{0%,100%{opacity:0.6;transform:scale(1)}40%{opacity:1;transform:scale(1.3)}70%{opacity:0.1;transform:scale(0.7)}}
+              @keyframes twinkle3{0%,100%{opacity:0.8}30%{opacity:0.1}60%{opacity:1}90%{opacity:0.3}}
+              @keyframes shootingstar{0%{transform:translateX(0) translateY(0);opacity:1}100%{transform:translateX(200px) translateY(60px);opacity:0}}
+              .star{position:absolute;border-radius:50%;background:#fff}
+              .s1{animation:twinkle1 2.1s ease-in-out infinite}
+              .s2{animation:twinkle2 3.4s ease-in-out infinite}
+              .s3{animation:twinkle3 1.8s ease-in-out infinite}
+              .s4{animation:twinkle1 4.2s ease-in-out infinite}
+              .s5{animation:twinkle2 2.7s ease-in-out infinite}
+              .shooting{position:absolute;width:60px;height:1px;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.8));animation:shootingstar 4s ease-in-out infinite;animation-delay:2s}
+            `}</style>
+            {/* Stars */}
+            {[
+              {l:"4%",t:"15%",w:2,h:2,c:"s1"},{l:"8%",t:"70%",w:1,h:1,c:"s2"},{l:"12%",t:"35%",w:1.5,h:1.5,c:"s3"},
+              {l:"16%",t:"85%",w:1,h:1,c:"s4"},{l:"20%",t:"10%",w:2.5,h:2.5,c:"s1"},{l:"22%",t:"55%",w:1,h:1,c:"s5"},
+              {l:"26%",t:"40%",w:1.5,h:1.5,c:"s2"},{l:"30%",t:"90%",w:1,h:1,c:"s3"},{l:"34%",t:"25%",w:2,h:2,c:"s4"},
+              {l:"38%",t:"65%",w:1,h:1,c:"s1"},{l:"42%",t:"8%",w:1.5,h:1.5,c:"s5"},{l:"46%",t:"78%",w:2,h:2,c:"s2"},
+              {l:"50%",t:"18%",w:1,h:1,c:"s3"},{l:"54%",t:"48%",w:1.5,h:1.5,c:"s4"},{l:"58%",t:"88%",w:1,h:1,c:"s1"},
+              {l:"62%",t:"32%",w:2,h:2,c:"s2"},{l:"66%",t:"72%",w:1,h:1,c:"s5"},{l:"70%",t:"12%",w:1.5,h:1.5,c:"s3"},
+              {l:"74%",t:"58%",w:2.5,h:2.5,c:"s4"},{l:"78%",t:"82%",w:1,h:1,c:"s1"},{l:"82%",t:"22%",w:1.5,h:1.5,c:"s2"},
+              {l:"86%",t:"42%",w:1,h:1,c:"s5"},{l:"90%",t:"68%",w:2,h:2,c:"s3"},{l:"94%",t:"5%",w:1,h:1,c:"s4"},
+              {l:"96%",t:"52%",w:1.5,h:1.5,c:"s1"},{l:"6%",t:"50%",w:1,h:1,c:"s3"},{l:"14%",t:"5%",w:2,h:2,c:"s2"},
+              {l:"28%",t:"75%",w:1,h:1,c:"s5"},{l:"36%",t:"45%",w:1.5,h:1.5,c:"s1"},{l:"44%",t:"92%",w:1,h:1,c:"s4"},
+              {l:"52%",t:"28%",w:2,h:2,c:"s2"},{l:"60%",t:"62%",w:1,h:1,c:"s3"},{l:"68%",t:"38%",w:1.5,h:1.5,c:"s5"},
+              {l:"76%",t:"15%",w:1,h:1,c:"s1"},{l:"84%",t:"55%",w:2,h:2,c:"s4"},{l:"92%",t:"30%",w:1,h:1,c:"s2"},
+              {l:"3%",t:"80%",w:1.5,h:1.5,c:"s3"},{l:"18%",t:"20%",w:1,h:1,c:"s5"},{l:"32%",t:"60%",w:2,h:2,c:"s1"},
+              {l:"48%",t:"95%",w:1,h:1,c:"s4"},{l:"56%",t:"5%",w:1.5,h:1.5,c:"s2"},{l:"72%",t:"85%",w:1,h:1,c:"s3"},
+              {l:"88%",t:"45%",w:2,h:2,c:"s5"},{l:"98%",t:"75%",w:1,h:1,c:"s1"},{l:"10%",t:"92%",w:1.5,h:1.5,c:"s4"},
+              {l:"24%",t:"3%",w:1,h:1,c:"s2"},{l:"40%",t:"38%",w:2,h:2,c:"s3"},{l:"64%",t:"18%",w:1,h:1,c:"s5"},
+              {l:"80%",t:"72%",w:1.5,h:1.5,c:"s1"},{l:"2%",t:"30%",w:1,h:1,c:"s2"},
+            ].map((s,i)=>(
+              <div key={i} className={`star ${s.c}`} style={{left:s.l,top:s.t,width:s.w,height:s.h,boxShadow:s.w>1.8?`0 0 ${s.w*2}px ${s.w}px rgba(255,255,255,0.4)`:""}} />
+            ))}
+            <div className="shooting" style={{top:"20%",left:"10%"}} />
+            <div className="shooting" style={{top:"60%",left:"5%",animationDelay:"6s",animationDuration:"5s"}} />
+            <img src="/mau-agent.jpeg" alt="Mau Bautista IA" style={{width:140,height:140,objectFit:"cover",borderRadius:"50%",border:"4px solid rgba(255,255,255,0.3)",flexShrink:0,position:"relative",zIndex:1}} />
+            <div style={{position:"relative",zIndex:1}}>
               <div style={{fontFamily:"'Playfair Display',serif",fontSize:28,fontWeight:700,color:"#fff",marginBottom:6}}>Bienvenido al Agente de Mau Bautista</div>
               <div style={{color:"rgba(255,255,255,0.7)",fontSize:15,marginBottom:10}}>Tu bookkeeper inteligente</div>
               <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>

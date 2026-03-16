@@ -378,6 +378,9 @@ export default function App() {
   const [progress, setProgress]         = useState("");
   const [dragOver, setDragOver]         = useState(false);
   const [balances, setBalances]         = useState([]);
+  const [splitMode, setSplitMode]       = useState(false);
+  const [splitParts, setSplitParts]     = useState([]);
+  const [splitPartNum, setSplitPartNum] = useState(1);
   const fileRef = useRef();
 
   useEffect(() => { loadList(); }, []);
@@ -466,11 +469,27 @@ export default function App() {
       const result = categorize(row.concept, row.amount, isDeposit, clientData.businessType, clientData.learnedMerchants||{});
       return { ...row, concept: result.enrichedConcept||row.concept, category:result.category, level:result.level, reason:result.reason||"", payee:result.payee||null, checkNum:result.checkNum||null };
     });
-    const asks = categorized.filter(r=>r.category==="ASK TO CLIENT");
-    setTransactions(categorized); setAskQueue(asks); setCurrentAsk(0);
+    // In split mode: merge with previous parts instead of replacing
+    let finalTransactions = categorized;
+    if (splitMode && splitParts.length > 0) {
+      const allPrevious = splitParts.flat();
+      finalTransactions = [...allPrevious, ...categorized];
+    }
+
+    const asks = finalTransactions.filter(r=>r.category==="ASK TO CLIENT");
+    setTransactions(finalTransactions);
+    setAskQueue(asks); setCurrentAsk(0);
     setProgress("");
-    // Always show reconciliation first
-    setScreen("reconcile");
+
+    if (splitMode) {
+      // Save this part and go back to upload for next part
+      setSplitParts(prev => [...prev, categorized]);
+      setSplitPartNum(prev => prev + 1);
+      setBalances(bals); // keep balances from first part
+      setScreen("reconcile");
+    } else {
+      setScreen("reconcile");
+    }
   }
 
   function resolveAsk(category, learn, learnKey) {
@@ -736,10 +755,51 @@ export default function App() {
                    :(<><div style={{fontWeight:500,color:"#1a1a1a"}}>Arrastra el bank statement aquí</div><div style={{color:"#64748b",fontSize:12,marginTop:3}}>o click · Solo PDF bancario digital</div></>)}
               <input ref={fileRef} type="file" accept=".pdf" style={{display:"none"}} onChange={e=>{const f=e.target.files[0];if(f)setFile(f)}} />
             </div>
+            {/* Split mode toggle */}
+            <div style={{marginTop:16,padding:"12px 16px",background:"rgba(26,86,219,0.1)",borderRadius:10,border:"1px solid rgba(26,86,219,0.3)"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <div>
+                  <div style={{fontSize:13,fontWeight:700,color:"#ffffff"}}>📄 Modo PDF Dividido</div>
+                  <div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>Para PDFs de 20+ páginas — procesa múltiples partes y las junta automáticamente</div>
+                </div>
+                <button onClick={()=>{setSplitMode(!splitMode); setSplitParts([]); setSplitPartNum(1);}}
+                  style={{padding:"6px 16px",borderRadius:20,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,
+                    background:splitMode?"#1a56db":"rgba(255,255,255,0.1)",
+                    color:"#fff",transition:"all 0.2s"}}>
+                  {splitMode ? "✅ ON" : "OFF"}
+                </button>
+              </div>
+              {splitMode&&(
+                <div style={{marginTop:10,display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+                  <div style={{fontSize:12,color:"#94a3b8"}}>Partes cargadas:</div>
+                  {[1,2,3,4].map(n=>(
+                    <div key={n} style={{width:28,height:28,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,
+                      background:n<splitPartNum?"#22c55e":n===splitPartNum?"#1a56db":"rgba(255,255,255,0.1)",
+                      color:"#fff",border:n===splitPartNum?"2px solid #fff":"2px solid transparent"}}>
+                      {n<splitPartNum?"✓":n}
+                    </div>
+                  ))}
+                  {splitParts.length>0&&(
+                    <div style={{fontSize:11,color:"#22c55e",marginLeft:4}}>
+                      {splitParts.reduce((s,p)=>s+p.length,0)} transacciones acumuladas
+                    </div>
+                  )}
+                  {splitParts.length>0&&(
+                    <button onClick={()=>{setSplitParts([]);setSplitPartNum(1);setTransactions([]);}}
+                      style={{marginLeft:"auto",fontSize:10,color:"#ef4444",background:"transparent",border:"1px solid #ef4444",borderRadius:6,padding:"2px 8px",cursor:"pointer"}}>
+                      Reiniciar
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
             {file&&(
               <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:14}}>
                 <button style={{...S.btn,...S.btnOutline,color:"#fff",borderColor:"#475569"}} onClick={()=>setFile(null)}>Cambiar</button>
-                <button style={{...S.btn,...S.btnGold}} onClick={runExtraction}>🚀 Procesar</button>
+                <button style={{...S.btn,...S.btnGold}} onClick={runExtraction}>
+                  {splitMode ? `🚀 Procesar Parte ${splitPartNum}` : "🚀 Procesar"}
+                </button>
               </div>
             )}
           </div>
@@ -941,7 +1001,24 @@ export default function App() {
           <div style={{marginBottom:20,display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:10}}>
             <div>
               <h1 style={S.h1}>⚖️ Conciliación de Saldos</h1>
-              <p style={S.sub}>Verifica que los saldos del banco cuadren con las transacciones extraídas</p>
+              <p style={S.sub}>
+                {splitMode && splitParts.length > 0
+                  ? `Modo PDF dividido — ${splitParts.length} parte(s) procesada(s) · ${transactions.length} transacciones totales`
+                  : "Verifica que los saldos del banco cuadren con las transacciones extraídas"
+                }
+              </p>
+              {splitMode && (
+                <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
+                  <button style={{...S.btn,background:"#1a56db",color:"#fff",fontSize:11,padding:"5px 14px"}}
+                    onClick={()=>setScreen("upload")}>
+                    ➕ Agregar Parte {splitPartNum}
+                  </button>
+                  <button style={{...S.btn,background:"#22c55e",color:"#fff",fontSize:11,padding:"5px 14px"}}
+                    onClick={()=>{setSplitMode(false); setScreen(askQueue.length>0?"resolve":"review")}}>
+                    ✅ Listo — Ver transacciones
+                  </button>
+                </div>
+              )}
             </div>
             <div style={{display:"flex",gap:8}}>
               <button style={{...S.btn,...S.btnOutline,fontSize:12,color:"#fff",borderColor:"#475569"}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>

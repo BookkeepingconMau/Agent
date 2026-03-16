@@ -661,10 +661,80 @@ export default function App() {
 
       {/* EXTRACTING */}
       {screen==="extracting"&&(
-        <div style={{...S.page,textAlign:"center",paddingTop:80}}>
-          <div style={{fontSize:48,marginBottom:16,display:"inline-block",animation:"spin 2s linear infinite"}}>⚙️</div>
-          <h2 style={{fontSize:20,fontWeight:700,marginBottom:8,color:"#ffffff"}}>Procesando...</h2>
-          <p style={{color:"#94a3b8",fontSize:13}}>{progress}</p>
+        <div style={{textAlign:"center",paddingTop:40,paddingBottom:40,position:"relative",zIndex:1}}>
+          <style>{`
+            @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+            @keyframes screenGlow{0%,100%{opacity:0.6;transform:scale(1)}50%{opacity:1;transform:scale(1.03)}}
+            @keyframes dataFlow{0%{transform:translateY(0);opacity:0}20%{opacity:1}100%{transform:translateY(-60px);opacity:0}}
+            @keyframes pulse{0%,100%{transform:scale(1);opacity:0.8}50%{transform:scale(1.15);opacity:1}}
+            @keyframes dots{0%,20%{content:"."} 40%{content:".."} 60%,100%{content:"..."}}
+            @keyframes scanline{0%{transform:translateY(-100%)}100%{transform:translateY(400%)}}
+            .data-particle{position:absolute;font-size:11px;font-family:monospace;animation:dataFlow 2s ease-in-out infinite;pointer-events:none;font-weight:700}
+            .screen-card{animation:screenGlow 2s ease-in-out infinite}
+            .robot-float{animation:float 3s ease-in-out infinite}
+            .dot-pulse{animation:pulse 1s ease-in-out infinite}
+          `}</style>
+
+          {/* Floating data particles */}
+          <div style={{position:"relative",display:"inline-block",width:420,height:340}}>
+
+            {/* Left screen */}
+            <div className="screen-card" style={{position:"absolute",left:0,top:60,width:110,height:130,background:"rgba(10,20,50,0.9)",borderRadius:10,border:"1px solid #1a56db",padding:8,animationDelay:"0.5s"}}>
+              <div style={{fontSize:8,color:"#1a56db",fontWeight:700,marginBottom:4,fontFamily:"monospace"}}>TRANSACTIONS</div>
+              {["$4,037.00","$-3,397.75","$9,995.73","$-559.50","$4,812.54","$-85.73","$3,897.82"].map((n,i)=>(
+                <div key={i} style={{fontSize:8,color:n.includes("-")?"#ef4444":"#22c55e",fontFamily:"monospace",marginBottom:2,opacity:0.9}}>{n}</div>
+              ))}
+              <div style={{position:"absolute",bottom:0,left:0,right:0,height:2,background:"linear-gradient(90deg,transparent,#1a56db,transparent)",animation:"scanline 2s linear infinite"}} />
+            </div>
+
+            {/* Right screen */}
+            <div className="screen-card" style={{position:"absolute",right:0,top:60,width:110,height:130,background:"rgba(10,20,50,0.9)",borderRadius:10,border:"1px solid #1a56db",padding:8,animationDelay:"1s"}}>
+              <div style={{fontSize:8,color:"#1a56db",fontWeight:700,marginBottom:4,fontFamily:"monospace"}}>CATEGORIES</div>
+              {["COGS ████","PAYROLL ███","MEALS ██","FUEL ████","RENT ██","BANK ███","UTIL ██"].map((n,i)=>(
+                <div key={i} style={{fontSize:8,color:"#94a3b8",fontFamily:"monospace",marginBottom:2}}>{n}</div>
+              ))}
+              <div style={{position:"absolute",bottom:0,left:0,right:0,height:2,background:"linear-gradient(90deg,transparent,#1a56db,transparent)",animation:"scanline 2s linear infinite",animationDelay:"1s"}} />
+            </div>
+
+            {/* Top screen */}
+            <div className="screen-card" style={{position:"absolute",left:"50%",transform:"translateX(-50%)",top:0,width:130,height:55,background:"rgba(10,20,50,0.9)",borderRadius:10,border:"1px solid #22c55e",padding:8,animationDelay:"0.2s"}}>
+              <div style={{fontSize:8,color:"#22c55e",fontWeight:700,marginBottom:3,fontFamily:"monospace"}}>RECONCILIATION ✓</div>
+              <div style={{fontSize:9,color:"#ffffff",fontFamily:"monospace"}}>Deps: $212,675.50</div>
+              <div style={{fontSize:9,color:"#ffffff",fontFamily:"monospace"}}>With: $209,593.76</div>
+            </div>
+
+            {/* Robot - center */}
+            <div className="robot-float" style={{position:"absolute",left:"50%",transform:"translateX(-50%)",top:65,zIndex:2}}>
+              <img src="/mau-agent.jpeg" alt="Mau Agent" style={{width:150,height:150,objectFit:"cover",borderRadius:"50%",border:"3px solid #1a56db",boxShadow:"0 0 30px rgba(26,86,219,0.6),0 0 60px rgba(26,86,219,0.3)"}} />
+            </div>
+
+            {/* Floating data particles */}
+            {[
+              {l:"15%",t:"20%",d:"0s",v:"ACH"},
+              {l:"75%",t:"15%",d:"0.4s",v:"PDF"},
+              {l:"20%",t:"55%",d:"0.8s",v:"CSV"},
+              {l:"70%",t:"50%",d:"1.2s",v:"$$$"},
+              {l:"45%",t:"10%",d:"0.6s",v:"TAX"},
+              {l:"50%",t:"60%",d:"1s",v:"CHK"},
+            ].map((p,i)=>(
+              <div key={i} className="data-particle" style={{left:p.l,top:p.t,color:"#1a56db",animationDelay:p.d}}>{p.v}</div>
+            ))}
+
+          </div>
+
+          {/* Progress text */}
+          <div style={{marginTop:8}}>
+            <h2 style={{fontSize:22,fontWeight:700,color:"#ffffff",marginBottom:8,fontFamily:"'Playfair Display',serif"}}>
+              Procesando Statement...
+            </h2>
+            <p style={{color:"#94a3b8",fontSize:14,fontFamily:"monospace"}}>{progress}</p>
+            {/* Animated dots */}
+            <div style={{display:"flex",justifyContent:"center",gap:8,marginTop:16}}>
+              {[0,1,2,3,4].map(i=>(
+                <div key={i} className="dot-pulse" style={{width:8,height:8,borderRadius:"50%",background:"#1a56db",animationDelay:`${i*0.15}s`}} />
+              ))}
+            </div>
+          </div>
         </div>
       )}
 

@@ -443,12 +443,12 @@ export default function App() {
   const totalWithdrawalsAmt = withdrawals.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
 
   const S = {
-    app:{minHeight:"100vh",background:"#f4f6f9",fontFamily:"'DM Sans',system-ui,sans-serif",color:"#1a1a1a",position:"relative"},
+    app:{minHeight:"100vh",background:"#05080f",fontFamily:"'DM Sans',system-ui,sans-serif",color:"#1a1a1a",position:"relative"},
     nav:{background:"#0f1f4b",padding:"0 36px",height:64,display:"flex",alignItems:"center",justifyContent:"space-between"},
     page:{maxWidth:1320,margin:"0 auto",padding:"44px 36px",position:"relative",zIndex:1},
     h1:{fontSize:32,fontWeight:700,letterSpacing:"-0.5px",marginBottom:8},
-    sub:{color:"#666",fontSize:15},
-    card:{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:28,marginBottom:18},
+    sub:{color:"#94a3b8",fontSize:15},
+    card:{background:"rgba(255,255,255,0.96)",borderRadius:16,border:"1px solid #e2e8f0",padding:28,marginBottom:18},
     btn:{padding:"11px 24px",borderRadius:10,border:"none",cursor:"pointer",fontSize:14,fontWeight:600,transition:"all 0.15s"},
     btnPrimary:{background:"#0f1f4b",color:"#fff"},
     btnGold:{background:"#1a56db",color:"#fff"},
@@ -470,8 +470,8 @@ export default function App() {
   return (
     <div style={S.app}>
       <style>{`
-        body{background:#f4f6f9}
-        .bg-star{position:fixed;border-radius:50%;background:rgba(26,86,219,0.25);pointer-events:none;z-index:0}
+        body{background:#05080f}
+        .bg-star{position:fixed;border-radius:50%;background:#ffffff;pointer-events:none;z-index:0;box-shadow:0 0 4px 1px rgba(255,255,255,0.4)}
         .bg-s1{animation:twinkle1 3s ease-in-out infinite}
         .bg-s2{animation:twinkle2 4.5s ease-in-out infinite}
         .bg-s3{animation:twinkle3 2.5s ease-in-out infinite}
@@ -479,19 +479,25 @@ export default function App() {
       {/* Background starfield */}
       <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
         {[
-          {l:"2%",t:"5%",w:2,h:2,c:"bg-s1"},{l:"7%",t:"15%",w:1.5,h:1.5,c:"bg-s2"},{l:"13%",t:"8%",w:1,h:1,c:"bg-s3"},
-          {l:"18%",t:"25%",w:2,h:2,c:"bg-s1"},{l:"23%",t:"3%",w:1.5,h:1.5,c:"bg-s2"},{l:"29%",t:"18%",w:1,h:1,c:"bg-s3"},
-          {l:"35%",t:"10%",w:2,h:2,c:"bg-s1"},{l:"41%",t:"22%",w:1,h:1,c:"bg-s2"},{l:"47%",t:"6%",w:1.5,h:1.5,c:"bg-s3"},
-          {l:"53%",t:"14%",w:2,h:2,c:"bg-s1"},{l:"59%",t:"28%",w:1,h:1,c:"bg-s2"},{l:"65%",t:"4%",w:1.5,h:1.5,c:"bg-s3"},
-          {l:"71%",t:"20%",w:2,h:2,c:"bg-s1"},{l:"77%",t:"9%",w:1,h:1,c:"bg-s2"},{l:"83%",t:"16%",w:1.5,h:1.5,c:"bg-s3"},
-          {l:"89%",t:"7%",w:2,h:2,c:"bg-s1"},{l:"95%",t:"24%",w:1,h:1,c:"bg-s2"},{l:"5%",t:"40%",w:1.5,h:1.5,c:"bg-s3"},
-          {l:"11%",t:"55%",w:1,h:1,c:"bg-s1"},{l:"17%",t:"45%",w:2,h:2,c:"bg-s2"},{l:"33%",t:"50%",w:1,h:1,c:"bg-s3"},
-          {l:"45%",t:"60%",w:1.5,h:1.5,c:"bg-s1"},{l:"57%",t:"42%",w:1,h:1,c:"bg-s2"},{l:"69%",t:"58%",w:2,h:2,c:"bg-s3"},
-          {l:"81%",t:"48%",w:1,h:1,c:"bg-s1"},{l:"93%",t:"38%",w:1.5,h:1.5,c:"bg-s2"},{l:"8%",t:"75%",w:1,h:1,c:"bg-s3"},
-          {l:"22%",t:"80%",w:2,h:2,c:"bg-s1"},{l:"38%",t:"70%",w:1,h:1,c:"bg-s2"},{l:"52%",t:"85%",w:1.5,h:1.5,c:"bg-s3"},
-          {l:"66%",t:"72%",w:1,h:1,c:"bg-s1"},{l:"78%",t:"88%",w:2,h:2,c:"bg-s2"},{l:"91%",t:"65%",w:1,h:1,c:"bg-s3"},
-          {l:"4%",t:"90%",w:1.5,h:1.5,c:"bg-s1"},{l:"26%",t:"95%",w:1,h:1,c:"bg-s2"},{l:"48%",t:"92%",w:2,h:2,c:"bg-s3"},
-          {l:"72%",t:"96%",w:1,h:1,c:"bg-s1"},{l:"86%",t:"82%",w:1.5,h:1.5,c:"bg-s2"},{l:"97%",t:"90%",w:1,h:1,c:"bg-s3"},
+          {l:"2%",t:"5%",w:3,h:3,c:"bg-s1"},{l:"7%",t:"15%",w:2,h:2,c:"bg-s2"},{l:"13%",t:"8%",w:1.5,h:1.5,c:"bg-s3"},
+          {l:"18%",t:"25%",w:2.5,h:2.5,c:"bg-s1"},{l:"23%",t:"3%",w:2,h:2,c:"bg-s2"},{l:"29%",t:"18%",w:1.5,h:1.5,c:"bg-s3"},
+          {l:"35%",t:"10%",w:3,h:3,c:"bg-s1"},{l:"41%",t:"22%",w:1.5,h:1.5,c:"bg-s2"},{l:"47%",t:"6%",w:2,h:2,c:"bg-s3"},
+          {l:"53%",t:"14%",w:2.5,h:2.5,c:"bg-s1"},{l:"59%",t:"28%",w:1.5,h:1.5,c:"bg-s2"},{l:"65%",t:"4%",w:2,h:2,c:"bg-s3"},
+          {l:"71%",t:"20%",w:3,h:3,c:"bg-s1"},{l:"77%",t:"9%",w:1.5,h:1.5,c:"bg-s2"},{l:"83%",t:"16%",w:2,h:2,c:"bg-s3"},
+          {l:"89%",t:"7%",w:2.5,h:2.5,c:"bg-s1"},{l:"95%",t:"24%",w:1.5,h:1.5,c:"bg-s2"},{l:"5%",t:"40%",w:2,h:2,c:"bg-s3"},
+          {l:"11%",t:"55%",w:1.5,h:1.5,c:"bg-s1"},{l:"17%",t:"45%",w:2.5,h:2.5,c:"bg-s2"},{l:"33%",t:"50%",w:1.5,h:1.5,c:"bg-s3"},
+          {l:"45%",t:"60%",w:2,h:2,c:"bg-s1"},{l:"57%",t:"42%",w:1.5,h:1.5,c:"bg-s2"},{l:"69%",t:"58%",w:2.5,h:2.5,c:"bg-s3"},
+          {l:"81%",t:"48%",w:1.5,h:1.5,c:"bg-s1"},{l:"93%",t:"38%",w:2,h:2,c:"bg-s2"},{l:"8%",t:"75%",w:1.5,h:1.5,c:"bg-s3"},
+          {l:"22%",t:"80%",w:2.5,h:2.5,c:"bg-s1"},{l:"38%",t:"70%",w:1.5,h:1.5,c:"bg-s2"},{l:"52%",t:"85%",w:2,h:2,c:"bg-s3"},
+          {l:"66%",t:"72%",w:1.5,h:1.5,c:"bg-s1"},{l:"78%",t:"88%",w:2.5,h:2.5,c:"bg-s2"},{l:"91%",t:"65%",w:1.5,h:1.5,c:"bg-s3"},
+          {l:"4%",t:"90%",w:2,h:2,c:"bg-s1"},{l:"26%",t:"95%",w:1.5,h:1.5,c:"bg-s2"},{l:"48%",t:"92%",w:2.5,h:2.5,c:"bg-s3"},
+          {l:"72%",t:"96%",w:1.5,h:1.5,c:"bg-s1"},{l:"86%",t:"82%",w:2,h:2,c:"bg-s2"},{l:"97%",t:"90%",w:1.5,h:1.5,c:"bg-s3"},
+          {l:"10%",t:"33%",w:2,h:2,c:"bg-s1"},{l:"20%",t:"62%",w:1.5,h:1.5,c:"bg-s2"},{l:"30%",t:"85%",w:2.5,h:2.5,c:"bg-s3"},
+          {l:"40%",t:"30%",w:1.5,h:1.5,c:"bg-s1"},{l:"50%",t:"75%",w:2,h:2,c:"bg-s2"},{l:"60%",t:"50%",w:1.5,h:1.5,c:"bg-s3"},
+          {l:"70%",t:"35%",w:2.5,h:2.5,c:"bg-s1"},{l:"80%",t:"60%",w:1.5,h:1.5,c:"bg-s2"},{l:"90%",t:"15%",w:2,h:2,c:"bg-s3"},
+          {l:"15%",t:"92%",w:1.5,h:1.5,c:"bg-s1"},{l:"55%",t:"20%",w:2,h:2,c:"bg-s2"},{l:"75%",t:"45%",w:1.5,h:1.5,c:"bg-s3"},
+          {l:"85%",t:"30%",w:2.5,h:2.5,c:"bg-s1"},{l:"25%",t:"45%",w:1.5,h:1.5,c:"bg-s2"},{l:"43%",t:"12%",w:2,h:2,c:"bg-s3"},
+          {l:"63%",t:"88%",w:1.5,h:1.5,c:"bg-s1"},{l:"3%",t:"60%",w:2,h:2,c:"bg-s2"},{l:"98%",t:"55%",w:1.5,h:1.5,c:"bg-s3"},
         ].map((s,i)=>(
           <div key={i} className={`bg-star ${s.c}`} style={{left:s.l,top:s.t,width:s.w,height:s.h}} />
         ))}
@@ -604,7 +610,7 @@ export default function App() {
               </div>
             </div>
           )}
-          {clients.length===0&&<div style={{textAlign:"center",padding:"40px 0",color:"#bbb",fontSize:13}}>Crea tu primer cliente para empezar</div>}
+          {clients.length===0&&<div style={{textAlign:"center",padding:"40px 0",color:"#64748b",fontSize:13}}>Crea tu primer cliente para empezar</div>}
         </div>
       )}
 

@@ -469,6 +469,12 @@ export default function App() {
 
   return (
     <div style={S.app}>
+      {/* Fixed logo bottom right - all screens */}
+      <div style={{position:"fixed",bottom:20,right:24,zIndex:1000,opacity:0.85,transition:"opacity 0.2s"}}
+        onMouseEnter={e=>e.currentTarget.style.opacity=1}
+        onMouseLeave={e=>e.currentTarget.style.opacity=0.85}>
+        <img src="/logo-mau.png" alt="Mau Bautista" style={{width:120,height:"auto",filter:"brightness(1.1)"}} />
+      </div>
       <style>{`
         body{background:#05080f}
         .bg-star{position:fixed;border-radius:50%;background:#ffffff;pointer-events:none;z-index:0;box-shadow:0 0 4px 1px rgba(255,255,255,0.4)}

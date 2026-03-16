@@ -683,10 +683,9 @@ export default function App() {
 
           {/* Matrix rain background */}
           <div style={{position:"absolute",inset:0,overflow:"hidden",opacity:0.07}}>
-            {Array.from({length:20}).map((_,i)=>(
-              <div key={i} style={{position:"absolute",left:`${i*5+2}%`,top:0,fontSize:11,color:"#1a56db",fontFamily:"monospace",lineHeight:1.4,animation:`matrixRain ${3+i*0.3}s linear infinite`,animationDelay:`${i*0.2}s`,whiteSpace:"pre"}}>
-                {Array.from({length:40}).map(()=>Math.random()>0.5?"1":"0").join("
-")}
+            {[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19].map((i)=>(
+              <div key={i} style={{position:"absolute",left:`${i*5+2}%`,top:0,fontSize:11,color:"#1a56db",fontFamily:"monospace",lineHeight:1.6,animation:`matrixRain ${3+i*0.3}s linear infinite`,animationDelay:`${i*0.2}s`}}>
+                {"10110100101101001011010010110100101101001011".split("").map((c,j)=><div key={j}>{c}</div>)}
               </div>
             ))}
           </div>

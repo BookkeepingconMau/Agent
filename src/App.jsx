@@ -327,6 +327,35 @@ async function extractTransactionsSecondPass(b64, missingDeposits, missingWithdr
   return rows;
 }
 
+// ─── DEDICATED CHECK SUMMARY EXTRACTION ─────────────────────────────────────
+async function extractCheckSummary(b64) {
+  const system = "You are a STRICT check/draft extraction agent. " +
+    "Your ONLY job is to find the 'Cleared Check Summary', 'Draft Summary', or 'Withdrawals and Other Charges' summary tables. " +
+    "These tables appear near the END of bank statements, listing check numbers and amounts in a grid format. " +
+    "Extract EVERY check/draft as one WITHDRAWAL row. " +
+    "Output ONLY raw CSV: TYPE,DATE,AMOUNT,CONCEPT. " +
+    "Use the statement end date for all checks. AMOUNT must be negative. " +
+    "CONCEPT format: CHECK #[number]. No headers. No markdown. No explanation.";
+
+  const text = await callClaude([{ role:"user", content:[
+    { type:"document", source:{ type:"base64", media_type:"application/pdf", data:b64 } },
+    { type:"text", text:"Find ONLY the Cleared Check Summary table, Draft Summary table, and Withdrawals and Other Charges summary table near the END of this document. Extract every single check/draft as WITHDRAWAL rows. Raw CSV: TYPE,DATE,AMOUNT,CONCEPT" }
+  ]}], system);
+
+  const rows = [];
+  text.trim().split("\n").forEach(line => {
+    const parts = line.split(",");
+    if (parts.length < 4) return;
+    const type    = parts[0].trim().toUpperCase();
+    const date    = parts[1].trim();
+    const amount  = parts[2].trim();
+    const concept = parts.slice(3).join(",").trim().replace(/^"|"$/g,"");
+    if (type === "WITHDRAWAL" && date && amount && concept)
+      rows.push({ type, date, amount, concept, category:"", level:"" });
+  });
+  return rows;
+}
+
 // ─── STORAGE ──────────────────────────────────────────────────────────────────
 const sc = async (id) => { try { const r=await window.storage.get(`client:${id}`); return r?JSON.parse(r.value):null; } catch { return null; } };
 const ss = async (id,d) => { try { await window.storage.set(`client:${id}`,JSON.stringify(d)); } catch {} };
@@ -389,7 +418,7 @@ export default function App() {
     const bals = await extractBalances(b64);
     setBalances(bals);
 
-    // ── SECOND PASS: check if totals match bank statement ──
+    // ── SMART MULTI-PASS: dedicated check summary + general second pass ──
     let allRows = rows;
     if (bals.length > 0) {
       const bankDep  = bals.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
@@ -399,25 +428,39 @@ export default function App() {
       const depDiff  = bankDep  - extractedDep;
       const withDiff = bankWith - extractedWith;
 
-      // If difference > $50, do a second pass
-      if (depDiff > 50 || withDiff > 50) {
-        setProgress(`⚡ Agente 2B: Segunda pasada — faltan $${(depDiff+withDiff).toFixed(2)} por encontrar...`);
-        const secondRows = await extractTransactionsSecondPass(b64, depDiff > 0 ? depDiff : 0, withDiff > 0 ? withDiff : 0, rows);
-        
-        // Deduplicate: remove rows already in first pass (same date + amount + similar concept)
-        const newRows = secondRows.filter(sr => {
-          return !rows.some(r => 
-            r.date === sr.date && 
-            r.amount === sr.amount && 
-            r.type === sr.type
-          );
+      // PASS 2A: If withdrawals missing > $50, do dedicated check summary extraction
+      if (withDiff > 50) {
+        setProgress("⚡ Agente 2A: Extrayendo resumen de cheques faltantes ($" + withDiff.toFixed(2) + ")...");
+        const checkRows = await extractCheckSummary(b64);
+        const newCheckRows = checkRows.filter(cr => {
+          const crAmt = Math.abs(parseFloat(cr.amount)||0).toFixed(2);
+          return !rows.some(r => {
+            const rAmt = Math.abs(parseFloat(r.amount)||0).toFixed(2);
+            return r.type === "WITHDRAWAL" && rAmt === crAmt;
+          });
         });
-        allRows = [...rows, ...newRows];
-        setProgress(`✅ Segunda pasada: +${newRows.length} transacciones encontradas`);
+        allRows = [...rows, ...newCheckRows];
+        setProgress("✅ Pasada de cheques: +" + newCheckRows.length + " cheques encontrados");
+      }
+
+      // PASS 2B: If still missing (deposits or withdrawals), do general second pass
+      const newExtDep  = allRows.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+      const newExtWith = allRows.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+      const remDepDiff  = bankDep  - newExtDep;
+      const remWithDiff = bankWith - newExtWith;
+
+      if (remDepDiff > 50 || remWithDiff > 50) {
+        setProgress("⚡ Agente 2B: Buscando transacciones adicionales faltantes...");
+        const secondRows = await extractTransactionsSecondPass(b64, remDepDiff > 0 ? remDepDiff : 0, remWithDiff > 0 ? remWithDiff : 0, allRows);
+        const newRows = secondRows.filter(sr =>
+          !allRows.some(r => r.date === sr.date && r.amount === sr.amount && r.type === sr.type)
+        );
+        allRows = [...allRows, ...newRows];
+        setProgress("✅ Pasada adicional: +" + newRows.length + " transacciones más encontradas");
       }
     }
 
-    setProgress("Agente 3: Categorizando...");
+        setProgress("Agente 3: Categorizando...");
     const categorized = allRows.map(row => {
       const isDeposit = row.type==="DEPOSIT";
       const result = categorize(row.concept, row.amount, isDeposit, clientData.businessType, clientData.learnedMerchants||{});

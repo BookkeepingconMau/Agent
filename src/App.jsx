@@ -499,7 +499,18 @@ export default function App() {
       {/* HOME */}
       {screen==="home"&&(
         <div style={S.page}>
-          <div style={{marginBottom:24}}><h1 style={S.h1}>Bienvenido al Agente de Mau Bautista</h1><p style={S.sub}>14 tipos de negocio · Memoria persistente · Conciliación automática</p></div>
+          <div style={{marginBottom:24,background:"linear-gradient(135deg,#0f1f4b 0%,#1a56db 100%)",borderRadius:16,padding:"28px 32px",display:"flex",alignItems:"center",gap:24,flexWrap:"wrap"}}>
+            <img src="/mau-agent.jpeg" alt="Mau Bautista IA" style={{width:110,height:110,objectFit:"cover",borderRadius:"50%",border:"3px solid rgba(255,255,255,0.3)",flexShrink:0}} />
+            <div>
+              <div style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:"#fff",marginBottom:4}}>Bienvenido al Agente de Mau Bautista</div>
+              <div style={{color:"rgba(255,255,255,0.7)",fontSize:13,marginBottom:8}}>Tu bookkeeper inteligente · Powered by Claude AI</div>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                {["14 tipos de negocio","350+ merchants","Conciliación automática","Memoria persistente"].map(t=>(
+                  <span key={t} style={{background:"rgba(255,255,255,0.15)",color:"#fff",borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:600}}>{t}</span>
+                ))}
+              </div>
+            </div>
+          </div>
           <div style={S.card}>
             <h2 style={{fontSize:15,fontWeight:700,marginBottom:14}}>➕ Nuevo Cliente</h2>
             <div style={{display:"grid",gap:12,gridTemplateColumns:"1fr"}}>

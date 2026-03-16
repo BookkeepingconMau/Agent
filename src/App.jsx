@@ -746,42 +746,33 @@ export default function App() {
             <p style={S.sub}>{BUSINESS_TYPES.find(b=>b.id===clientData.businessType)?.icon} {BUSINESS_TYPES.find(b=>b.id===clientData.businessType)?.label} · 🧠 {Object.keys(clientData.learnedMerchants||{}).length} aprendidas</p>
           </div>
           <div style={S.card}>
-            <div className={`drop${dragOver?" over":""}`}
-              onDragOver={e=>{e.preventDefault();setDragOver(true)}} onDragLeave={()=>setDragOver(false)}
-              onDrop={e=>{e.preventDefault();setDragOver(false);const f=e.dataTransfer.files[0];if(f?.type==="application/pdf")setFile(f)}}
-              onClick={()=>fileRef.current.click()}>
-              <div style={{fontSize:36,marginBottom:10}}>📄</div>
-              {file?(<><div style={{fontWeight:600,color:"#1a56db"}}>{file.name}</div><div style={{color:"#94a3b8",fontSize:12,marginTop:3}}>{(file.size/1024).toFixed(0)} KB</div></>)
-                   :(<><div style={{fontWeight:500,color:"#1a1a1a"}}>Arrastra el bank statement aquí</div><div style={{color:"#64748b",fontSize:12,marginTop:3}}>o click · Solo PDF bancario digital</div></>)}
-              <input ref={fileRef} type="file" accept=".pdf" style={{display:"none"}} onChange={e=>{const f=e.target.files[0];if(f)setFile(f)}} />
-            </div>
-            {/* Split mode toggle */}
-            <div style={{marginTop:16,padding:"12px 16px",background:"rgba(26,86,219,0.1)",borderRadius:10,border:"1px solid rgba(26,86,219,0.3)"}}>
+            {/* Split mode toggle - always visible */}
+            <div style={{marginBottom:16,padding:"12px 16px",background:"rgba(26,86,219,0.1)",borderRadius:10,border:"1px solid rgba(26,86,219,0.3)"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                 <div>
-                  <div style={{fontSize:13,fontWeight:700,color:"#ffffff"}}>📄 Modo PDF Dividido</div>
-                  <div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>Para PDFs de 20+ páginas — procesa múltiples partes y las junta automáticamente</div>
+                  <div style={{fontSize:13,fontWeight:700,color:"#1a1a1a"}}>📄 Modo PDF Dividido</div>
+                  <div style={{fontSize:11,color:"#64748b",marginTop:2}}>Para PDFs de 20+ páginas — procesa múltiples partes y las junta automáticamente</div>
                 </div>
                 <button onClick={()=>{setSplitMode(!splitMode); setSplitParts([]); setSplitPartNum(1);}}
                   style={{padding:"6px 16px",borderRadius:20,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,
-                    background:splitMode?"#1a56db":"rgba(255,255,255,0.1)",
-                    color:"#fff",transition:"all 0.2s"}}>
+                    background:splitMode?"#1a56db":"#e2e8f0",
+                    color:splitMode?"#fff":"#64748b",transition:"all 0.2s"}}>
                   {splitMode ? "✅ ON" : "OFF"}
                 </button>
               </div>
               {splitMode&&(
                 <div style={{marginTop:10,display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-                  <div style={{fontSize:12,color:"#94a3b8"}}>Partes cargadas:</div>
+                  <div style={{fontSize:12,color:"#64748b"}}>Partes cargadas:</div>
                   {[1,2,3,4].map(n=>(
                     <div key={n} style={{width:28,height:28,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,
-                      background:n<splitPartNum?"#22c55e":n===splitPartNum?"#1a56db":"rgba(255,255,255,0.1)",
-                      color:"#fff",border:n===splitPartNum?"2px solid #fff":"2px solid transparent"}}>
+                      background:n<splitPartNum?"#22c55e":n===splitPartNum?"#1a56db":"#e2e8f0",
+                      color:n<=splitPartNum?"#fff":"#94a3b8",border:n===splitPartNum?"2px solid #1a56db":"2px solid transparent"}}>
                       {n<splitPartNum?"✓":n}
                     </div>
                   ))}
                   {splitParts.length>0&&(
-                    <div style={{fontSize:11,color:"#22c55e",marginLeft:4}}>
-                      {splitParts.reduce((s,p)=>s+p.length,0)} transacciones acumuladas
+                    <div style={{fontSize:11,color:"#22c55e",marginLeft:4,fontWeight:600}}>
+                      ✅ {splitParts.reduce((s,p)=>s+p.length,0)} transacciones acumuladas
                     </div>
                   )}
                   {splitParts.length>0&&(
@@ -793,6 +784,17 @@ export default function App() {
                 </div>
               )}
             </div>
+
+            <div className={`drop${dragOver?" over":""}`}
+              onDragOver={e=>{e.preventDefault();setDragOver(true)}} onDragLeave={()=>setDragOver(false)}
+              onDrop={e=>{e.preventDefault();setDragOver(false);const f=e.dataTransfer.files[0];if(f?.type==="application/pdf")setFile(f)}}
+              onClick={()=>fileRef.current.click()}>
+              <div style={{fontSize:36,marginBottom:10}}>📄</div>
+              {file?(<><div style={{fontWeight:600,color:"#1a56db"}}>{file.name}</div><div style={{color:"#94a3b8",fontSize:12,marginTop:3}}>{(file.size/1024).toFixed(0)} KB</div></>)
+                   :(<><div style={{fontWeight:500,color:"#1a1a1a"}}>Arrastra el bank statement aquí</div><div style={{color:"#64748b",fontSize:12,marginTop:3}}>o click · Solo PDF bancario digital</div></>)}
+              <input ref={fileRef} type="file" accept=".pdf" style={{display:"none"}} onChange={e=>{const f=e.target.files[0];if(f)setFile(f)}} />
+            </div>
+
 
             {file&&(
               <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:14}}>

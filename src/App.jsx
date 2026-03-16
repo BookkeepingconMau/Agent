@@ -301,40 +301,20 @@ Example:
 
 // ─── SECOND PASS EXTRACTION ──────────────────────────────────────────────────
 async function extractTransactionsSecondPass(b64, missingDeposits, missingWithdrawals, existingRows) {
-  const system = `You are a STRICT bank statement extraction agent doing a SECOND PASS.
-A first extraction already found some transactions but is MISSING some.
+  const system = "You are a STRICT bank statement extraction agent doing a SECOND PASS. " +
+    "A first extraction already found some transactions but is MISSING some. " +
+    "Focus on finding transactions near the end of the document, summary tables, and any missed pages. " +
+    "Output ONLY raw CSV: TYPE,DATE,AMOUNT,CONCEPT. " +
+    "TYPE = DEPOSIT or WITHDRAWAL only. DATE: MM/DD/YYYY. DEPOSITS positive, WITHDRAWALS negative. " +
+    "No headers, no markdown, no explanation.";
 
-WHAT IS MISSING:
-- Missing deposits total: $${missingDeposits.toFixed(2)}
-- Missing withdrawals total: $${missingWithdrawals.toFixed(2)}
-
-YOUR JOB: Find ONLY the transactions that were NOT captured in the first pass.
-Focus especially on:
-1. Pages that may have been cut off in the first extraction
-2. Summary tables like "Cleared Check Summary" or "Draft Summary" 
-3. Any transactions near the end of the document
-4. Transfers between accounts
-
-CRITICAL: Output ONLY raw CSV: TYPE,DATE,AMOUNT,CONCEPT
-- TYPE = DEPOSIT or WITHDRAWAL only
-- DATE: MM/DD/YYYY
-- DEPOSITS positive, WITHDRAWALS negative
-- No headers, no markdown, no explanation`;
-
-  const alreadyFound = existingRows.map(r => `${r.date},${r.amount},${r.concept}`).join('
-');
-  
   const text = await callClaude([{ role:"user", content:[
     { type:"document", source:{ type:"base64", media_type:"application/pdf", data:b64 } },
-    { type:"text", text:`Do a SECOND PASS extraction. Focus on finding missing transactions.
-Already found ${existingRows.length} transactions. 
-Missing approximately $${missingDeposits.toFixed(2)} in deposits and $${missingWithdrawals.toFixed(2)} in withdrawals.
-Return ONLY new transactions not already captured. Raw CSV: TYPE,DATE,AMOUNT,CONCEPT` }
+    { type:"text", text:"Do a SECOND PASS extraction. Find missing transactions. Already found " + existingRows.length + " transactions. Missing approximately $" + missingDeposits.toFixed(2) + " in deposits and $" + missingWithdrawals.toFixed(2) + " in withdrawals. Return ONLY new transactions not already captured. Raw CSV: TYPE,DATE,AMOUNT,CONCEPT" }
   ]}], system);
 
   const rows = [];
-  text.trim().split("
-").forEach(line => {
+  text.trim().split("\n").forEach(line => {
     const parts = line.split(",");
     if (parts.length < 4) return;
     const type    = parts[0].trim().toUpperCase();

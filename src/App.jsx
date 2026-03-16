@@ -23,13 +23,11 @@ const tradesMat  = (fallback="ASK TO CLIENT") => ({ construction:"COGS - Materia
 const MERCHANT_DICT = [
   // ── FUEL ──
   ...[["QT","QUIKTRIP","QUICK TRIP"],["RACETRAC"],["VALERO"],["STRIPES"],["MURPHY USA","MURPHY EXPRESS"],["CIRCLE K"],["SPEEDWAY"],["WAWA"],["THORNTONS"],["SHELL"],["CHEVRON"],["EXXON","EXXONMOBIL"],["BP ","BP#"],["MARATHON"],["CASEY"],["KWIK TRIP","KWIKTRIP"],["LOVES","LOVE'S"],["PILOT TRAVEL","PILOT FLYING"],["FLYING J"],["ARCO"],[" 76 "," 76#"],["SUNOCO"],["KROGER FUEL","KROGER GAS"],["NEW HUDSON PETROLEUM"]].map(p=>({ patterns:p, category:tradesFuel("COGS - Fuel (Production)"), amountRule:{under15:"Meals & Entertainment"} })),
-
   // ── RESTAURANT INCOME (DEPOSITS) ──
   { patterns:["BANKCARD","BKCD PROCESSING"], category:{restaurant:"Income - Services",food_events:"Income - Services",construction:"ASK TO CLIENT",hvac:"ASK TO CLIENT",roofing:"ASK TO CLIENT",drywall:"ASK TO CLIENT",electrical:"ASK TO CLIENT",plumbing:"ASK TO CLIENT",landscaping:"ASK TO CLIENT",cleaning:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"ASK TO CLIENT",barbershop:"Income - Services",general:"ASK TO CLIENT"} },
   { patterns:["DOORDASH","DOOR DASH"], category:{restaurant:"Income - Services",food_events:"Income - Services",construction:"ASK TO CLIENT",hvac:"ASK TO CLIENT",roofing:"ASK TO CLIENT",drywall:"ASK TO CLIENT",electrical:"ASK TO CLIENT",plumbing:"ASK TO CLIENT",landscaping:"ASK TO CLIENT",cleaning:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"ASK TO CLIENT",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
   { patterns:["UBER USA","UBER EATS","UBEREATS"], category:{restaurant:"Income - Services",food_events:"Income - Services",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"Meals & Entertainment",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"} },
-
-  // ── RESTAURANT COGS - FOOD & BEVERAGE SUPPLIERS ──
+  // ── RESTAURANT COGS ──
   { patterns:["EL REY USA MEATS","EL REY MEATS"], category:"COGS - Materials" },
   { patterns:["CAPITOL BEVERAGE","CAPITAL BEVERAGE"], category:"COGS - Materials" },
   { patterns:["REYESCOCACOLA","REYES COCA COLA","REYES COKE"], category:"COGS - Materials" },
@@ -37,54 +35,39 @@ const MERCHANT_DICT = [
   { patterns:["HORROCKS","HORROCKS FARM"], category:{restaurant:"COGS - Materials",food_events:"COGS - Materials",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"Meals & Entertainment",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"} },
   { patterns:["QUALITY DAIRY"], category:{restaurant:"COGS - Materials",food_events:"COGS - Materials",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"Meals & Entertainment",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"} },
   { patterns:["SHEILA'S BAKERY","SHEILAS BAKERY"], category:{restaurant:"COGS - Materials",food_events:"COGS - Materials",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"Meals & Entertainment",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"} },
-
-  // ── LIQUOR / ALCOHOL ──
+  // ── LIQUOR ──
   { patterns:["STATE OF MICHGWL","STATE OF MICHNWS","GENERAL WINE AND LIQ","ABC LIQUOR"], category:{restaurant:"COGS - Materials",food_events:"COGS - Materials",construction:"ASK TO CLIENT",hvac:"ASK TO CLIENT",roofing:"ASK TO CLIENT",drywall:"ASK TO CLIENT",electrical:"ASK TO CLIENT",plumbing:"ASK TO CLIENT",landscaping:"ASK TO CLIENT",cleaning:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"ASK TO CLIENT",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
-
-  // ── RESTAURANT POS / MERCHANT FEES ──
+  // ── MERCHANT FEES ──
   { patterns:["LQ MERCHANT","MERCHANT BANKCD","BKCD PROCESSING","MERCHANT HUB","YBSPOS"], category:{restaurant:"Bank Fees",food_events:"Bank Fees",construction:"Bank Fees",hvac:"Bank Fees",roofing:"Bank Fees",drywall:"Bank Fees",electrical:"Bank Fees",plumbing:"Bank Fees",landscaping:"Bank Fees",cleaning:"Bank Fees",trucking:"Bank Fees",property_mgmt:"Bank Fees",barbershop:"Bank Fees",general:"Bank Fees"} },
-
   // ── UTILITIES ──
   ...[["CONSTELLATION ENERGY"],["COMED"],["PEOPLES GAS"],["ATMOS ENERGY"],["ONCOR"],["FPL ","FLORIDA POWER"],["DUKE ENERGY"],["APS "],["SRP "],["CONSUMERS ENERGY"],["LANSING BWL","BWL UTIL"],["DELTA CHARTER TW"],["GRANGERCOM"],["GRANGER"]].map(p=>({patterns:p,category:"Utilities"})),
-
   // ── PAYROLL ──
   ...[["INTUIT 82704102","INTUIT 83982660","INTUIT 19205133","INTUIT 63733983","INTUIT 32260264"],["GUSTO"],["ADP ","ADP*"],["PAYCHEX"]].map(p=>({patterns:p,category:"Payroll & Wages"})),
   { patterns:["INTUIT *QBOOKS","QBOOKS PAYROLL","QUICKBOOKS PAYROLL"], category:"Payroll & Wages" },
-
   // ── TAXES ──
   { patterns:["STATEOF MICHIGAN","STATE OF MICHIGAN","STATE FARM RO"], category:{restaurant:"Taxes & Licenses",food_events:"Taxes & Licenses",construction:"Insurance",hvac:"Insurance",roofing:"Insurance",drywall:"Insurance",electrical:"Insurance",plumbing:"Insurance",landscaping:"Insurance",cleaning:"Insurance",trucking:"Insurance",property_mgmt:"Insurance",barbershop:"Insurance",general:"Insurance"} },
-
-  // ── HVAC SPECIFIC ──
+  // ── HVAC ──
   ...[["JOHNSTONE SUPPLY","JOHNSTONE"],["WATSCO"],["CARRIER"],["TRANE"],["LENNOX"],["YORK HVAC"],["RHEEM"],["GOODMAN"],["REFRIGERANT","R-410","FREON"]].map(p=>({patterns:p,category:"COGS - Materials"})),
-
-  // ── ROOFING SPECIFIC ──
+  // ── ROOFING ──
   ...[["ABC SUPPLY","ABC ROOFING"],["BEACON ROOFING"],["GULFEAGLE"],["OWENS CORNING"],["GAF ROOFING","GAF MATERIAL"]].map(p=>({patterns:p,category:"COGS - Materials"})),
-
-  // ── DRYWALL SPECIFIC ──
+  // ── DRYWALL ──
   ...[["USG ","US GYPSUM"],["NATIONAL GYPSUM"],["CERTAINTEED"],["GEORGIA PACIFIC"]].map(p=>({patterns:p,category:"COGS - Materials"})),
-
-  // ── ELECTRICAL SPECIFIC ──
+  // ── ELECTRICAL ──
   ...[["GRAYBAR"],["REXEL"],["WESCO"],["PLATT ELECTRIC"],["CITY ELECTRIC"]].map(p=>({patterns:p,category:"COGS - Materials"})),
-
-  // ── PLUMBING SPECIFIC ──
+  // ── PLUMBING ──
   ...[["HAJOCA"],["REEVES-SAIN","REEVES SAIN"],["CONSOLIDATED PIPE"],["BARNETT"]].map(p=>({patterns:p,category:"COGS - Materials"})),
-
-  // ── BARBERSHOP SPECIFIC ──
+  // ── BARBERSHOP ──
   ...[["SALLY BEAUTY","SALLYS BEAUTY"],["COSMOPROF"],["BEAUTY SUPPLY"],["SALON CENTRIC"],["PAUL MITCHELL"]].map(p=>({patterns:p,category:"COGS - Materials"})),
-
-  // ── CLEANING SPECIFIC ──
+  // ── CLEANING ──
   ...[["ULINE","U-LINE"],["CINTAS"],["ZORO TOOLS","ZORO "]].map(p=>({patterns:p,category:"COGS - Materials"})),
   { patterns:["GRAINGER"], category:{construction:"COGS - Materials",hvac:"COGS - Materials",roofing:"COGS - Materials",drywall:"COGS - Materials",electrical:"COGS - Materials",plumbing:"COGS - Materials",landscaping:"COGS - Materials",cleaning:"COGS - Materials",food_events:"COGS - Materials",restaurant:"ASK TO CLIENT",trucking:"Operating Expenses - Supplies",property_mgmt:"Repairs & Maintenance",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
-
-  // ── PROPERTY MGMT SPECIFIC ──
+  // ── PROPERTY MGMT ──
   ...[["APARTMENT LIST"],["ZILLOW"],["COSTAR"],["APARTMENTS.COM"],["BUILDIUM"],["APPFOLIO"],["RENTMANAGER","RENT MANAGER"]].map(p=>({patterns:p,category:{property_mgmt:p[0].includes("BUILDIUM")||p[0].includes("APPFOLIO")||p[0].includes("RENTMANAGER")?"Software & Subscriptions":"Advertising & Marketing",construction:"Advertising & Marketing",hvac:"Advertising & Marketing",roofing:"Advertising & Marketing",drywall:"Advertising & Marketing",electrical:"Advertising & Marketing",plumbing:"Advertising & Marketing",landscaping:"Advertising & Marketing",cleaning:"Advertising & Marketing",food_events:"Advertising & Marketing",restaurant:"Advertising & Marketing",trucking:"Advertising & Marketing",barbershop:"Advertising & Marketing",general:"Advertising & Marketing"}})),
-
   // ── LATIN GROCERY ──
   ...[["FIESTA MART"],["CARDENAS"],["NORTHGATE"],["VALLARTA"],["HEB ","H-E-B"],["ALDI"],["CARNICERIA"],["PANADERIA"],["SURTIDORA"],["LUCKY SUPERMARKET"],["STATER BROS"],["BRAVO SUPER"],["SEDANOS"],["COMPARE FOODS"],["PRICE RITE"],["MEIJER"],["KROGER "]].map(p=>({
     patterns:p,
     category:{food_events:"COGS - Materials",restaurant:"COGS - Materials",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"COGS - Materials",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"}
   })),
-
   // ── HARDWARE ──
   { patterns:["HOME DEPOT","THE HOME DEPOT"], category:tradesMat("Repairs & Maintenance") },
   { patterns:["LOWES","LOWE'S"],              category:tradesMat("Repairs & Maintenance") },
@@ -101,14 +84,12 @@ const MERCHANT_DICT = [
   { patterns:["SUNBELT RENTAL"],              category:tradesMat("ASK TO CLIENT") },
   { patterns:["UNITED RENTALS"],              category:tradesMat("ASK TO CLIENT") },
   { patterns:["RESTAURANT EQUIPPERS"],        category:{restaurant:"Repairs & Maintenance",food_events:"Repairs & Maintenance",construction:"ASK TO CLIENT",hvac:"ASK TO CLIENT",roofing:"ASK TO CLIENT",drywall:"ASK TO CLIENT",electrical:"ASK TO CLIENT",plumbing:"ASK TO CLIENT",landscaping:"ASK TO CLIENT",cleaning:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"ASK TO CLIENT",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
-
-  // ── RESTAURANTS / MEALS ──
+  // ── MEALS ──
   ...[["MCDONALD"],["STARBUCKS"],["CHICK-FIL-A","CHICKFILA"],["SUBWAY"],["CHIPOTLE"],["TACO BELL"],["WENDYS"],["BURGER KING"],["DOMINOS"],["PIZZA HUT"],["POPEYES"],["PANDA EXPRESS"],["IN-N-OUT"],["WHATABURGER"],["RAISING CANE"],["SONIC DRIVE"],["JACK IN THE BOX"],["DAIRY QUEEN"],["FIVE GUYS"],["PANERA"],["DUNKIN"],["BUFFALO WILD","BUFFALO WILD WINGS"],["OLIVE GARDEN"]].map(p=>({patterns:p,category:"Meals & Entertainment"})),
   ...[["TAQUERIA"],["TACOS "],["CARNITAS"],["TAMALES"],["TORTAS"]].map(p=>({patterns:p,category:{food_events:"COGS - Materials",restaurant:"COGS - Materials",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"Meals & Entertainment",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"}})),
   { patterns:["JALISCIENCE","LA JALISCIENCE"], category:"Meals & Entertainment" },
   { patterns:["PUPUSERIA"],  category:"Meals & Entertainment" },
   { patterns:["PALETERIA"],  category:"Meals & Entertainment" },
-
   // ── PAYMENT APPS ──
   { patterns:["WESTERN UNION"],              category:"Owner Draw" },
   { patterns:["MONEYGRAM","MONEY GRAM"],     category:"Owner Draw" },
@@ -120,32 +101,25 @@ const MERCHANT_DICT = [
   { patterns:["APPLE CASH","APPLE PAY"],     category:"ASK TO CLIENT" },
   { patterns:["GOOGLE PAY"],                 category:"ASK TO CLIENT" },
   { patterns:["PERSON PAY","COMPUTERLINE PERSON PAY"], category:"ASK TO CLIENT" },
-
   // ── INSURANCE ──
   ...[["STATE FARM"],["GEICO"],["PROGRESSIVE","PROG MICHIGAN"],["ALLSTATE"],["FARMERS INS"],["NATIONWIDE"],["LIBERTY MUTUAL"],["WORKERS COMP"]].map(p=>({patterns:p,category:"Insurance"})),
-
   // ── LOANS ──
   ...[["CAMINO FINANCIAL"],["KABBAGE"],["ONDECK"],["BLUEVINE"],["FUNDBOX"],["CREDIBLY"],["LENDIO"],["LAFCU"]].map(p=>({patterns:p,category:"Loan Payment"})),
-
   // ── TELECOM ──
   ...[["VERIZON","VZWRLSS"],["AT&T","ATT "],["T-MOBILE","TMOBILE"],["METRO PCS","METROPCS"],["BOOST MOBILE"],["CRICKET "],["SIMPLE MOBILE"],["TRACFONE"],["SPECTRUM"],["XFINITY","COMCAST"],["DIRECTV"],["DISH NETWORK"]].map(p=>({patterns:p,category:"Telephone & Internet"})),
-
   // ── SOFTWARE ──
   ...[["QUICKBOOKS"],["INTUIT"],["CANVA"],["ADOBE"],["MICROSOFT 365"],["GOOGLE WORKSPACE"],["DROPBOX"],["ZOOM"],["SLACK"],["SHOPIFY"],["GODADDY"],["WIX"],["NETFLIX"],["SPOTIFY"],["HULU"],["DISNEY+","DISNEY PLUS"],["BUILDIUM"],["APPFOLIO"],["MAILCHIMP"],["CONSTANTCONTACT"],["AMAZON PRIME"]].map(p=>({patterns:p,category:"Software & Subscriptions"})),
   { patterns:["SQUARE ","SQUARE*","SQ *","SQ*"], category:"ASK TO CLIENT" },
   { patterns:["STRIPE"],                         category:"ASK TO CLIENT" },
   { patterns:["KOMPANIC LLC","KOMPANIC"],         category:{restaurant:"Software & Subscriptions",food_events:"Software & Subscriptions",construction:"Software & Subscriptions",hvac:"Software & Subscriptions",roofing:"Software & Subscriptions",drywall:"Software & Subscriptions",electrical:"Software & Subscriptions",plumbing:"Software & Subscriptions",landscaping:"Software & Subscriptions",cleaning:"Software & Subscriptions",trucking:"Software & Subscriptions",property_mgmt:"Software & Subscriptions",barbershop:"Software & Subscriptions",general:"Software & Subscriptions"} },
-
-  // ── BOOKKEEPING / PROFESSIONAL SERVICES ──
+  // ── BOOKKEEPING ──
   { patterns:["V&M BOOKKEEPING","BOOKKEEPING GROUP"], category:"Operating Expenses - Supplies" },
-
   // ── VEHICLE ──
   ...[["AUTOZONE"],["OREILLY","O'REILLY"],["ADVANCE AUTO"],["NAPA AUTO"],["PEP BOYS"],["JIFFY LUBE"],["FIRESTONE"],["GOODYEAR"],["MAVIS TIRE"],["DISCOUNT TIRE"],["CAR WASH","CARWASH"]].map(p=>({patterns:p,category:"Vehicle - Maintenance"})),
   { patterns:["UBER ","UBER*"],         category:"Travel & Transportation" },
   { patterns:["LYFT"],                  category:"Travel & Transportation" },
   ...[["IPASS"],["SUNPASS"],["TXTAG"],["EZPASS"],["TOLL "]].map(p=>({patterns:p,category:{trucking:"COGS - Fuel (Production)",construction:"Travel & Transportation",hvac:"Travel & Transportation",roofing:"Travel & Transportation",drywall:"Travel & Transportation",electrical:"Travel & Transportation",plumbing:"Travel & Transportation",landscaping:"Travel & Transportation",cleaning:"Travel & Transportation",food_events:"Travel & Transportation",restaurant:"Travel & Transportation",property_mgmt:"Travel & Transportation",barbershop:"Travel & Transportation",general:"Travel & Transportation"}})),
   ...[["SPIRIT AIRLINES"],["FRONTIER AIRLINES"],["AMERICAN AIRLINES"],["SOUTHWEST AIRLINES"]].map(p=>({patterns:p,category:"Travel & Transportation"})),
-
   // ── RETAIL ──
   { patterns:["WALMART","WAL-MART","WM SUPERCENTER"], category:{construction:"COGS - Materials",hvac:"COGS - Materials",roofing:"COGS - Materials",drywall:"COGS - Materials",electrical:"COGS - Materials",plumbing:"COGS - Materials",landscaping:"COGS - Materials",cleaning:"COGS - Materials",food_events:"COGS - Materials",restaurant:"COGS - Materials",trucking:"Operating Expenses - Supplies",property_mgmt:"Operating Expenses - Supplies",barbershop:"COGS - Materials",general:"Office Supplies"} },
   { patterns:["SAMS CLUB","SAM'S CLUB","SAMSCLUB"], category:{construction:"COGS - Materials",hvac:"COGS - Materials",roofing:"COGS - Materials",drywall:"COGS - Materials",electrical:"COGS - Materials",plumbing:"COGS - Materials",landscaping:"COGS - Materials",cleaning:"COGS - Materials",food_events:"COGS - Materials",restaurant:"COGS - Materials",trucking:"Operating Expenses - Supplies",property_mgmt:"Operating Expenses - Supplies",barbershop:"COGS - Materials",general:"Office Supplies"} },
@@ -157,13 +131,10 @@ const MERCHANT_DICT = [
   ...[["TARGET"],["DOLLAR TREE"],["DOLLAR GENERAL"],["FAMILY DOLLAR"],["FIVE BELOW"]].map(p=>({patterns:p,category:"Office Supplies"})),
   { patterns:["EBAY"], category:"ASK TO CLIENT" },
   ...[["ROSS DRESS","ROSS STORE"],["TJ MAXX","TJMAXX"],["BURLINGTON"],["MARSHALLS"]].map(p=>({patterns:p,category:"Uniforms"})),
-
   // ── ADVERTISING ──
   ...[["FACEBOOK ADS","FACEBOOK.COM"],["META ADS"],["GOOGLE ADS"],["YELP"],["THUMBTACK"],["HOMEADVISOR"],["ANGI "],["NEXTDOOR"],["VISTAPRINT"],["4IMPRINT"],["INDEED"],["ZIPRECRUITER"],["INSTY PRINTS"]].map(p=>({patterns:p,category:"Advertising & Marketing"})),
-
   // ── BANK FEES ──
   ...[["OVERDRAFT"],["NSF FEE"],["MONTHLY FEE","MONTHLY SERVICE FEE"],["SERVICE FEE"],["ATM FEE","ATM WITHDRAWAL FEE"],["WIRE FEE"],["LATE FEE"],["RETURNED ITEM"],["STOP PAYMENT"],["MINIMUM BALANCE"],["TRAN OVER"],["MAURERS YOUR IMA"]].map(p=>({patterns:p,category:"Bank Fees"})),
-
   // ── MISC ──
   ...[["USPS"],["UPS STORE"],["FEDEX"]].map(p=>({patterns:p,category:"Operating Expenses - Delivery & Postage"})),
   ...[["STAPLES"],["OFFICE DEPOT"],["OFFICEMAX"]].map(p=>({patterns:p,category:"Office Supplies"})),
@@ -212,46 +183,30 @@ function detectCheck(concept) {
   return { checkNum, payee, enrichedConcept: parts.join(" ") };
 }
 
-// ─── CATEGORIZATION ENGINE ─────────────────────────────────────────────────────
+// ─── CATEGORIZATION ENGINE ────────────────────────────────────────────────────
 function categorize(concept, amount, isDeposit, businessType, learnedMerchants) {
   const upper = concept.toUpperCase();
   const amt   = Math.abs(parseFloat(amount) || 0);
-
-  // 1. Transfer detection — auto from keywords
   const transfer = detectTransfer(concept);
   if (transfer) return transfer;
-
-  // 2. Check detection → always Subcontractor Expense
   if (!isDeposit) {
     const check = detectCheck(concept);
     if (check) return { category:"Subcontractor Expense", level:"CHECK", payee:check.payee, checkNum:check.checkNum, enrichedConcept:check.enrichedConcept };
   }
-
-  // 3. Memory
   for (const [key, cat] of Object.entries(learnedMerchants)) {
     if (upper.includes(key.toUpperCase())) return { category:cat, level:"MEMORY" };
   }
-
-  // 4. Deposits
   if (isDeposit) {
     if (upper.includes("ZELLE") && upper.includes("TRANSFER IN")) return { category:"ASK TO CLIENT", level:"ASK", reason:"Zelle recibido — ¿Income o Owner Investment?" };
-    // Auto-income rule: deposits >= $1,000
     if (amt >= 1000) return { category:"Income - Services", level:"HARD" };
-    // Generic deposit with no merchant match
     if (upper.includes("DEPOSIT") && !upper.includes("ACH")) return { category:"ASK TO CLIENT", level:"ASK", reason:"Depósito no identificado" };
   }
-
-  // 5. ATM always ASK
   if (upper.includes("ATM CASH") || upper.includes("ATM W/D") || upper.includes("CUSTOMER WITHDRAWAL")) {
     return { category:"ASK TO CLIENT", level:"ASK", reason:"ATM — ¿Owner Draw o gasto en efectivo?" };
   }
-
-  // 6. Zelle out always ASK
   if (upper.includes("ZELLE") && (upper.includes("TRANSFER OUT") || upper.includes("PAYMENT TO"))) {
     return { category:"ASK TO CLIENT", level:"ASK", reason:"Zelle — ¿Subcontractor, Payroll o Personal?" };
   }
-
-  // 7. Dictionary
   for (const entry of MERCHANT_DICT) {
     if (entry.patterns.some(p => upper.includes(p.toUpperCase()))) {
       if (entry.amountRule?.under15 && amt < 15) return { category:entry.amountRule.under15, level:"HARD" };
@@ -262,11 +217,10 @@ function categorize(concept, amount, isDeposit, businessType, learnedMerchants) 
       return { category:entry.category, level:"HARD" };
     }
   }
-
   return { category:"ASK TO CLIENT", level:"ASK", reason:"Merchant no identificado" };
 }
 
-// ─── CLAUDE API ────────────────────────────────────────────────────────────────
+// ─── CLAUDE API ───────────────────────────────────────────────────────────────
 async function callClaude(messages, system) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method:"POST",
@@ -308,25 +262,58 @@ async function extractTransactions(b64) {
   return rows;
 }
 
-// ─── STORAGE ───────────────────────────────────────────────────────────────────
+// ─── NEW: EXTRACT BALANCES ────────────────────────────────────────────────────
+async function extractBalances(b64) {
+  const system = `You are a bank statement balance extraction agent.
+Extract ALL account/subaccount balances from the statement.
+Many statements have multiple subaccounts (Checking, Savings, Money Market, etc.).
+For EACH account/subaccount found, extract:
+- account_name: name or type of account (e.g. "Business Checking", "Business Savings")
+- account_number: last 4 digits if visible, else "N/A"
+- beginning_balance: opening balance amount (positive number)
+- total_deposits: total deposits/credits for the period
+- total_withdrawals: total withdrawals/debits for the period (positive number)
+- ending_balance: closing balance amount (positive number)
+- period_start: start date of statement period (MM/DD/YYYY)
+- period_end: end date of statement period (MM/DD/YYYY)
+
+Respond ONLY with valid JSON array. No markdown. No explanation.
+Example:
+[{"account_name":"Business Checking","account_number":"1234","beginning_balance":5000.00,"total_deposits":10000.00,"total_withdrawals":8000.00,"ending_balance":7000.00,"period_start":"01/01/2024","period_end":"01/31/2024"}]`;
+  const text = await callClaude([{ role:"user", content:[
+    { type:"document", source:{ type:"base64", media_type:"application/pdf", data:b64 } },
+    { type:"text", text:"Extract all account balances as JSON array." }
+  ]}], system);
+  try {
+    const clean = text.replace(/```json|```/g,"").trim();
+    return JSON.parse(clean);
+  } catch {
+    return [];
+  }
+}
+
+// ─── STORAGE ──────────────────────────────────────────────────────────────────
 const sc = async (id) => { try { const r=await window.storage.get(`client:${id}`); return r?JSON.parse(r.value):null; } catch { return null; } };
 const ss = async (id,d) => { try { await window.storage.set(`client:${id}`,JSON.stringify(d)); } catch {} };
 const sl = async () => { try { const r=await window.storage.list("client:"); return r?.keys||[]; } catch { return []; } };
 
-// ─── APP ───────────────────────────────────────────────────────────────────────
+const fmt = (n) => Number(n||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+
+// ─── APP ──────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [screen, setScreen]           = useState("home");
-  const [clients, setClients]         = useState([]);
-  const [clientId, setClientId]       = useState("");
-  const [clientData, setClientData]   = useState(null);
-  const [newName, setNewName]         = useState("");
-  const [newType, setNewType]         = useState("");
-  const [file, setFile]               = useState(null);
+  const [screen, setScreen]             = useState("home");
+  const [clients, setClients]           = useState([]);
+  const [clientId, setClientId]         = useState("");
+  const [clientData, setClientData]     = useState(null);
+  const [newName, setNewName]           = useState("");
+  const [newType, setNewType]           = useState("");
+  const [file, setFile]                 = useState(null);
   const [transactions, setTransactions] = useState([]);
-  const [askQueue, setAskQueue]       = useState([]);
-  const [currentAsk, setCurrentAsk]   = useState(0);
-  const [progress, setProgress]       = useState("");
-  const [dragOver, setDragOver]       = useState(false);
+  const [askQueue, setAskQueue]         = useState([]);
+  const [currentAsk, setCurrentAsk]     = useState(0);
+  const [progress, setProgress]         = useState("");
+  const [dragOver, setDragOver]         = useState(false);
+  const [balances, setBalances]         = useState([]);
   const fileRef = useRef();
 
   useEffect(() => { loadList(); }, []);
@@ -359,9 +346,15 @@ export default function App() {
     if (!file || !clientData) return;
     setScreen("extracting"); setProgress("Agente 1: Leyendo PDF...");
     const b64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(",")[1]); r.onerror=rej; r.readAsDataURL(file); });
+
     setProgress("Agente 1: Extrayendo transacciones...");
     const rows = await extractTransactions(b64);
-    setProgress("Agente 2: Categorizando...");
+
+    setProgress("Agente 2: Extrayendo saldos y subcuentas...");
+    const bals = await extractBalances(b64);
+    setBalances(bals);
+
+    setProgress("Agente 3: Categorizando...");
     const categorized = rows.map(row => {
       const isDeposit = row.type==="DEPOSIT";
       const result = categorize(row.concept, row.amount, isDeposit, clientData.businessType, clientData.learnedMerchants||{});
@@ -369,7 +362,9 @@ export default function App() {
     });
     const asks = categorized.filter(r=>r.category==="ASK TO CLIENT");
     setTransactions(categorized); setAskQueue(asks); setCurrentAsk(0);
-    setScreen(asks.length>0?"resolve":"review"); setProgress("");
+    setProgress("");
+    // Always show reconciliation first
+    setScreen("reconcile");
   }
 
   function resolveAsk(category, learn, learnKey) {
@@ -408,11 +403,11 @@ export default function App() {
   }
   function downloadWave(type) {
     const rows = transactions.filter(r=>r.type===type);
-    const csv = "DATE,AMOUNT,*,CONCEPT\n" + rows.map(r=>`${r.date},${r.amount},,\"${r.concept}\"`).join("\n");
+    const csv = "DATE,AMOUNT,*,CONCEPT\n" + rows.map(r=>`${r.date},${r.amount},,"${r.concept}"`).join("\n");
     triggerDownload(`wave_${type.toLowerCase()}_import.csv`, csv);
   }
   function downloadCSV() {
-    const csv = "DATE,AMOUNT,*,CONCEPT,CATEGORY\n" + transactions.map(r=>`${r.date},${r.amount},,\"${r.concept}\",\"${r.category}\"`).join("\n");
+    const csv = "DATE,AMOUNT,*,CONCEPT,CATEGORY\n" + transactions.map(r=>`${r.date},${r.amount},,"${r.concept}","${r.category}"`).join("\n");
     triggerDownload(`wave_completo_${(clientData?.name||"client").replace(/\s/g,"_")}.csv`, csv);
   }
 
@@ -435,6 +430,10 @@ export default function App() {
     return acc;
   }, {});
   const checkReportRows = Object.entries(checkReport).sort((a,b)=>b[1].total-a[1].total);
+
+  // Totals from extracted transactions
+  const totalDepositsAmt    = deposits.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+  const totalWithdrawalsAmt = withdrawals.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
 
   const S = {
     app:{minHeight:"100vh",background:"#f7f6f2",fontFamily:"'DM Sans',system-ui,sans-serif",color:"#1a1a1a"},
@@ -484,11 +483,11 @@ export default function App() {
       <div style={S.nav}>
         <div style={{fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:700,color:"#f7f6f2"}}>
           Wave<span style={{color:"#c8a96e"}}>Book</span>
-          <span style={{fontSize:11,color:"#555",fontFamily:"'DM Sans',sans-serif",fontWeight:400,marginLeft:8}}>v5.2 · 14 tipos · 350+ merchants · Income automático</span>
+          <span style={{fontSize:11,color:"#555",fontFamily:"'DM Sans',sans-serif",fontWeight:400,marginLeft:8}}>v5.3 · 14 tipos · 350+ merchants · Conciliación automática</span>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
           {clientData&&<span style={{color:"#888",fontSize:12}}>{clientData.name}</span>}
-          <button style={{...S.btn,background:"#2a2a2a",color:"#f7f6f2",padding:"5px 14px",fontSize:11,border:"1px solid #3a3a3a"}} onClick={()=>{setScreen("home");setFile(null);setTransactions([])}}>
+          <button style={{...S.btn,background:"#2a2a2a",color:"#f7f6f2",padding:"5px 14px",fontSize:11,border:"1px solid #3a3a3a"}} onClick={()=>{setScreen("home");setFile(null);setTransactions([]);setBalances([])}}>
             👥 Clientes {clients.length>0&&<span style={{background:"#c8a96e",color:"#fff",borderRadius:10,padding:"1px 6px",fontSize:10,marginLeft:5}}>{clients.length}</span>}
           </button>
         </div>
@@ -497,8 +496,7 @@ export default function App() {
       {/* HOME */}
       {screen==="home"&&(
         <div style={S.page}>
-          <div style={{marginBottom:24}}><h1 style={S.h1}>Bookkeeper Dashboard</h1><p style={S.sub}>14 tipos de negocio · Memoria persistente · Transfers automáticos</p></div>
-
+          <div style={{marginBottom:24}}><h1 style={S.h1}>Bookkeeper Dashboard</h1><p style={S.sub}>14 tipos de negocio · Memoria persistente · Conciliación automática</p></div>
           <div style={S.card}>
             <h2 style={{fontSize:15,fontWeight:700,marginBottom:14}}>➕ Nuevo Cliente</h2>
             <div style={{display:"grid",gap:12,gridTemplateColumns:"1fr"}}>
@@ -517,7 +515,6 @@ export default function App() {
             </div>
             <button style={{...S.btn,...S.btnGold}} onClick={createClient} disabled={!newName.trim()||!newType}>Crear Cliente →</button>
           </div>
-
           {clients.length>0&&(
             <div style={S.card}>
               <h2 style={{fontSize:15,fontWeight:700,marginBottom:14}}>📁 Clientes ({clients.length})</h2>
@@ -529,9 +526,7 @@ export default function App() {
                     <div key={c.id} className="cc" style={{padding:"12px 16px",border:"1px solid #e8e4dc",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"space-between",background:"#fff",transition:"all 0.15s"}} onClick={()=>selectClient(c.id)}>
                       <div>
                         <div style={{fontWeight:600,fontSize:14}}>{c.name}</div>
-                        <div style={{color:"#999",fontSize:12,marginTop:2}}>
-                          {bt?.icon} {bt?.label} · 🧠 {ml} aprendidas · 📄 {(c.history||[]).length} procesados
-                        </div>
+                        <div style={{color:"#999",fontSize:12,marginTop:2}}>{bt?.icon} {bt?.label} · 🧠 {ml} aprendidas · 📄 {(c.history||[]).length} procesados</div>
                       </div>
                       <button style={{...S.btn,...S.btnPrimary,fontSize:11,padding:"6px 14px"}}>Abrir →</button>
                     </div>
@@ -551,7 +546,6 @@ export default function App() {
             <h1 style={S.h1}>{clientData.name}</h1>
             <p style={S.sub}>{BUSINESS_TYPES.find(b=>b.id===clientData.businessType)?.icon} {BUSINESS_TYPES.find(b=>b.id===clientData.businessType)?.label} · 🧠 {Object.keys(clientData.learnedMerchants||{}).length} aprendidas</p>
           </div>
-
           <div style={S.card}>
             <div className={`drop${dragOver?" over":""}`}
               onDragOver={e=>{e.preventDefault();setDragOver(true)}} onDragLeave={()=>setDragOver(false)}
@@ -569,7 +563,6 @@ export default function App() {
               </div>
             )}
           </div>
-
           {Object.keys(clientData.learnedMerchants||{}).length>0&&(
             <div style={S.card}>
               <div style={{fontSize:12,fontWeight:700,marginBottom:10,color:"#666"}}>🧠 MEMORIA ({Object.keys(clientData.learnedMerchants).length} reglas)</div>
@@ -591,6 +584,166 @@ export default function App() {
           <div style={{fontSize:48,marginBottom:16,display:"inline-block",animation:"spin 2s linear infinite"}}>⚙️</div>
           <h2 style={{fontSize:20,fontWeight:700,marginBottom:8}}>Procesando...</h2>
           <p style={{color:"#888",fontSize:13}}>{progress}</p>
+        </div>
+      )}
+
+      {/* ── RECONCILIATION SCREEN ── */}
+      {screen==="reconcile"&&(
+        <div style={S.page}>
+          <div style={{marginBottom:20,display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:10}}>
+            <div>
+              <h1 style={S.h1}>⚖️ Conciliación de Saldos</h1>
+              <p style={S.sub}>Verifica que los saldos del banco cuadren con las transacciones extraídas</p>
+            </div>
+            <div style={{display:"flex",gap:8}}>
+              <button style={{...S.btn,...S.btnOutline,fontSize:12}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
+                Saltar conciliación →
+              </button>
+              <button style={{...S.btn,...S.btnGold}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
+                Continuar ✓
+              </button>
+            </div>
+          </div>
+
+          {/* Summary totals from transactions */}
+          <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
+            {[
+              {l:"Transacciones",v:transactions.length,c:"#1a1a1a"},
+              {l:"Total Depósitos",v:`$${fmt(totalDepositsAmt)}`,c:"#166534"},
+              {l:"Total Retiros",v:`$${fmt(totalWithdrawalsAmt)}`,c:"#991b1b"},
+              {l:"Diferencia Neta",v:`$${fmt(totalDepositsAmt-totalWithdrawalsAmt)}`,c:totalDepositsAmt>=totalWithdrawalsAmt?"#166534":"#991b1b"},
+            ].map(s=>(
+              <div key={s.l} style={{...S.card,flex:1,minWidth:140,marginBottom:0,padding:"12px 16px"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"#aaa",letterSpacing:1,marginBottom:4}}>{s.l}</div>
+                <div style={{fontSize:18,fontWeight:700,color:s.c}}>{s.v}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Per-account reconciliation table */}
+          {balances.length>0 ? (
+            <div style={{...S.card,padding:0,overflow:"hidden"}}>
+              <div style={{background:"#1a1a1a",color:"#fff",padding:"10px 16px",fontSize:12,fontWeight:700,letterSpacing:1}}>
+                📊 CONCILIACIÓN POR CUENTA — Extraído del estado de cuenta
+              </div>
+              {/* Header */}
+              <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr 1fr 1fr 1fr 80px",padding:"8px 16px",background:"#f7f6f2",borderBottom:"1px solid #e8e4dc"}}>
+                {["CUENTA","PERÍODO","SALDO INICIAL","+ DEPÓSITOS","- RETIROS","SALDO FINAL","STATUS"].map(h=>(
+                  <div key={h} style={{fontSize:10,fontWeight:700,color:"#aaa",letterSpacing:0.5}}>{h}</div>
+                ))}
+              </div>
+              {balances.map((b,i)=>{
+                const calculated = (parseFloat(b.beginning_balance)||0) + (parseFloat(b.total_deposits)||0) - (parseFloat(b.total_withdrawals)||0);
+                const ending     = parseFloat(b.ending_balance)||0;
+                const diff       = Math.abs(calculated - ending);
+                const ok         = diff < 0.02; // allow 2 cent rounding
+                return (
+                  <div key={i} style={{borderBottom:"1px solid #f0ede8"}}>
+                    <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr 1fr 1fr 1fr 80px",padding:"12px 16px",alignItems:"center",background:ok?"#fff":"#fff8f8"}}>
+                      <div>
+                        <div style={{fontWeight:600,fontSize:13}}>{b.account_name||"Cuenta"}</div>
+                        {b.account_number&&b.account_number!=="N/A"&&<div style={{fontSize:11,color:"#999"}}>****{b.account_number}</div>}
+                      </div>
+                      <div style={{fontSize:11,color:"#666"}}>{b.period_start||"—"}<br/>{b.period_end||""}</div>
+                      <div style={{fontSize:13,fontWeight:600}}>${fmt(b.beginning_balance)}</div>
+                      <div style={{fontSize:13,fontWeight:600,color:"#166534"}}>+${fmt(b.total_deposits)}</div>
+                      <div style={{fontSize:13,fontWeight:600,color:"#991b1b"}}>-${fmt(b.total_withdrawals)}</div>
+                      <div>
+                        <div style={{fontSize:13,fontWeight:700}}>${fmt(b.ending_balance)}</div>
+                        {!ok&&<div style={{fontSize:10,color:"#991b1b"}}>calc: ${fmt(calculated)}</div>}
+                      </div>
+                      <div style={{textAlign:"center"}}>
+                        {ok
+                          ? <span style={{background:"#dcfce7",color:"#166534",borderRadius:6,padding:"3px 8px",fontSize:11,fontWeight:700}}>✅ OK</span>
+                          : <span style={{background:"#fee2e2",color:"#991b1b",borderRadius:6,padding:"3px 8px",fontSize:11,fontWeight:700}}>⚠️ DIF</span>
+                        }
+                      </div>
+                    </div>
+                    {!ok&&(
+                      <div style={{background:"#fef3c7",padding:"6px 16px",fontSize:11,color:"#92400e",borderTop:"1px solid #fde68a"}}>
+                        ⚠️ Diferencia de ${fmt(diff)} — Revisa si hay transacciones faltantes o saldos incorrectos en el PDF
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {/* Totals row */}
+              {balances.length>1&&(
+                <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr 1fr 1fr 1fr 80px",padding:"10px 16px",background:"#f7f6f2",borderTop:"2px solid #e8e4dc"}}>
+                  <div style={{fontWeight:700,fontSize:12}}>TOTAL GENERAL</div>
+                  <div></div>
+                  <div style={{fontWeight:700,fontSize:13}}>${fmt(balances.reduce((s,b)=>s+(parseFloat(b.beginning_balance)||0),0))}</div>
+                  <div style={{fontWeight:700,fontSize:13,color:"#166534"}}>+${fmt(balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0))}</div>
+                  <div style={{fontWeight:700,fontSize:13,color:"#991b1b"}}>-${fmt(balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0))}</div>
+                  <div style={{fontWeight:700,fontSize:13}}>${fmt(balances.reduce((s,b)=>s+(parseFloat(b.ending_balance)||0),0))}</div>
+                  <div></div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{...S.card,textAlign:"center",padding:"32px 20px",color:"#999"}}>
+              <div style={{fontSize:32,marginBottom:10}}>🔍</div>
+              <div style={{fontWeight:600,marginBottom:6}}>No se encontraron saldos en el PDF</div>
+              <div style={{fontSize:12}}>Puede ser que el PDF sea un estado de cuenta sin resumen de saldos, o que el formato no sea reconocible. Puedes continuar de todas formas.</div>
+            </div>
+          )}
+
+          {/* Comparison: bank totals vs extracted transactions */}
+          {balances.length>0&&(
+            <div style={{...S.card,marginTop:14}}>
+              <div style={{fontSize:12,fontWeight:700,color:"#666",marginBottom:12,letterSpacing:1}}>🔎 COMPARACIÓN: BANCO vs TRANSACCIONES EXTRAÍDAS</div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:12}}>
+                {[
+                  {
+                    l:"Depósitos Banco",
+                    v:`$${fmt(balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0))}`,
+                    c:"#166534",
+                  },{
+                    l:"Depósitos Extraídos",
+                    v:`$${fmt(totalDepositsAmt)}`,
+                    c:"#166534",
+                  },{
+                    l:"Retiros Banco",
+                    v:`$${fmt(balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0))}`,
+                    c:"#991b1b",
+                  },{
+                    l:"Retiros Extraídos",
+                    v:`$${fmt(totalWithdrawalsAmt)}`,
+                    c:"#991b1b",
+                  },
+                ].map(s=>(
+                  <div key={s.l} style={{background:"#f7f6f2",borderRadius:8,padding:"12px 14px"}}>
+                    <div style={{fontSize:10,fontWeight:700,color:"#aaa",letterSpacing:0.5,marginBottom:4}}>{s.l}</div>
+                    <div style={{fontSize:16,fontWeight:700,color:s.c}}>{s.v}</div>
+                  </div>
+                ))}
+              </div>
+              {(()=>{
+                const bankDep  = balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
+                const bankWith = balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
+                const depDiff  = Math.abs(bankDep - totalDepositsAmt);
+                const withDiff = Math.abs(bankWith - totalWithdrawalsAmt);
+                const allGood  = depDiff < 1 && withDiff < 1;
+                return (
+                  <div style={{marginTop:12,padding:"10px 14px",borderRadius:8,background:allGood?"#dcfce7":"#fef3c7",border:`1px solid ${allGood?"#86efac":"#fde68a"}`}}>
+                    {allGood
+                      ? <span style={{color:"#166534",fontWeight:600,fontSize:13}}>✅ Todo cuadra — Las transacciones extraídas coinciden con los totales del banco</span>
+                      : <span style={{color:"#92400e",fontWeight:600,fontSize:13}}>
+                          ⚠️ Posible diferencia — Depósitos: ${fmt(depDiff)} · Retiros: ${fmt(withDiff)} · Puede haber transacciones faltantes
+                        </span>
+                    }
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          <div style={{display:"flex",justifyContent:"flex-end",marginTop:16,gap:10}}>
+            <button style={{...S.btn,...S.btnOutline}} onClick={()=>setScreen("upload")}>← Volver</button>
+            <button style={{...S.btn,...S.btnGold,fontSize:14,padding:"10px 28px"}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
+              {askQueue.length>0 ? `Resolver ${askQueue.length} ambigüedades →` : "Ver transacciones →"}
+            </button>
+          </div>
         </div>
       )}
 
@@ -622,7 +775,6 @@ export default function App() {
                 </div>
                 {ask.reason&&<div style={{marginTop:8,fontSize:12,color:"#888"}}>💡 {ask.reason}</div>}
               </div>
-
               {isZelle&&!isDeposit&&zelleName&&(
                 <div style={{marginBottom:16}}>
                   <span style={S.label}>ZELLE A: <strong style={{color:"#1a1a1a"}}>{zelleName}</strong></span>
@@ -691,11 +843,11 @@ export default function App() {
               </div>
             ))}
           </div>
-
           {askPct>15&&<div style={{background:"#fef3c7",border:"1px solid #f59e0b",borderRadius:8,padding:"9px 14px",marginBottom:12,fontSize:12,color:"#92400e"}}>⚠️ <strong>ALERTA:</strong> {askPct}% supera el límite de 15%</div>}
-
           <div style={{display:"flex",gap:7,marginBottom:12,flexWrap:"wrap",alignItems:"center",justifyContent:"space-between"}}>
-            <span style={{fontSize:11,color:"#999"}}>XFER = transfer auto · CHK = cheque → Subcontractor · Click en CATEGORY para editar</span>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+              <button style={{...S.btn,background:"#f0ede8",color:"#1a1a1a",fontSize:11,padding:"6px 12px"}} onClick={()=>setScreen("reconcile")}>⚖️ Ver Conciliación</button>
+            </div>
             <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
               <button style={{...S.btn,...S.btnOutline,fontSize:11}} onClick={()=>downloadWave("DEPOSIT")}>⬇ Wave DEPOSITS</button>
               <button style={{...S.btn,...S.btnOutline,fontSize:11}} onClick={()=>downloadWave("WITHDRAWAL")}>⬇ Wave WITHDRAWALS</button>
@@ -703,7 +855,6 @@ export default function App() {
               <button style={{...S.btn,...S.btnGold}} onClick={finalize}>✓ Finalizar</button>
             </div>
           </div>
-
           {deposits.length>0&&(
             <div style={{...S.card,padding:0,overflow:"hidden",marginBottom:12}}>
               <div style={{background:"#166534",color:"#fff",padding:"8px 14px",fontSize:11,fontWeight:700,letterSpacing:1}}>▲ DEPOSITS ({deposits.length})</div>
@@ -716,11 +867,10 @@ export default function App() {
               <TableRows rows={withdrawals} allRows={transactions} updateCategory={updateCategory} cats={WITHDRAWAL_CATEGORIES} levelColor={levelColor} />
             </div>
           )}
-
           {checkReportRows.length>0&&(
             <div style={{...S.card,padding:0,overflow:"hidden",marginBottom:12}}>
               <div style={{background:"#92400e",color:"#fff",padding:"8px 14px",fontSize:11,fontWeight:700,letterSpacing:1}}>
-                📋 REPORTE DE CHEQUES — Subcontractors ({checks.length} cheques · Total: ${checks.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})})
+                📋 REPORTE DE CHEQUES — Subcontractors ({checks.length} cheques · Total: ${fmt(checks.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0))})
               </div>
               <div style={{padding:0}}>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 80px 110px",padding:"7px 14px",background:"#f7f6f2",borderBottom:"1px solid #e8e4dc"}}>
@@ -731,13 +881,13 @@ export default function App() {
                     <div key={name} className="tr" style={{display:"grid",gridTemplateColumns:"1fr 80px 110px",padding:"9px 14px",borderBottom:"1px solid #f0ede8",alignItems:"center"}}>
                       <div style={{fontWeight:600,fontSize:13}}>{name}</div>
                       <div style={{fontSize:13,color:"#666",textAlign:"center"}}>{data.count}</div>
-                      <div style={{fontSize:13,fontWeight:700,color:"#92400e",textAlign:"right"}}>${data.total.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+                      <div style={{fontSize:13,fontWeight:700,color:"#92400e",textAlign:"right"}}>${fmt(data.total)}</div>
                     </div>
                   ))}
                 </div>
                 <div style={{padding:"8px 14px",background:"#fef3c7",display:"flex",justifyContent:"flex-end",gap:8,alignItems:"center"}}>
                   <span style={{fontSize:11,color:"#92400e",fontWeight:600}}>Total en cheques:</span>
-                  <span style={{fontSize:15,fontWeight:700,color:"#92400e"}}>${checks.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+                  <span style={{fontSize:15,fontWeight:700,color:"#92400e"}}>${fmt(checks.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0))}</span>
                 </div>
               </div>
             </div>
@@ -752,8 +902,8 @@ export default function App() {
           <h1 style={S.h1}>¡Statement completado!</h1>
           <p style={{color:"#888",marginTop:6,marginBottom:10,fontSize:13}}>{transactions.length} transacciones · 🔄 {transfers.length} transfers automáticos · 🧠 {Object.keys(clientData?.learnedMerchants||{}).length} en memoria</p>
           <div style={{display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap",marginTop:20}}>
-            <button style={{...S.btn,...S.btnOutline}} onClick={()=>{setFile(null);setTransactions([]);setScreen("upload")}}>Otro PDF</button>
-            <button style={{...S.btn,...S.btnPrimary}} onClick={()=>{setFile(null);setTransactions([]);setScreen("home")}}>Dashboard</button>
+            <button style={{...S.btn,...S.btnOutline}} onClick={()=>{setFile(null);setTransactions([]);setBalances([]);setScreen("upload")}}>Otro PDF</button>
+            <button style={{...S.btn,...S.btnPrimary}} onClick={()=>{setFile(null);setTransactions([]);setBalances([]);setScreen("home")}}>Dashboard</button>
           </div>
         </div>
       )}

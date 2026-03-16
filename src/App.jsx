@@ -661,239 +661,178 @@ export default function App() {
 
       {/* EXTRACTING */}
       {screen==="extracting"&&(
-        <div style={{textAlign:"center",paddingTop:40,paddingBottom:40,position:"relative",zIndex:1}}>
+        <div style={{position:"fixed",inset:0,background:"#05080f",zIndex:999,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
           <style>{`
-            @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
-            @keyframes screenGlow{0%,100%{opacity:0.6;transform:scale(1)}50%{opacity:1;transform:scale(1.03)}}
-            @keyframes dataFlow{0%{transform:translateY(0);opacity:0}20%{opacity:1}100%{transform:translateY(-60px);opacity:0}}
-            @keyframes pulse{0%,100%{transform:scale(1);opacity:0.8}50%{transform:scale(1.15);opacity:1}}
-            @keyframes dots{0%,20%{content:"."} 40%{content:".."} 60%,100%{content:"..."}}
-            @keyframes scanline{0%{transform:translateY(-100%)}100%{transform:translateY(400%)}}
-            .data-particle{position:absolute;font-size:11px;font-family:monospace;animation:dataFlow 2s ease-in-out infinite;pointer-events:none;font-weight:700}
-            .screen-card{animation:screenGlow 2s ease-in-out infinite}
-            .robot-float{animation:float 3s ease-in-out infinite}
-            .dot-pulse{animation:pulse 1s ease-in-out infinite}
+            @keyframes float{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-18px) rotate(1deg)}}
+            @keyframes scanline{0%{transform:translateY(-100%)}100%{transform:translateY(2000%)}}
+            @keyframes dataFlow{0%{transform:translateY(20px);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateY(-120px);opacity:0}}
+            @keyframes screenPulse{0%,100%{box-shadow:0 0 20px rgba(26,86,219,0.4),0 0 40px rgba(26,86,219,0.2)}50%{box-shadow:0 0 40px rgba(26,86,219,0.8),0 0 80px rgba(26,86,219,0.4)}}
+            @keyframes robotGlow{0%,100%{box-shadow:0 0 40px rgba(26,86,219,0.6),0 0 80px rgba(26,86,219,0.3),0 0 120px rgba(26,86,219,0.1)}50%{box-shadow:0 0 60px rgba(26,86,219,1),0 0 120px rgba(26,86,219,0.6),0 0 180px rgba(26,86,219,0.3)}}
+            @keyframes dotPulse{0%,100%{transform:scale(1);opacity:0.5}50%{transform:scale(1.4);opacity:1}}
+            @keyframes typewriter{0%{width:0}100%{width:100%}}
+            @keyframes matrixRain{0%{transform:translateY(-100%);opacity:1}100%{transform:translateY(100vh);opacity:0}}
+            @keyframes greenPulse{0%,100%{box-shadow:0 0 20px rgba(34,197,94,0.4)}50%{box-shadow:0 0 40px rgba(34,197,94,0.8)}}
+            @keyframes counter{0%{opacity:0.3}50%{opacity:1}100%{opacity:0.3}}
+            .robot-glow{animation:robotGlow 2s ease-in-out infinite}
+            .robot-float{animation:float 4s ease-in-out infinite}
+            .screen-pulse{animation:screenPulse 2s ease-in-out infinite}
+            .screen-pulse-green{animation:greenPulse 2s ease-in-out infinite}
+            .data-particle{position:absolute;font-size:13px;font-family:monospace;animation:dataFlow 2.5s ease-in-out infinite;pointer-events:none;font-weight:700;text-shadow:0 0 8px currentColor}
+            .counter-anim{animation:counter 1.5s ease-in-out infinite}
           `}</style>
 
-          {/* Floating data particles */}
-          <div style={{position:"relative",display:"inline-block",width:420,height:340}}>
-
-            {/* Left screen */}
-            <div className="screen-card" style={{position:"absolute",left:0,top:60,width:110,height:130,background:"rgba(10,20,50,0.9)",borderRadius:10,border:"1px solid #1a56db",padding:8,animationDelay:"0.5s"}}>
-              <div style={{fontSize:8,color:"#1a56db",fontWeight:700,marginBottom:4,fontFamily:"monospace"}}>TRANSACTIONS</div>
-              {["$4,037.00","$-3,397.75","$9,995.73","$-559.50","$4,812.54","$-85.73","$3,897.82"].map((n,i)=>(
-                <div key={i} style={{fontSize:8,color:n.includes("-")?"#ef4444":"#22c55e",fontFamily:"monospace",marginBottom:2,opacity:0.9}}>{n}</div>
-              ))}
-              <div style={{position:"absolute",bottom:0,left:0,right:0,height:2,background:"linear-gradient(90deg,transparent,#1a56db,transparent)",animation:"scanline 2s linear infinite"}} />
-            </div>
-
-            {/* Right screen */}
-            <div className="screen-card" style={{position:"absolute",right:0,top:60,width:110,height:130,background:"rgba(10,20,50,0.9)",borderRadius:10,border:"1px solid #1a56db",padding:8,animationDelay:"1s"}}>
-              <div style={{fontSize:8,color:"#1a56db",fontWeight:700,marginBottom:4,fontFamily:"monospace"}}>CATEGORIES</div>
-              {["COGS ████","PAYROLL ███","MEALS ██","FUEL ████","RENT ██","BANK ███","UTIL ██"].map((n,i)=>(
-                <div key={i} style={{fontSize:8,color:"#94a3b8",fontFamily:"monospace",marginBottom:2}}>{n}</div>
-              ))}
-              <div style={{position:"absolute",bottom:0,left:0,right:0,height:2,background:"linear-gradient(90deg,transparent,#1a56db,transparent)",animation:"scanline 2s linear infinite",animationDelay:"1s"}} />
-            </div>
-
-            {/* Top screen */}
-            <div className="screen-card" style={{position:"absolute",left:"50%",transform:"translateX(-50%)",top:0,width:130,height:55,background:"rgba(10,20,50,0.9)",borderRadius:10,border:"1px solid #22c55e",padding:8,animationDelay:"0.2s"}}>
-              <div style={{fontSize:8,color:"#22c55e",fontWeight:700,marginBottom:3,fontFamily:"monospace"}}>RECONCILIATION ✓</div>
-              <div style={{fontSize:9,color:"#ffffff",fontFamily:"monospace"}}>Deps: $212,675.50</div>
-              <div style={{fontSize:9,color:"#ffffff",fontFamily:"monospace"}}>With: $209,593.76</div>
-            </div>
-
-            {/* Robot - center */}
-            <div className="robot-float" style={{position:"absolute",left:"50%",transform:"translateX(-50%)",top:65,zIndex:2}}>
-              <img src="/mau-agent.jpeg" alt="Mau Agent" style={{width:150,height:150,objectFit:"cover",borderRadius:"50%",border:"3px solid #1a56db",boxShadow:"0 0 30px rgba(26,86,219,0.6),0 0 60px rgba(26,86,219,0.3)"}} />
-            </div>
-
-            {/* Floating data particles */}
-            {[
-              {l:"15%",t:"20%",d:"0s",v:"ACH"},
-              {l:"75%",t:"15%",d:"0.4s",v:"PDF"},
-              {l:"20%",t:"55%",d:"0.8s",v:"CSV"},
-              {l:"70%",t:"50%",d:"1.2s",v:"$$$"},
-              {l:"45%",t:"10%",d:"0.6s",v:"TAX"},
-              {l:"50%",t:"60%",d:"1s",v:"CHK"},
-            ].map((p,i)=>(
-              <div key={i} className="data-particle" style={{left:p.l,top:p.t,color:"#1a56db",animationDelay:p.d}}>{p.v}</div>
+          {/* Matrix rain background */}
+          <div style={{position:"absolute",inset:0,overflow:"hidden",opacity:0.07}}>
+            {Array.from({length:20}).map((_,i)=>(
+              <div key={i} style={{position:"absolute",left:`${i*5+2}%`,top:0,fontSize:11,color:"#1a56db",fontFamily:"monospace",lineHeight:1.4,animation:`matrixRain ${3+i*0.3}s linear infinite`,animationDelay:`${i*0.2}s`,whiteSpace:"pre"}}>
+                {Array.from({length:40}).map(()=>Math.random()>0.5?"1":"0").join("
+")}
+              </div>
             ))}
-
           </div>
 
-          {/* Progress text */}
-          <div style={{marginTop:8}}>
-            <h2 style={{fontSize:22,fontWeight:700,color:"#ffffff",marginBottom:8,fontFamily:"'Playfair Display',serif"}}>
+          {/* Main layout */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 280px 1fr",gap:32,alignItems:"center",width:"90%",maxWidth:1100,position:"relative",zIndex:1}}>
+
+            {/* LEFT SCREENS */}
+            <div style={{display:"flex",flexDirection:"column",gap:20}}>
+
+              {/* Transactions screen */}
+              <div className="screen-pulse" style={{background:"rgba(5,15,40,0.95)",borderRadius:14,border:"1px solid #1a56db",padding:18,position:"relative",overflow:"hidden"}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+                  <div style={{width:8,height:8,borderRadius:"50%",background:"#ef4444"}} />
+                  <div style={{width:8,height:8,borderRadius:"50%",background:"#f59e0b"}} />
+                  <div style={{width:8,height:8,borderRadius:"50%",background:"#22c55e"}} />
+                  <span style={{fontSize:11,color:"#1a56db",fontFamily:"monospace",fontWeight:700,marginLeft:8}}>TRANSACTIONS.csv</span>
+                </div>
+                {[
+                  {d:"02/02",v:"+$4,037.00",c:"#22c55e",t:"ACH Bankcard DAILY DEP"},
+                  {d:"02/02",v:"-$3,397.75",c:"#ef4444",t:"ACH EL REY USA MEATS"},
+                  {d:"02/03",v:"+$5,974.79",c:"#22c55e",t:"ACH Bankcard DAILY DEP"},
+                  {d:"02/04",v:"-$4,683.63",c:"#ef4444",t:"ACH INTUIT 32260264 TAX"},
+                  {d:"02/04",v:"+$10,000.00",c:"#22c55e",t:"ComputerLine Transfer"},
+                  {d:"02/09",v:"-$1,000.00",c:"#ef4444",t:"STATE FARM RO 27"},
+                  {d:"02/17",v:"-$4,546.19",c:"#ef4444",t:"ACH EL REY USA MEATS"},
+                  {d:"02/24",v:"+$30,000.00",c:"#22c55e",t:"Deposit"},
+                  {d:"02/25",v:"-$80,000.00",c:"#ef4444",t:"Draft 5559"},
+                ].map((r,i)=>(
+                  <div key={i} className="counter-anim" style={{display:"grid",gridTemplateColumns:"45px 80px 1fr",gap:6,fontSize:10,fontFamily:"monospace",marginBottom:5,animationDelay:`${i*0.2}s`}}>
+                    <span style={{color:"#64748b"}}>{r.d}</span>
+                    <span style={{color:r.c,fontWeight:700}}>{r.v}</span>
+                    <span style={{color:"#94a3b8",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{r.t}</span>
+                  </div>
+                ))}
+                <div style={{position:"absolute",bottom:0,left:0,right:0,height:2,background:"linear-gradient(90deg,transparent,#1a56db,transparent)",animation:"scanline 3s linear infinite"}} />
+              </div>
+
+              {/* Reconciliation screen */}
+              <div className="screen-pulse-green" style={{background:"rgba(5,25,15,0.95)",borderRadius:14,border:"1px solid #22c55e",padding:18,position:"relative",overflow:"hidden"}}>
+                <div style={{fontSize:11,color:"#22c55e",fontFamily:"monospace",fontWeight:700,marginBottom:10}}>⚖️ RECONCILIATION ENGINE</div>
+                {[
+                  {l:"Business Checking",dep:"$210,820.98",with:"$204,893.76",s:"✅"},
+                  {l:"Spartan Saver",dep:"$1,853.56",with:"$700.00",s:"✅"},
+                  {l:"IMMA Account",dep:"$0.96",with:"$4,000.00",s:"✅"},
+                ].map((r,i)=>(
+                  <div key={i} style={{marginBottom:8,paddingBottom:8,borderBottom:"1px solid rgba(34,197,94,0.15)"}}>
+                    <div style={{fontSize:10,color:"#94a3b8",fontFamily:"monospace",marginBottom:3}}>{r.l}</div>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:11,fontFamily:"monospace"}}>
+                      <span style={{color:"#22c55e"}}>+{r.dep}</span>
+                      <span style={{color:"#ef4444"}}>-{r.with}</span>
+                      <span style={{fontSize:14}}>{r.s}</span>
+                    </div>
+                  </div>
+                ))}
+                <div style={{position:"absolute",bottom:0,left:0,right:0,height:2,background:"linear-gradient(90deg,transparent,#22c55e,transparent)",animation:"scanline 2.5s linear infinite"}} />
+              </div>
+            </div>
+
+            {/* CENTER - Robot */}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:16}}>
+              <div className="robot-float robot-glow" style={{borderRadius:"50%",position:"relative"}}>
+                <img src="/mau-agent.jpeg" alt="Mau Agent" style={{width:220,height:220,objectFit:"cover",borderRadius:"50%",border:"4px solid #1a56db",display:"block"}} />
+                {/* Orbit ring */}
+                <div style={{position:"absolute",inset:-12,borderRadius:"50%",border:"2px solid rgba(26,86,219,0.4)",borderTopColor:"#1a56db",animation:"spin 3s linear infinite"}} />
+                <div style={{position:"absolute",inset:-24,borderRadius:"50%",border:"1px solid rgba(26,86,219,0.2)",borderBottomColor:"#1a56db",animation:"spin 5s linear infinite reverse"}} />
+              </div>
+
+              {/* Floating data around robot */}
+              {[
+                {v:"ACH",c:"#1a56db",delay:"0s"},{v:"PDF",c:"#22c55e",delay:"0.5s"},
+                {v:"$$$",c:"#f59e0b",delay:"1s"},{v:"CSV",c:"#1a56db",delay:"1.5s"},
+                {v:"TAX",c:"#ef4444",delay:"0.8s"},{v:"CHK",c:"#22c55e",delay:"1.3s"},
+              ].map((p,i)=>(
+                <div key={i} className="data-particle" style={{
+                  left:`${15+Math.cos(i*60*Math.PI/180)*35+35}%`,
+                  top:`${30+Math.sin(i*60*Math.PI/180)*30}%`,
+                  color:p.c,animationDelay:p.delay,position:"absolute"
+                }}>{p.v}</div>
+              ))}
+
+              {/* Progress dots */}
+              <div style={{display:"flex",gap:10,marginTop:8}}>
+                {[0,1,2,3,4].map(i=>(
+                  <div key={i} style={{width:10,height:10,borderRadius:"50%",background:"#1a56db",animation:`dotPulse 1s ease-in-out infinite`,animationDelay:`${i*0.15}s`,boxShadow:"0 0 8px #1a56db"}} />
+                ))}
+              </div>
+            </div>
+
+            {/* RIGHT SCREENS */}
+            <div style={{display:"flex",flexDirection:"column",gap:20}}>
+
+              {/* Categories screen */}
+              <div className="screen-pulse" style={{background:"rgba(5,15,40,0.95)",borderRadius:14,border:"1px solid #1a56db",padding:18,position:"relative",overflow:"hidden",animationDelay:"0.5s"}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+                  <div style={{width:8,height:8,borderRadius:"50%",background:"#ef4444"}} />
+                  <div style={{width:8,height:8,borderRadius:"50%",background:"#f59e0b"}} />
+                  <div style={{width:8,height:8,borderRadius:"50%",background:"#22c55e"}} />
+                  <span style={{fontSize:11,color:"#1a56db",fontFamily:"monospace",fontWeight:700,marginLeft:8}}>CATEGORIES.engine</span>
+                </div>
+                {[
+                  {cat:"COGS - Materials",pct:82,c:"#1a56db"},{cat:"Payroll & Wages",pct:65,c:"#8b5cf6"},
+                  {cat:"Meals & Entertain",pct:23,c:"#f59e0b"},{cat:"COGS - Fuel",pct:45,c:"#ef4444"},
+                  {cat:"Bank Fees",pct:12,c:"#94a3b8"},{cat:"Subcontractor",pct:71,c:"#22c55e"},
+                  {cat:"Software & Subs",pct:18,c:"#06b6d4"},{cat:"Utilities",pct:34,c:"#f97316"},
+                ].map((r,i)=>(
+                  <div key={i} style={{marginBottom:7}}>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:10,fontFamily:"monospace",marginBottom:3}}>
+                      <span style={{color:"#94a3b8"}}>{r.cat}</span>
+                      <span style={{color:r.c,fontWeight:700}}>{r.pct}%</span>
+                    </div>
+                    <div style={{height:4,background:"rgba(255,255,255,0.1)",borderRadius:2,overflow:"hidden"}}>
+                      <div className="counter-anim" style={{height:"100%",width:`${r.pct}%`,background:r.c,borderRadius:2,boxShadow:`0 0 6px ${r.c}`,animationDelay:`${i*0.1}s`}} />
+                    </div>
+                  </div>
+                ))}
+                <div style={{position:"absolute",bottom:0,left:0,right:0,height:2,background:"linear-gradient(90deg,transparent,#8b5cf6,transparent)",animation:"scanline 2s linear infinite"}} />
+              </div>
+
+              {/* Check detection screen */}
+              <div className="screen-pulse" style={{background:"rgba(5,15,40,0.95)",borderRadius:14,border:"1px solid #f59e0b",padding:18,position:"relative",overflow:"hidden",animationDelay:"1s"}}>
+                <div style={{fontSize:11,color:"#f59e0b",fontFamily:"monospace",fontWeight:700,marginBottom:10}}>📋 CHECK DETECTION</div>
+                {[
+                  {n:"#5559",a:"$80,000",s:"✅ HARD"},
+                  {n:"#5546",a:"$10,488",s:"✅ CHECK"},
+                  {n:"#5538",a:"$1,590",s:"✅ CHECK"},
+                  {n:"#5542",a:"$1,150",s:"✅ CHECK"},
+                  {n:"#5544",a:"$1,977",s:"✅ CHECK"},
+                ].map((r,i)=>(
+                  <div key={i} className="counter-anim" style={{display:"grid",gridTemplateColumns:"50px 70px 1fr",gap:6,fontSize:10,fontFamily:"monospace",marginBottom:6,animationDelay:`${i*0.25}s`}}>
+                    <span style={{color:"#f59e0b",fontWeight:700}}>{r.n}</span>
+                    <span style={{color:"#ffffff"}}>{r.a}</span>
+                    <span style={{color:"#22c55e"}}>{r.s}</span>
+                  </div>
+                ))}
+                <div style={{position:"absolute",bottom:0,left:0,right:0,height:2,background:"linear-gradient(90deg,transparent,#f59e0b,transparent)",animation:"scanline 3.5s linear infinite"}} />
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom status */}
+          <div style={{marginTop:32,textAlign:"center",position:"relative",zIndex:1}}>
+            <h2 style={{fontSize:26,fontWeight:700,color:"#ffffff",marginBottom:8,fontFamily:"'Playfair Display',serif",textShadow:"0 0 20px rgba(26,86,219,0.5)"}}>
               Procesando Statement...
             </h2>
-            <p style={{color:"#94a3b8",fontSize:14,fontFamily:"monospace"}}>{progress}</p>
-            {/* Animated dots */}
-            <div style={{display:"flex",justifyContent:"center",gap:8,marginTop:16}}>
-              {[0,1,2,3,4].map(i=>(
-                <div key={i} className="dot-pulse" style={{width:8,height:8,borderRadius:"50%",background:"#1a56db",animationDelay:`${i*0.15}s`}} />
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── RECONCILIATION SCREEN ── */}
-      {screen==="reconcile"&&(
-        <div style={S.page}>
-          <div style={{marginBottom:20,display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:10}}>
-            <div>
-              <h1 style={S.h1}>⚖️ Conciliación de Saldos</h1>
-              <p style={S.sub}>Verifica que los saldos del banco cuadren con las transacciones extraídas</p>
-            </div>
-            <div style={{display:"flex",gap:8}}>
-              <button style={{...S.btn,...S.btnOutline,fontSize:12}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
-                Saltar conciliación →
-              </button>
-              <button style={{...S.btn,...S.btnGold}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
-                Continuar ✓
-              </button>
-            </div>
-          </div>
-
-          {/* Summary totals from transactions */}
-          <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
-            {[
-              {l:"Transacciones",v:transactions.length,c:"#1a1a1a"},
-              {l:"Total Depósitos",v:`$${fmt(totalDepositsAmt)}`,c:"#166534"},
-              {l:"Total Retiros",v:`$${fmt(totalWithdrawalsAmt)}`,c:"#991b1b"},
-              {l:"Diferencia Neta",v:`$${fmt(totalDepositsAmt-totalWithdrawalsAmt)}`,c:totalDepositsAmt>=totalWithdrawalsAmt?"#166534":"#991b1b"},
-            ].map(s=>(
-              <div key={s.l} style={{...S.card,flex:1,minWidth:140,marginBottom:0,padding:"12px 16px"}}>
-                <div style={{fontSize:10,fontWeight:700,color:"#aaa",letterSpacing:1,marginBottom:4}}>{s.l}</div>
-                <div style={{fontSize:18,fontWeight:700,color:s.c}}>{s.v}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Per-account reconciliation table */}
-          {balances.length>0 ? (
-            <div style={{...S.card,padding:0,overflow:"hidden"}}>
-              <div style={{background:"#0f1f4b",color:"#fff",padding:"10px 16px",fontSize:12,fontWeight:700,letterSpacing:1}}>
-                📊 CONCILIACIÓN POR CUENTA — Extraído del estado de cuenta
-              </div>
-              {/* Header */}
-              <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr 1fr 1fr 1fr 80px",padding:"8px 16px",background:"#f4f6f9",borderBottom:"1px solid #e2e8f0"}}>
-                {["CUENTA","PERÍODO","SALDO INICIAL","+ DEPÓSITOS","- RETIROS","SALDO FINAL","STATUS"].map(h=>(
-                  <div key={h} style={{fontSize:10,fontWeight:700,color:"#aaa",letterSpacing:0.5}}>{h}</div>
-                ))}
-              </div>
-              {balances.map((b,i)=>{
-                const calculated = (parseFloat(b.beginning_balance)||0) + (parseFloat(b.total_deposits)||0) - (parseFloat(b.total_withdrawals)||0);
-                const ending     = parseFloat(b.ending_balance)||0;
-                const diff       = Math.abs(calculated - ending);
-                const ok         = diff < 0.02; // allow 2 cent rounding
-                return (
-                  <div key={i} style={{borderBottom:"1px solid #edf2f7"}}>
-                    <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr 1fr 1fr 1fr 80px",padding:"12px 16px",alignItems:"center",background:ok?"#fff":"#fff8f8"}}>
-                      <div>
-                        <div style={{fontWeight:600,fontSize:13}}>{b.account_name||"Cuenta"}</div>
-                        {b.account_number&&b.account_number!=="N/A"&&<div style={{fontSize:11,color:"#94a3b8"}}>****{b.account_number}</div>}
-                      </div>
-                      <div style={{fontSize:11,color:"#666"}}>{b.period_start||"—"}<br/>{b.period_end||""}</div>
-                      <div style={{fontSize:13,fontWeight:600}}>${fmt(b.beginning_balance)}</div>
-                      <div style={{fontSize:13,fontWeight:600,color:"#166534"}}>+${fmt(b.total_deposits)}</div>
-                      <div style={{fontSize:13,fontWeight:600,color:"#991b1b"}}>-${fmt(b.total_withdrawals)}</div>
-                      <div>
-                        <div style={{fontSize:13,fontWeight:700}}>${fmt(b.ending_balance)}</div>
-                        {!ok&&<div style={{fontSize:10,color:"#991b1b"}}>calc: ${fmt(calculated)}</div>}
-                      </div>
-                      <div style={{textAlign:"center"}}>
-                        {ok
-                          ? <span style={{background:"#dcfce7",color:"#166534",borderRadius:6,padding:"3px 8px",fontSize:11,fontWeight:700}}>✅ OK</span>
-                          : <span style={{background:"#fee2e2",color:"#991b1b",borderRadius:6,padding:"3px 8px",fontSize:11,fontWeight:700}}>⚠️ DIF</span>
-                        }
-                      </div>
-                    </div>
-                    {!ok&&(
-                      <div style={{background:"#fef3c7",padding:"6px 16px",fontSize:11,color:"#92400e",borderTop:"1px solid #fde68a"}}>
-                        ⚠️ Diferencia de ${fmt(diff)} — Revisa si hay transacciones faltantes o saldos incorrectos en el PDF
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-              {/* Totals row */}
-              {balances.length>1&&(
-                <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr 1fr 1fr 1fr 80px",padding:"10px 16px",background:"#f4f6f9",borderTop:"2px solid #e2e8f0"}}>
-                  <div style={{fontWeight:700,fontSize:12}}>TOTAL GENERAL</div>
-                  <div></div>
-                  <div style={{fontWeight:700,fontSize:13}}>${fmt(balances.reduce((s,b)=>s+(parseFloat(b.beginning_balance)||0),0))}</div>
-                  <div style={{fontWeight:700,fontSize:13,color:"#166534"}}>+${fmt(balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0))}</div>
-                  <div style={{fontWeight:700,fontSize:13,color:"#991b1b"}}>-${fmt(balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0))}</div>
-                  <div style={{fontWeight:700,fontSize:13}}>${fmt(balances.reduce((s,b)=>s+(parseFloat(b.ending_balance)||0),0))}</div>
-                  <div></div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div style={{...S.card,textAlign:"center",padding:"32px 20px",color:"#999"}}>
-              <div style={{fontSize:32,marginBottom:10}}>🔍</div>
-              <div style={{fontWeight:600,marginBottom:6}}>No se encontraron saldos en el PDF</div>
-              <div style={{fontSize:12}}>Puede ser que el PDF sea un estado de cuenta sin resumen de saldos, o que el formato no sea reconocible. Puedes continuar de todas formas.</div>
-            </div>
-          )}
-
-          {/* Comparison: bank totals vs extracted transactions */}
-          {balances.length>0&&(
-            <div style={{...S.card,marginTop:14}}>
-              <div style={{fontSize:12,fontWeight:700,color:"#666",marginBottom:12,letterSpacing:1}}>🔎 COMPARACIÓN: BANCO vs TRANSACCIONES EXTRAÍDAS</div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:12}}>
-                {[
-                  {
-                    l:"Depósitos Banco",
-                    v:`$${fmt(balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0))}`,
-                    c:"#166534",
-                  },{
-                    l:"Depósitos Extraídos",
-                    v:`$${fmt(totalDepositsAmt)}`,
-                    c:"#166534",
-                  },{
-                    l:"Retiros Banco",
-                    v:`$${fmt(balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0))}`,
-                    c:"#991b1b",
-                  },{
-                    l:"Retiros Extraídos",
-                    v:`$${fmt(totalWithdrawalsAmt)}`,
-                    c:"#991b1b",
-                  },
-                ].map(s=>(
-                  <div key={s.l} style={{background:"#f4f6f9",borderRadius:8,padding:"12px 14px"}}>
-                    <div style={{fontSize:10,fontWeight:700,color:"#aaa",letterSpacing:0.5,marginBottom:4}}>{s.l}</div>
-                    <div style={{fontSize:16,fontWeight:700,color:s.c}}>{s.v}</div>
-                  </div>
-                ))}
-              </div>
-              {(()=>{
-                const bankDep  = balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
-                const bankWith = balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
-                const depDiff  = Math.abs(bankDep - totalDepositsAmt);
-                const withDiff = Math.abs(bankWith - totalWithdrawalsAmt);
-                const allGood  = depDiff < 1 && withDiff < 1;
-                return (
-                  <div style={{marginTop:12,padding:"10px 14px",borderRadius:8,background:allGood?"#dcfce7":"#fef3c7",border:`1px solid ${allGood?"#86efac":"#fde68a"}`}}>
-                    {allGood
-                      ? <span style={{color:"#166534",fontWeight:600,fontSize:13}}>✅ Todo cuadra — Las transacciones extraídas coinciden con los totales del banco</span>
-                      : <span style={{color:"#1a56db",fontWeight:600,fontSize:13}}>
-                          ⚠️ Posible diferencia — Depósitos: ${fmt(depDiff)} · Retiros: ${fmt(withDiff)} · Puede haber transacciones faltantes
-                        </span>
-                    }
-                  </div>
-                );
-              })()}
-            </div>
-          )}
-
-          <div style={{display:"flex",justifyContent:"flex-end",marginTop:16,gap:10}}>
-            <button style={{...S.btn,...S.btnOutline}} onClick={()=>setScreen("upload")}>← Volver</button>
-            <button style={{...S.btn,...S.btnGold,fontSize:14,padding:"10px 28px"}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
-              {askQueue.length>0 ? `Resolver ${askQueue.length} ambigüedades →` : "Ver transacciones →"}
-            </button>
+            <p style={{color:"#94a3b8",fontSize:14,fontFamily:"monospace",letterSpacing:2}}>{progress}</p>
           </div>
         </div>
       )}

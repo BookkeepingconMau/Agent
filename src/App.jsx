@@ -299,6 +299,54 @@ Example:
   }
 }
 
+// ─── SECOND PASS EXTRACTION ──────────────────────────────────────────────────
+async function extractTransactionsSecondPass(b64, missingDeposits, missingWithdrawals, existingRows) {
+  const system = `You are a STRICT bank statement extraction agent doing a SECOND PASS.
+A first extraction already found some transactions but is MISSING some.
+
+WHAT IS MISSING:
+- Missing deposits total: $${missingDeposits.toFixed(2)}
+- Missing withdrawals total: $${missingWithdrawals.toFixed(2)}
+
+YOUR JOB: Find ONLY the transactions that were NOT captured in the first pass.
+Focus especially on:
+1. Pages that may have been cut off in the first extraction
+2. Summary tables like "Cleared Check Summary" or "Draft Summary" 
+3. Any transactions near the end of the document
+4. Transfers between accounts
+
+CRITICAL: Output ONLY raw CSV: TYPE,DATE,AMOUNT,CONCEPT
+- TYPE = DEPOSIT or WITHDRAWAL only
+- DATE: MM/DD/YYYY
+- DEPOSITS positive, WITHDRAWALS negative
+- No headers, no markdown, no explanation`;
+
+  const alreadyFound = existingRows.map(r => `${r.date},${r.amount},${r.concept}`).join('
+');
+  
+  const text = await callClaude([{ role:"user", content:[
+    { type:"document", source:{ type:"base64", media_type:"application/pdf", data:b64 } },
+    { type:"text", text:`Do a SECOND PASS extraction. Focus on finding missing transactions.
+Already found ${existingRows.length} transactions. 
+Missing approximately $${missingDeposits.toFixed(2)} in deposits and $${missingWithdrawals.toFixed(2)} in withdrawals.
+Return ONLY new transactions not already captured. Raw CSV: TYPE,DATE,AMOUNT,CONCEPT` }
+  ]}], system);
+
+  const rows = [];
+  text.trim().split("
+").forEach(line => {
+    const parts = line.split(",");
+    if (parts.length < 4) return;
+    const type    = parts[0].trim().toUpperCase();
+    const date    = parts[1].trim();
+    const amount  = parts[2].trim();
+    const concept = parts.slice(3).join(",").trim().replace(/^"|"$/g,"");
+    if ((type==="DEPOSIT"||type==="WITHDRAWAL") && date && amount && concept)
+      rows.push({ type, date, amount, concept, category:"", level:"" });
+  });
+  return rows;
+}
+
 // ─── STORAGE ──────────────────────────────────────────────────────────────────
 const sc = async (id) => { try { const r=await window.storage.get(`client:${id}`); return r?JSON.parse(r.value):null; } catch { return null; } };
 const ss = async (id,d) => { try { await window.storage.set(`client:${id}`,JSON.stringify(d)); } catch {} };
@@ -361,8 +409,36 @@ export default function App() {
     const bals = await extractBalances(b64);
     setBalances(bals);
 
+    // ── SECOND PASS: check if totals match bank statement ──
+    let allRows = rows;
+    if (bals.length > 0) {
+      const bankDep  = bals.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
+      const bankWith = bals.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
+      const extractedDep  = rows.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+      const extractedWith = rows.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+      const depDiff  = bankDep  - extractedDep;
+      const withDiff = bankWith - extractedWith;
+
+      // If difference > $50, do a second pass
+      if (depDiff > 50 || withDiff > 50) {
+        setProgress(`⚡ Agente 2B: Segunda pasada — faltan $${(depDiff+withDiff).toFixed(2)} por encontrar...`);
+        const secondRows = await extractTransactionsSecondPass(b64, depDiff > 0 ? depDiff : 0, withDiff > 0 ? withDiff : 0, rows);
+        
+        // Deduplicate: remove rows already in first pass (same date + amount + similar concept)
+        const newRows = secondRows.filter(sr => {
+          return !rows.some(r => 
+            r.date === sr.date && 
+            r.amount === sr.amount && 
+            r.type === sr.type
+          );
+        });
+        allRows = [...rows, ...newRows];
+        setProgress(`✅ Segunda pasada: +${newRows.length} transacciones encontradas`);
+      }
+    }
+
     setProgress("Agente 3: Categorizando...");
-    const categorized = rows.map(row => {
+    const categorized = allRows.map(row => {
       const isDeposit = row.type==="DEPOSIT";
       const result = categorize(row.concept, row.amount, isDeposit, clientData.businessType, clientData.learnedMerchants||{});
       return { ...row, concept: result.enrichedConcept||row.concept, category:result.category, level:result.level, reason:result.reason||"", payee:result.payee||null, checkNum:result.checkNum||null };

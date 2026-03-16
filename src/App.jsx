@@ -237,16 +237,22 @@ async function callClaude(messages, system) {
 }
 
 async function extractTransactions(b64) {
-  const system = `You are a STRICT bank statement extraction agent.
-- Extract EVERY transaction. One row = one transaction.
-- NEVER group, summarize, skip, or invent.
-- DATE: MM/DD/YYYY. DEPOSITS: positive. WITHDRAWALS: negative.
-- Output ONLY raw CSV: TYPE,DATE,AMOUNT,CONCEPT
-- TYPE = DEPOSIT or WITHDRAWAL. No headers. No markdown.
-- Include fees, ATM, transfers. Exclude balance/summary rows.`;
+  const system = `You are a STRICT bank statement extraction agent. Your job is to extract EVERY single transaction with ZERO omissions.
+
+CRITICAL RULES:
+1. Extract ALL transactions from the main ledger (line by line transactions).
+2. IMPORTANT: Also extract ALL checks from any "Cleared Check Summary" or "Draft Summary" table — each check number + amount = one WITHDRAWAL row. These tables often appear near the end of the statement in a grid format with columns of check numbers and amounts. DO NOT skip them.
+3. De-duplicate: if a transaction appears in BOTH the main ledger AND a summary table, include it ONCE only.
+4. NEVER skip, group, summarize, or invent transactions.
+5. For checks from Cleared Check Summary: use the statement period end date as the date, concept = "CHECK #[number]".
+6. DATE format: MM/DD/YYYY. DEPOSITS positive. WITHDRAWALS negative (use minus sign).
+7. Output ONLY raw CSV with columns: TYPE,DATE,AMOUNT,CONCEPT
+8. TYPE = DEPOSIT or WITHDRAWAL only. No headers. No markdown. No explanation.
+9. Include ALL: fees, ATM, transfers, dividends, POS, ACH, drafts, checks, wire transfers.
+10. Exclude ONLY: balance rows, running balance column values, summary totals lines, account header rows.`;
   const text = await callClaude([{ role:"user", content:[
     { type:"document", source:{ type:"base64", media_type:"application/pdf", data:b64 } },
-    { type:"text", text:"Extract ALL transactions. Raw CSV: TYPE,DATE,AMOUNT,CONCEPT" }
+    { type:"text", text:"Extract ALL transactions including every check from the Cleared Check Summary table. Raw CSV: TYPE,DATE,AMOUNT,CONCEPT" }
   ]}], system);
   const rows = [];
   text.trim().split("\n").forEach(line => {
@@ -483,7 +489,7 @@ export default function App() {
       <div style={S.nav}>
         <div style={{fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:700,color:"#f7f6f2"}}>
           Wave<span style={{color:"#c8a96e"}}>Book</span>
-          <span style={{fontSize:11,color:"#555",fontFamily:"'DM Sans',sans-serif",fontWeight:400,marginLeft:8}}>v5.3 · 14 tipos · 350+ merchants · Conciliación automática</span>
+          <span style={{fontSize:11,color:"#555",fontFamily:"'DM Sans',sans-serif",fontWeight:400,marginLeft:8}}>v5.4 · 14 tipos · 350+ merchants · Extracción completa de cheques</span>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
           {clientData&&<span style={{color:"#888",fontSize:12}}>{clientData.name}</span>}

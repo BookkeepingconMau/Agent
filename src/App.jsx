@@ -249,7 +249,8 @@ CRITICAL RULES:
 7. Output ONLY raw CSV with columns: TYPE,DATE,AMOUNT,CONCEPT
 8. TYPE = DEPOSIT or WITHDRAWAL only. No headers. No markdown. No explanation.
 9. Include ALL: fees, ATM, transfers, dividends, POS, ACH, drafts, checks, wire transfers.
-10. Exclude ONLY: balance rows, running balance column values, summary totals lines, account header rows.`;
+10. Exclude ONLY: balance rows, running balance column values, summary totals lines, account header rows.
+11. CHECK IMAGES — BENEFICIARY EXTRACTION: If the PDF contains images or scans of physical checks, examine each check image carefully and extract the beneficiary name (Pay to the Order of). When found, format the concept as "CHECK #[number] - [Beneficiary Name]" instead of just "CHECK #[number]". If the check image is present but the name is illegible, use "CHECK #[number] - ILEGIBLE". If no check images are present, just use "CHECK #[number]" as normal.`;
   const text = await callClaude([{ role:"user", content:[
     { type:"document", source:{ type:"base64", media_type:"application/pdf", data:b64 } },
     { type:"text", text:"Extract ALL transactions including every check from the Cleared Check Summary table. Raw CSV: TYPE,DATE,AMOUNT,CONCEPT" }
@@ -443,18 +444,18 @@ export default function App() {
 
   const S = {
     app:{minHeight:"100vh",background:"#f4f6f9",fontFamily:"'DM Sans',system-ui,sans-serif",color:"#1a1a1a"},
-    nav:{background:"#0f1f4b",padding:"0 28px",height:52,display:"flex",alignItems:"center",justifyContent:"space-between"},
-    page:{maxWidth:1200,margin:"0 auto",padding:"36px 28px"},
-    h1:{fontSize:26,fontWeight:700,letterSpacing:"-0.5px",marginBottom:6},
-    sub:{color:"#666",fontSize:13},
-    card:{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:20,marginBottom:14},
-    btn:{padding:"9px 20px",borderRadius:8,border:"none",cursor:"pointer",fontSize:13,fontWeight:600,transition:"all 0.15s"},
+    nav:{background:"#0f1f4b",padding:"0 36px",height:64,display:"flex",alignItems:"center",justifyContent:"space-between"},
+    page:{maxWidth:1320,margin:"0 auto",padding:"44px 36px"},
+    h1:{fontSize:32,fontWeight:700,letterSpacing:"-0.5px",marginBottom:8},
+    sub:{color:"#666",fontSize:15},
+    card:{background:"#fff",borderRadius:16,border:"1px solid #e2e8f0",padding:28,marginBottom:18},
+    btn:{padding:"11px 24px",borderRadius:10,border:"none",cursor:"pointer",fontSize:14,fontWeight:600,transition:"all 0.15s"},
     btnPrimary:{background:"#0f1f4b",color:"#fff"},
     btnGold:{background:"#1a56db",color:"#fff"},
     btnOutline:{background:"transparent",color:"#1a1a1a",border:"1px solid #ccc"},
     btnSm:{padding:"5px 12px",borderRadius:6,border:"none",cursor:"pointer",fontSize:11,fontWeight:600},
-    input:{width:"100%",padding:"9px 13px",borderRadius:8,border:"1px solid #ddd",fontSize:13,outline:"none",fontFamily:"inherit"},
-    label:{fontSize:11,fontWeight:700,color:"#888",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:5,display:"block"},
+    input:{width:"100%",padding:"12px 16px",borderRadius:10,border:"1px solid #ddd",fontSize:15,outline:"none",fontFamily:"inherit"},
+    label:{fontSize:12,fontWeight:700,color:"#888",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:7,display:"block"},
   };
 
   const levelColor = l => ({
@@ -487,9 +488,9 @@ export default function App() {
 
       {/* NAV */}
       <div style={S.nav}>
-        <div style={{fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:700,color:"#f4f6f9"}}>
+        <div style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:"#ffffff"}}>
           Wave<span style={{color:"#1a56db"}}>Book</span>
-          <span style={{fontSize:11,color:"#8ba3d4",fontFamily:"'DM Sans',sans-serif",fontWeight:400,marginLeft:8}}>v5.4 · 14 tipos · 350+ merchants · Extracción completa de cheques</span>
+          <span style={{fontSize:13,color:"#8ba3d4",fontFamily:"'DM Sans',sans-serif",fontWeight:400,marginLeft:8}}>v5.4 · 14 tipos · 350+ merchants · Extracción completa de cheques</span>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
           {clientData&&<span style={{color:"#888",fontSize:12}}>{clientData.name}</span>}
@@ -499,11 +500,11 @@ export default function App() {
       {/* HOME */}
       {screen==="home"&&(
         <div style={S.page}>
-          <div style={{marginBottom:24,background:"linear-gradient(135deg,#0f1f4b 0%,#1a56db 100%)",borderRadius:16,padding:"28px 32px",display:"flex",alignItems:"center",gap:24,flexWrap:"wrap"}}>
-            <img src="/mau-agent.jpeg" alt="Mau Bautista IA" style={{width:110,height:110,objectFit:"cover",borderRadius:"50%",border:"3px solid rgba(255,255,255,0.3)",flexShrink:0}} />
+          <div style={{marginBottom:24,background:"linear-gradient(135deg,#0f1f4b 0%,#1a56db 100%)",borderRadius:20,padding:"36px 40px",display:"flex",alignItems:"center",gap:24,flexWrap:"wrap"}}>
+            <img src="/mau-agent.jpeg" alt="Mau Bautista IA" style={{width:140,height:140,objectFit:"cover",borderRadius:"50%",border:"4px solid rgba(255,255,255,0.3)",flexShrink:0}} />
             <div>
-              <div style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:"#fff",marginBottom:4}}>Bienvenido al Agente de Mau Bautista</div>
-              <div style={{color:"rgba(255,255,255,0.7)",fontSize:13,marginBottom:8}}>Tu bookkeeper inteligente</div>
+              <div style={{fontFamily:"'Playfair Display',serif",fontSize:28,fontWeight:700,color:"#fff",marginBottom:6}}>Bienvenido al Agente de Mau Bautista</div>
+              <div style={{color:"rgba(255,255,255,0.7)",fontSize:15,marginBottom:10}}>Tu bookkeeper inteligente</div>
               <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                 {["14 tipos de negocio","350+ merchants","Conciliación automática","Memoria persistente"].map(t=>(
                   <span key={t} style={{background:"rgba(255,255,255,0.15)",color:"#fff",borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:600}}>{t}</span>
@@ -523,7 +524,7 @@ export default function App() {
               <label style={S.label}>Tipo de negocio</label>
               <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginTop:4}}>
                 {BUSINESS_TYPES.map(bt=>(
-                  <button key={bt.id} className={`btype${newType===bt.id?" sel":""}`} onClick={()=>setNewType(bt.id)} style={{textAlign:"left",padding:"10px 14px"}}>{bt.icon} {bt.label}</button>
+                  <button key={bt.id} className={`btype${newType===bt.id?" sel":""}`} onClick={()=>setNewType(bt.id)} style={{textAlign:"left",padding:"13px 18px",fontSize:14}}>{bt.icon} {bt.label}</button>
                 ))}
               </div>
             </div>
@@ -537,10 +538,10 @@ export default function App() {
                   const bt=BUSINESS_TYPES.find(b=>b.id===c.businessType);
                   const ml=Object.keys(c.learnedMerchants||{}).length;
                   return (
-                    <div key={c.id} className="cc" style={{padding:"12px 16px",border:"1px solid #e2e8f0",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"space-between",background:"#fff",transition:"all 0.15s"}} onClick={()=>selectClient(c.id)}>
+                    <div key={c.id} className="cc" style={{padding:"16px 20px",border:"1px solid #e2e8f0",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"space-between",background:"#fff",transition:"all 0.15s"}} onClick={()=>selectClient(c.id)}>
                       <div>
-                        <div style={{fontWeight:600,fontSize:14}}>{c.name}</div>
-                        <div style={{color:"#999",fontSize:12,marginTop:2}}>{bt?.icon} {bt?.label} · 🧠 {ml} aprendidas · 📄 {(c.history||[]).length} procesados</div>
+                        <div style={{fontWeight:600,fontSize:16}}>{c.name}</div>
+                        <div style={{color:"#999",fontSize:13,marginTop:4}}>{bt?.icon} {bt?.label} · 🧠 {ml} aprendidas · 📄 {(c.history||[]).length} procesados</div>
                       </div>
                       <button style={{...S.btn,...S.btnPrimary,fontSize:11,padding:"6px 14px"}}>Abrir →</button>
                     </div>

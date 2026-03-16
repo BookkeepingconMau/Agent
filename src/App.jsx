@@ -1,19 +1,19 @@
 import { useState, useRef, useEffect } from "react";
 
 const BUSINESS_TYPES = [
-  { id: "construction",  label: "Construction / Trades",     icon: "[emoji_55356][emoji_57303]️" },
-  { id: "hvac",          label: "HVAC / Clima",              icon: "[emoji_55356][emoji_57132]️" },
-  { id: "roofing",       label: "Roofing",                   icon: "[emoji_55356][emoji_57312]" },
-  { id: "drywall",       label: "Drywall",                   icon: "[emoji_55358][emoji_56817]" },
-  { id: "electrical",    label: "Electricista",              icon: "[emoji_55357][emoji_56588]" },
-  { id: "plumbing",      label: "Plomer\'eda",                  icon: "[emoji_55357][emoji_57023]" },
-  { id: "landscaping",   label: "Landscaping / Lawn Care",   icon: "[emoji_55356][emoji_57151]" },
-  { id: "cleaning",      label: "Cleaning / Janitorial",     icon: "[emoji_55358][emoji_56825]" },
-  { id: "food_events",   label: "Food Events / Catering",    icon: "[emoji_55356][emoji_57213]️" },
-  { id: "restaurant",    label: "Restaurant",                icon: "[emoji_55356][emoji_57204]" },
-  { id: "trucking",      label: "Trucking / Transportation", icon: "[emoji_55357][emoji_56987]" },
-  { id: "property_mgmt", label: "Property Management",       icon: "[emoji_55356][emoji_57314]" },
-  { id: "barbershop",    label: "Barber\'eda / Sal\'f3n",          icon: "[emoji_55357][emoji_56455]" },
+  { id: "construction",  label: "Construction / Trades",     icon: "️" },
+  { id: "hvac",          label: "HVAC / Clima",              icon: "️" },
+  { id: "roofing",       label: "Roofing",                   icon: "" },
+  { id: "drywall",       label: "Drywall",                   icon: "" },
+  { id: "electrical",    label: "Electricista",              icon: "" },
+  { id: "plumbing",      label: "Plomer\'eda",                  icon: "" },
+  { id: "landscaping",   label: "Landscaping / Lawn Care",   icon: "" },
+  { id: "cleaning",      label: "Cleaning / Janitorial",     icon: "" },
+  { id: "food_events",   label: "Food Events / Catering",    icon: "️" },
+  { id: "restaurant",    label: "Restaurant",                icon: "" },
+  { id: "trucking",      label: "Trucking / Transportation", icon: "" },
+  { id: "property_mgmt", label: "Property Management",       icon: "" },
+  { id: "barbershop",    label: "Barber\'eda / Sal\'f3n",          icon: "" },
   { id: "general",       label: "General Services",          icon: "⚙️" },
 ];
 
@@ -21,13 +21,16 @@ const tradesFuel = (cat) => ({ construction:cat,hvac:cat,roofing:cat,drywall:cat
 const tradesMat  = (fallback="ASK TO CLIENT") => ({ construction:"COGS - Materials",hvac:"COGS - Materials",roofing:"COGS - Materials",drywall:"COGS - Materials",electrical:"COGS - Materials",plumbing:"COGS - Materials",landscaping:"COGS - Materials",cleaning:"COGS - Materials",food_events:"COGS - Materials",restaurant:fallback,trucking:"Operating Expenses - Supplies",property_mgmt:"Repairs & Maintenance",barbershop:"COGS - Materials",general:fallback });
 
 const MERCHANT_DICT = [
-  // ──FUEL ──...[["QT","QUIKTRIP","QUICK TRIP"],["RACETRAC"],["VALERO"],["STRIPES"],["MURPHY USA","MURPHY EXPRESS"],["CIRCLE K"],["SPEEDWAY"],["WAWA"],["THORNTONS"],["SHELL"],["CHEVRON"],["EXXON","EXXONMOBIL"],["BP ","BP#"],["MARATHON"],["CASEY"],["KWIK TRIP","KWIKTRIP"],["LOVES","LOVE'S"],["PILOT TRAVEL","PILOT FLYING"],["FLYING J"],["ARCO"],[" 76 "," 76#"],["SUNOCO"],["KROGER FUEL","KROGER GAS"],["NEW HUDSON PETROLEUM"]].map(p=>({ patterns:p, category:tradesFuel("COGS - Fuel (Production)"), amountRule:{under15:"Meals & Entertainment"} })),
+  // ──FUEL ──
+  ...[["QT","QUIKTRIP","QUICK TRIP"],["RACETRAC"],["VALERO"],["STRIPES"],["MURPHY USA","MURPHY EXPRESS"],["CIRCLE K"],["SPEEDWAY"],["WAWA"],["THORNTONS"],["SHELL"],["CHEVRON"],["EXXON","EXXONMOBIL"],["BP ","BP#"],["MARATHON"],["CASEY"],["KWIK TRIP","KWIKTRIP"],["LOVES","LOVE'S"],["PILOT TRAVEL","PILOT FLYING"],["FLYING J"],["ARCO"],[" 76 "," 76#"],["SUNOCO"],["KROGER FUEL","KROGER GAS"],["NEW HUDSON PETROLEUM"]].map(p=>({ patterns:p, category:tradesFuel("COGS - Fuel (Production)"), amountRule:{under15:"Meals & Entertainment"} })),
 
-  // ──RESTAURANT INCOME (DEPOSITS) ──{ patterns:["BANKCARD","BKCD PROCESSING"], category:{restaurant:"Income - Services",food_events:"Income - Services",construction:"ASK TO CLIENT",hvac:"ASK TO CLIENT",roofing:"ASK TO CLIENT",drywall:"ASK TO CLIENT",electrical:"ASK TO CLIENT",plumbing:"ASK TO CLIENT",landscaping:"ASK TO CLIENT",cleaning:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"ASK TO CLIENT",barbershop:"Income - Services",general:"ASK TO CLIENT"} },
+  // ──RESTAURANT INCOME (DEPOSITS) ──
+  { patterns:["BANKCARD","BKCD PROCESSING"], category:{restaurant:"Income - Services",food_events:"Income - Services",construction:"ASK TO CLIENT",hvac:"ASK TO CLIENT",roofing:"ASK TO CLIENT",drywall:"ASK TO CLIENT",electrical:"ASK TO CLIENT",plumbing:"ASK TO CLIENT",landscaping:"ASK TO CLIENT",cleaning:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"ASK TO CLIENT",barbershop:"Income - Services",general:"ASK TO CLIENT"} },
   { patterns:["DOORDASH","DOOR DASH"], category:{restaurant:"Income - Services",food_events:"Income - Services",construction:"ASK TO CLIENT",hvac:"ASK TO CLIENT",roofing:"ASK TO CLIENT",drywall:"ASK TO CLIENT",electrical:"ASK TO CLIENT",plumbing:"ASK TO CLIENT",landscaping:"ASK TO CLIENT",cleaning:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"ASK TO CLIENT",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
   { patterns:["UBER USA","UBER EATS","UBEREATS"], category:{restaurant:"Income - Services",food_events:"Income - Services",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"Meals & Entertainment",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"} },
 
-  // ──RESTAURANT COGS - FOOD & BEVERAGE SUPPLIERS ──{ patterns:["EL REY USA MEATS","EL REY MEATS"], category:"COGS - Materials" },
+  // ──RESTAURANT COGS - FOOD & BEVERAGE SUPPLIERS ──
+  { patterns:["EL REY USA MEATS","EL REY MEATS"], category:"COGS - Materials" },
   { patterns:["CAPITOL BEVERAGE","CAPITAL BEVERAGE"], category:"COGS - Materials" },
   { patterns:["REYESCOCACOLA","REYES COCA COLA","REYES COKE"], category:"COGS - Materials" },
   { patterns:["GFS STORE","GORDON FOOD SERVICE","GORDON FOOD"], category:{restaurant:"COGS - Materials",food_events:"COGS - Materials",construction:"Operating Expenses - Supplies",hvac:"Operating Expenses - Supplies",roofing:"Operating Expenses - Supplies",drywall:"Operating Expenses - Supplies",electrical:"Operating Expenses - Supplies",plumbing:"Operating Expenses - Supplies",landscaping:"Operating Expenses - Supplies",cleaning:"COGS - Materials",trucking:"Operating Expenses - Supplies",property_mgmt:"Operating Expenses - Supplies",barbershop:"Operating Expenses - Supplies",general:"Operating Expenses - Supplies"} },
@@ -35,40 +38,55 @@ const MERCHANT_DICT = [
   { patterns:["QUALITY DAIRY"], category:{restaurant:"COGS - Materials",food_events:"COGS - Materials",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"Meals & Entertainment",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"} },
   { patterns:["SHEILA'S BAKERY","SHEILAS BAKERY"], category:{restaurant:"COGS - Materials",food_events:"COGS - Materials",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"Meals & Entertainment",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"} },
 
-  // ──LIQUOR / ALCOHOL ──{ patterns:["STATE OF MICHGWL","STATE OF MICHNWS","GENERAL WINE AND LIQ","ABC LIQUOR"], category:{restaurant:"COGS - Materials",food_events:"COGS - Materials",construction:"ASK TO CLIENT",hvac:"ASK TO CLIENT",roofing:"ASK TO CLIENT",drywall:"ASK TO CLIENT",electrical:"ASK TO CLIENT",plumbing:"ASK TO CLIENT",landscaping:"ASK TO CLIENT",cleaning:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"ASK TO CLIENT",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
+  // ──LIQUOR / ALCOHOL ──
+  { patterns:["STATE OF MICHGWL","STATE OF MICHNWS","GENERAL WINE AND LIQ","ABC LIQUOR"], category:{restaurant:"COGS - Materials",food_events:"COGS - Materials",construction:"ASK TO CLIENT",hvac:"ASK TO CLIENT",roofing:"ASK TO CLIENT",drywall:"ASK TO CLIENT",electrical:"ASK TO CLIENT",plumbing:"ASK TO CLIENT",landscaping:"ASK TO CLIENT",cleaning:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"ASK TO CLIENT",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
 
-  // ──RESTAURANT POS / MERCHANT FEES ──{ patterns:["LQ MERCHANT","MERCHANT BANKCD","BKCD PROCESSING","MERCHANT HUB","YBSPOS"], category:{restaurant:"Bank Fees",food_events:"Bank Fees",construction:"Bank Fees",hvac:"Bank Fees",roofing:"Bank Fees",drywall:"Bank Fees",electrical:"Bank Fees",plumbing:"Bank Fees",landscaping:"Bank Fees",cleaning:"Bank Fees",trucking:"Bank Fees",property_mgmt:"Bank Fees",barbershop:"Bank Fees",general:"Bank Fees"} },
+  // ──RESTAURANT POS / MERCHANT FEES ──
+  { patterns:["LQ MERCHANT","MERCHANT BANKCD","BKCD PROCESSING","MERCHANT HUB","YBSPOS"], category:{restaurant:"Bank Fees",food_events:"Bank Fees",construction:"Bank Fees",hvac:"Bank Fees",roofing:"Bank Fees",drywall:"Bank Fees",electrical:"Bank Fees",plumbing:"Bank Fees",landscaping:"Bank Fees",cleaning:"Bank Fees",trucking:"Bank Fees",property_mgmt:"Bank Fees",barbershop:"Bank Fees",general:"Bank Fees"} },
 
-  // ──UTILITIES ──...[["CONSTELLATION ENERGY"],["COMED"],["PEOPLES GAS"],["ATMOS ENERGY"],["ONCOR"],["FPL ","FLORIDA POWER"],["DUKE ENERGY"],["APS "],["SRP "],["CONSUMERS ENERGY"],["LANSING BWL","BWL UTIL"],["DELTA CHARTER TW"],["GRANGERCOM"],["GRANGER"]].map(p=>({patterns:p,category:"Utilities"})),
+  // ──UTILITIES ──
+  ...[["CONSTELLATION ENERGY"],["COMED"],["PEOPLES GAS"],["ATMOS ENERGY"],["ONCOR"],["FPL ","FLORIDA POWER"],["DUKE ENERGY"],["APS "],["SRP "],["CONSUMERS ENERGY"],["LANSING BWL","BWL UTIL"],["DELTA CHARTER TW"],["GRANGERCOM"],["GRANGER"]].map(p=>({patterns:p,category:"Utilities"})),
 
-  // ──PAYROLL ──...[["INTUIT 82704102","INTUIT 83982660","INTUIT 19205133","INTUIT 63733983","INTUIT 32260264"],["GUSTO"],["ADP ","ADP*"],["PAYCHEX"]].map(p=>({patterns:p,category:"Payroll & Wages"})),
+  // ──PAYROLL ──
+  ...[["INTUIT 82704102","INTUIT 83982660","INTUIT 19205133","INTUIT 63733983","INTUIT 32260264"],["GUSTO"],["ADP ","ADP*"],["PAYCHEX"]].map(p=>({patterns:p,category:"Payroll & Wages"})),
   { patterns:["INTUIT *QBOOKS","QBOOKS PAYROLL","QUICKBOOKS PAYROLL"], category:"Payroll & Wages" },
 
-  // ──TAXES ──{ patterns:["STATEOF MICHIGAN","STATE OF MICHIGAN","STATE FARM RO"], category:{restaurant:"Taxes & Licenses",food_events:"Taxes & Licenses",construction:"Insurance",hvac:"Insurance",roofing:"Insurance",drywall:"Insurance",electrical:"Insurance",plumbing:"Insurance",landscaping:"Insurance",cleaning:"Insurance",trucking:"Insurance",property_mgmt:"Insurance",barbershop:"Insurance",general:"Insurance"} },
+  // ──TAXES ──
+  { patterns:["STATEOF MICHIGAN","STATE OF MICHIGAN","STATE FARM RO"], category:{restaurant:"Taxes & Licenses",food_events:"Taxes & Licenses",construction:"Insurance",hvac:"Insurance",roofing:"Insurance",drywall:"Insurance",electrical:"Insurance",plumbing:"Insurance",landscaping:"Insurance",cleaning:"Insurance",trucking:"Insurance",property_mgmt:"Insurance",barbershop:"Insurance",general:"Insurance"} },
 
-  // ──HVAC SPECIFIC ──...[["JOHNSTONE SUPPLY","JOHNSTONE"],["WATSCO"],["CARRIER"],["TRANE"],["LENNOX"],["YORK HVAC"],["RHEEM"],["GOODMAN"],["REFRIGERANT","R-410","FREON"]].map(p=>({patterns:p,category:"COGS - Materials"})),
+  // ──HVAC SPECIFIC ──
+  ...[["JOHNSTONE SUPPLY","JOHNSTONE"],["WATSCO"],["CARRIER"],["TRANE"],["LENNOX"],["YORK HVAC"],["RHEEM"],["GOODMAN"],["REFRIGERANT","R-410","FREON"]].map(p=>({patterns:p,category:"COGS - Materials"})),
 
-  // ──ROOFING SPECIFIC ──...[["ABC SUPPLY","ABC ROOFING"],["BEACON ROOFING"],["GULFEAGLE"],["OWENS CORNING"],["GAF ROOFING","GAF MATERIAL"]].map(p=>({patterns:p,category:"COGS - Materials"})),
+  // ──ROOFING SPECIFIC ──
+  ...[["ABC SUPPLY","ABC ROOFING"],["BEACON ROOFING"],["GULFEAGLE"],["OWENS CORNING"],["GAF ROOFING","GAF MATERIAL"]].map(p=>({patterns:p,category:"COGS - Materials"})),
 
-  // ──DRYWALL SPECIFIC ──...[["USG ","US GYPSUM"],["NATIONAL GYPSUM"],["CERTAINTEED"],["GEORGIA PACIFIC"]].map(p=>({patterns:p,category:"COGS - Materials"})),
+  // ──DRYWALL SPECIFIC ──
+  ...[["USG ","US GYPSUM"],["NATIONAL GYPSUM"],["CERTAINTEED"],["GEORGIA PACIFIC"]].map(p=>({patterns:p,category:"COGS - Materials"})),
 
-  // ──ELECTRICAL SPECIFIC ──...[["GRAYBAR"],["REXEL"],["WESCO"],["PLATT ELECTRIC"],["CITY ELECTRIC"]].map(p=>({patterns:p,category:"COGS - Materials"})),
+  // ──ELECTRICAL SPECIFIC ──
+  ...[["GRAYBAR"],["REXEL"],["WESCO"],["PLATT ELECTRIC"],["CITY ELECTRIC"]].map(p=>({patterns:p,category:"COGS - Materials"})),
 
-  // ──PLUMBING SPECIFIC ──...[["HAJOCA"],["REEVES-SAIN","REEVES SAIN"],["CONSOLIDATED PIPE"],["BARNETT"]].map(p=>({patterns:p,category:"COGS - Materials"})),
+  // ──PLUMBING SPECIFIC ──
+  ...[["HAJOCA"],["REEVES-SAIN","REEVES SAIN"],["CONSOLIDATED PIPE"],["BARNETT"]].map(p=>({patterns:p,category:"COGS - Materials"})),
 
-  // ──BARBERSHOP SPECIFIC ──...[["SALLY BEAUTY","SALLYS BEAUTY"],["COSMOPROF"],["BEAUTY SUPPLY"],["SALON CENTRIC"],["PAUL MITCHELL"]].map(p=>({patterns:p,category:"COGS - Materials"})),
+  // ──BARBERSHOP SPECIFIC ──
+  ...[["SALLY BEAUTY","SALLYS BEAUTY"],["COSMOPROF"],["BEAUTY SUPPLY"],["SALON CENTRIC"],["PAUL MITCHELL"]].map(p=>({patterns:p,category:"COGS - Materials"})),
 
-  // ──CLEANING SPECIFIC ──...[["ULINE","U-LINE"],["CINTAS"],["ZORO TOOLS","ZORO "]].map(p=>({patterns:p,category:"COGS - Materials"})),
+  // ──CLEANING SPECIFIC ──
+  ...[["ULINE","U-LINE"],["CINTAS"],["ZORO TOOLS","ZORO "]].map(p=>({patterns:p,category:"COGS - Materials"})),
   { patterns:["GRAINGER"], category:{construction:"COGS - Materials",hvac:"COGS - Materials",roofing:"COGS - Materials",drywall:"COGS - Materials",electrical:"COGS - Materials",plumbing:"COGS - Materials",landscaping:"COGS - Materials",cleaning:"COGS - Materials",food_events:"COGS - Materials",restaurant:"ASK TO CLIENT",trucking:"Operating Expenses - Supplies",property_mgmt:"Repairs & Maintenance",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
 
-  // ──PROPERTY MGMT SPECIFIC ──...[["APARTMENT LIST"],["ZILLOW"],["COSTAR"],["APARTMENTS.COM"],["BUILDIUM"],["APPFOLIO"],["RENTMANAGER","RENT MANAGER"]].map(p=>({patterns:p,category:{property_mgmt:p[0].includes("BUILDIUM")||p[0].includes("APPFOLIO")||p[0].includes("RENTMANAGER")?"Software & Subscriptions":"Advertising & Marketing",construction:"Advertising & Marketing",hvac:"Advertising & Marketing",roofing:"Advertising & Marketing",drywall:"Advertising & Marketing",electrical:"Advertising & Marketing",plumbing:"Advertising & Marketing",landscaping:"Advertising & Marketing",cleaning:"Advertising & Marketing",food_events:"Advertising & Marketing",restaurant:"Advertising & Marketing",trucking:"Advertising & Marketing",barbershop:"Advertising & Marketing",general:"Advertising & Marketing"}})),
+  // ──PROPERTY MGMT SPECIFIC ──
+  ...[["APARTMENT LIST"],["ZILLOW"],["COSTAR"],["APARTMENTS.COM"],["BUILDIUM"],["APPFOLIO"],["RENTMANAGER","RENT MANAGER"]].map(p=>({patterns:p,category:{property_mgmt:p[0].includes("BUILDIUM")||p[0].includes("APPFOLIO")||p[0].includes("RENTMANAGER")?"Software & Subscriptions":"Advertising & Marketing",construction:"Advertising & Marketing",hvac:"Advertising & Marketing",roofing:"Advertising & Marketing",drywall:"Advertising & Marketing",electrical:"Advertising & Marketing",plumbing:"Advertising & Marketing",landscaping:"Advertising & Marketing",cleaning:"Advertising & Marketing",food_events:"Advertising & Marketing",restaurant:"Advertising & Marketing",trucking:"Advertising & Marketing",barbershop:"Advertising & Marketing",general:"Advertising & Marketing"}})),
 
-  // ──LATIN GROCERY ──...[["FIESTA MART"],["CARDENAS"],["NORTHGATE"],["VALLARTA"],["HEB ","H-E-B"],["ALDI"],["CARNICERIA"],["PANADERIA"],["SURTIDORA"],["LUCKY SUPERMARKET"],["STATER BROS"],["BRAVO SUPER"],["SEDANOS"],["COMPARE FOODS"],["PRICE RITE"],["MEIJER"],["KROGER "]].map(p=>({
+  // ──LATIN GROCERY ──
+  ...[["FIESTA MART"],["CARDENAS"],["NORTHGATE"],["VALLARTA"],["HEB ","H-E-B"],["ALDI"],["CARNICERIA"],["PANADERIA"],["SURTIDORA"],["LUCKY SUPERMARKET"],["STATER BROS"],["BRAVO SUPER"],["SEDANOS"],["COMPARE FOODS"],["PRICE RITE"],["MEIJER"],["KROGER "]].map(p=>({
     patterns:p,
     category:{food_events:"COGS - Materials",restaurant:"COGS - Materials",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"COGS - Materials",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"}
   })),
 
-  // ──HARDWARE ──{ patterns:["HOME DEPOT","THE HOME DEPOT"], category:tradesMat("Repairs & Maintenance") },
+  // ──HARDWARE ──
+  { patterns:["HOME DEPOT","THE HOME DEPOT"], category:tradesMat("Repairs & Maintenance") },
   { patterns:["LOWES","LOWE'S"],              category:tradesMat("Repairs & Maintenance") },
   { patterns:["MENARDS"],                     category:tradesMat("ASK TO CLIENT") },
   { patterns:["ACE HARDWARE"],               category:tradesMat("ASK TO CLIENT") },
@@ -84,13 +102,15 @@ const MERCHANT_DICT = [
   { patterns:["UNITED RENTALS"],              category:tradesMat("ASK TO CLIENT") },
   { patterns:["RESTAURANT EQUIPPERS"],        category:{restaurant:"Repairs & Maintenance",food_events:"Repairs & Maintenance",construction:"ASK TO CLIENT",hvac:"ASK TO CLIENT",roofing:"ASK TO CLIENT",drywall:"ASK TO CLIENT",electrical:"ASK TO CLIENT",plumbing:"ASK TO CLIENT",landscaping:"ASK TO CLIENT",cleaning:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"ASK TO CLIENT",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
 
-  // ──RESTAURANTS / MEALS ──...[["MCDONALD"],["STARBUCKS"],["CHICK-FIL-A","CHICKFILA"],["SUBWAY"],["CHIPOTLE"],["TACO BELL"],["WENDYS"],["BURGER KING"],["DOMINOS"],["PIZZA HUT"],["POPEYES"],["PANDA EXPRESS"],["IN-N-OUT"],["WHATABURGER"],["RAISING CANE"],["SONIC DRIVE"],["JACK IN THE BOX"],["DAIRY QUEEN"],["FIVE GUYS"],["PANERA"],["DUNKIN"],["BUFFALO WILD","BUFFALO WILD WINGS"],["OLIVE GARDEN"]].map(p=>({patterns:p,category:"Meals & Entertainment"})),
+  // ──RESTAURANTS / MEALS ──
+  ...[["MCDONALD"],["STARBUCKS"],["CHICK-FIL-A","CHICKFILA"],["SUBWAY"],["CHIPOTLE"],["TACO BELL"],["WENDYS"],["BURGER KING"],["DOMINOS"],["PIZZA HUT"],["POPEYES"],["PANDA EXPRESS"],["IN-N-OUT"],["WHATABURGER"],["RAISING CANE"],["SONIC DRIVE"],["JACK IN THE BOX"],["DAIRY QUEEN"],["FIVE GUYS"],["PANERA"],["DUNKIN"],["BUFFALO WILD","BUFFALO WILD WINGS"],["OLIVE GARDEN"]].map(p=>({patterns:p,category:"Meals & Entertainment"})),
   ...[["TAQUERIA"],["TACOS "],["CARNITAS"],["TAMALES"],["TORTAS"]].map(p=>({patterns:p,category:{food_events:"COGS - Materials",restaurant:"COGS - Materials",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"Meals & Entertainment",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"}})),
   { patterns:["JALISCIENCE","LA JALISCIENCE"], category:"Meals & Entertainment" },
   { patterns:["PUPUSERIA"],  category:"Meals & Entertainment" },
   { patterns:["PALETERIA"],  category:"Meals & Entertainment" },
 
-  // ──PAYMENT APPS ──{ patterns:["WESTERN UNION"],              category:"Owner Draw" },
+  // ──PAYMENT APPS ──
+  { patterns:["WESTERN UNION"],              category:"Owner Draw" },
   { patterns:["MONEYGRAM","MONEY GRAM"],     category:"Owner Draw" },
   { patterns:["REMITLY"],                    category:"Owner Draw" },
   { patterns:["XOOM"],                       category:"Owner Draw" },
@@ -101,26 +121,33 @@ const MERCHANT_DICT = [
   { patterns:["GOOGLE PAY"],                 category:"ASK TO CLIENT" },
   { patterns:["PERSON PAY","COMPUTERLINE PERSON PAY"], category:"ASK TO CLIENT" },
 
-  // ──INSURANCE ──...[["STATE FARM"],["GEICO"],["PROGRESSIVE","PROG MICHIGAN"],["ALLSTATE"],["FARMERS INS"],["NATIONWIDE"],["LIBERTY MUTUAL"],["WORKERS COMP"]].map(p=>({patterns:p,category:"Insurance"})),
+  // ──INSURANCE ──
+  ...[["STATE FARM"],["GEICO"],["PROGRESSIVE","PROG MICHIGAN"],["ALLSTATE"],["FARMERS INS"],["NATIONWIDE"],["LIBERTY MUTUAL"],["WORKERS COMP"]].map(p=>({patterns:p,category:"Insurance"})),
 
-  // ──LOANS ──...[["CAMINO FINANCIAL"],["KABBAGE"],["ONDECK"],["BLUEVINE"],["FUNDBOX"],["CREDIBLY"],["LENDIO"],["LAFCU"]].map(p=>({patterns:p,category:"Loan Payment"})),
+  // ──LOANS ──
+  ...[["CAMINO FINANCIAL"],["KABBAGE"],["ONDECK"],["BLUEVINE"],["FUNDBOX"],["CREDIBLY"],["LENDIO"],["LAFCU"]].map(p=>({patterns:p,category:"Loan Payment"})),
 
-  // ──TELECOM ──...[["VERIZON","VZWRLSS"],["AT&T","ATT "],["T-MOBILE","TMOBILE"],["METRO PCS","METROPCS"],["BOOST MOBILE"],["CRICKET "],["SIMPLE MOBILE"],["TRACFONE"],["SPECTRUM"],["XFINITY","COMCAST"],["DIRECTV"],["DISH NETWORK"]].map(p=>({patterns:p,category:"Telephone & Internet"})),
+  // ──TELECOM ──
+  ...[["VERIZON","VZWRLSS"],["AT&T","ATT "],["T-MOBILE","TMOBILE"],["METRO PCS","METROPCS"],["BOOST MOBILE"],["CRICKET "],["SIMPLE MOBILE"],["TRACFONE"],["SPECTRUM"],["XFINITY","COMCAST"],["DIRECTV"],["DISH NETWORK"]].map(p=>({patterns:p,category:"Telephone & Internet"})),
 
-  // ──SOFTWARE ──...[["QUICKBOOKS"],["INTUIT"],["CANVA"],["ADOBE"],["MICROSOFT 365"],["GOOGLE WORKSPACE"],["DROPBOX"],["ZOOM"],["SLACK"],["SHOPIFY"],["GODADDY"],["WIX"],["NETFLIX"],["SPOTIFY"],["HULU"],["DISNEY+","DISNEY PLUS"],["BUILDIUM"],["APPFOLIO"],["MAILCHIMP"],["CONSTANTCONTACT"],["AMAZON PRIME"]].map(p=>({patterns:p,category:"Software & Subscriptions"})),
+  // ──SOFTWARE ──
+  ...[["QUICKBOOKS"],["INTUIT"],["CANVA"],["ADOBE"],["MICROSOFT 365"],["GOOGLE WORKSPACE"],["DROPBOX"],["ZOOM"],["SLACK"],["SHOPIFY"],["GODADDY"],["WIX"],["NETFLIX"],["SPOTIFY"],["HULU"],["DISNEY+","DISNEY PLUS"],["BUILDIUM"],["APPFOLIO"],["MAILCHIMP"],["CONSTANTCONTACT"],["AMAZON PRIME"]].map(p=>({patterns:p,category:"Software & Subscriptions"})),
   { patterns:["SQUARE ","SQUARE*","SQ *","SQ*"], category:"ASK TO CLIENT" },
   { patterns:["STRIPE"],                         category:"ASK TO CLIENT" },
   { patterns:["KOMPANIC LLC","KOMPANIC"],         category:{restaurant:"Software & Subscriptions",food_events:"Software & Subscriptions",construction:"Software & Subscriptions",hvac:"Software & Subscriptions",roofing:"Software & Subscriptions",drywall:"Software & Subscriptions",electrical:"Software & Subscriptions",plumbing:"Software & Subscriptions",landscaping:"Software & Subscriptions",cleaning:"Software & Subscriptions",trucking:"Software & Subscriptions",property_mgmt:"Software & Subscriptions",barbershop:"Software & Subscriptions",general:"Software & Subscriptions"} },
 
-  // ──BOOKKEEPING / PROFESSIONAL SERVICES ──{ patterns:["V&M BOOKKEEPING","BOOKKEEPING GROUP"], category:"Operating Expenses - Supplies" },
+  // ──BOOKKEEPING / PROFESSIONAL SERVICES ──
+  { patterns:["V&M BOOKKEEPING","BOOKKEEPING GROUP"], category:"Operating Expenses - Supplies" },
 
-  // ──VEHICLE ──...[["AUTOZONE"],["OREILLY","O'REILLY"],["ADVANCE AUTO"],["NAPA AUTO"],["PEP BOYS"],["JIFFY LUBE"],["FIRESTONE"],["GOODYEAR"],["MAVIS TIRE"],["DISCOUNT TIRE"],["CAR WASH","CARWASH"]].map(p=>({patterns:p,category:"Vehicle - Maintenance"})),
+  // ──VEHICLE ──
+  ...[["AUTOZONE"],["OREILLY","O'REILLY"],["ADVANCE AUTO"],["NAPA AUTO"],["PEP BOYS"],["JIFFY LUBE"],["FIRESTONE"],["GOODYEAR"],["MAVIS TIRE"],["DISCOUNT TIRE"],["CAR WASH","CARWASH"]].map(p=>({patterns:p,category:"Vehicle - Maintenance"})),
   { patterns:["UBER ","UBER*"],         category:"Travel & Transportation" },
   { patterns:["LYFT"],                  category:"Travel & Transportation" },
   ...[["IPASS"],["SUNPASS"],["TXTAG"],["EZPASS"],["TOLL "]].map(p=>({patterns:p,category:{trucking:"COGS - Fuel (Production)",construction:"Travel & Transportation",hvac:"Travel & Transportation",roofing:"Travel & Transportation",drywall:"Travel & Transportation",electrical:"Travel & Transportation",plumbing:"Travel & Transportation",landscaping:"Travel & Transportation",cleaning:"Travel & Transportation",food_events:"Travel & Transportation",restaurant:"Travel & Transportation",property_mgmt:"Travel & Transportation",barbershop:"Travel & Transportation",general:"Travel & Transportation"}})),
   ...[["SPIRIT AIRLINES"],["FRONTIER AIRLINES"],["AMERICAN AIRLINES"],["SOUTHWEST AIRLINES"]].map(p=>({patterns:p,category:"Travel & Transportation"})),
 
-  // ──RETAIL ──{ patterns:["WALMART","WAL-MART","WM SUPERCENTER"], category:{construction:"COGS - Materials",hvac:"COGS - Materials",roofing:"COGS - Materials",drywall:"COGS - Materials",electrical:"COGS - Materials",plumbing:"COGS - Materials",landscaping:"COGS - Materials",cleaning:"COGS - Materials",food_events:"COGS - Materials",restaurant:"COGS - Materials",trucking:"Operating Expenses - Supplies",property_mgmt:"Operating Expenses - Supplies",barbershop:"COGS - Materials",general:"Office Supplies"} },
+  // ──RETAIL ──
+  { patterns:["WALMART","WAL-MART","WM SUPERCENTER"], category:{construction:"COGS - Materials",hvac:"COGS - Materials",roofing:"COGS - Materials",drywall:"COGS - Materials",electrical:"COGS - Materials",plumbing:"COGS - Materials",landscaping:"COGS - Materials",cleaning:"COGS - Materials",food_events:"COGS - Materials",restaurant:"COGS - Materials",trucking:"Operating Expenses - Supplies",property_mgmt:"Operating Expenses - Supplies",barbershop:"COGS - Materials",general:"Office Supplies"} },
   { patterns:["SAMS CLUB","SAM'S CLUB","SAMSCLUB"], category:{construction:"COGS - Materials",hvac:"COGS - Materials",roofing:"COGS - Materials",drywall:"COGS - Materials",electrical:"COGS - Materials",plumbing:"COGS - Materials",landscaping:"COGS - Materials",cleaning:"COGS - Materials",food_events:"COGS - Materials",restaurant:"COGS - Materials",trucking:"Operating Expenses - Supplies",property_mgmt:"Operating Expenses - Supplies",barbershop:"COGS - Materials",general:"Office Supplies"} },
   { patterns:["COSTCO"], category:{construction:"COGS - Materials",hvac:"COGS - Materials",roofing:"COGS - Materials",drywall:"COGS - Materials",electrical:"COGS - Materials",plumbing:"COGS - Materials",landscaping:"COGS - Materials",cleaning:"COGS - Materials",food_events:"COGS - Materials",restaurant:"COGS - Materials",trucking:"Operating Expenses - Supplies",property_mgmt:"Operating Expenses - Supplies",barbershop:"COGS - Materials",general:"Office Supplies"} },
   { patterns:["AMAZON"], category:{construction:"COGS - Materials",hvac:"COGS - Materials",roofing:"COGS - Materials",drywall:"COGS - Materials",electrical:"COGS - Materials",plumbing:"COGS - Materials",landscaping:"COGS - Materials",cleaning:"COGS - Materials",food_events:"COGS - Materials",restaurant:"ASK TO CLIENT",trucking:"Operating Expenses - Supplies",property_mgmt:"Repairs & Maintenance",barbershop:"COGS - Materials",general:"Office Supplies"} },
@@ -131,11 +158,14 @@ const MERCHANT_DICT = [
   { patterns:["EBAY"], category:"ASK TO CLIENT" },
   ...[["ROSS DRESS","ROSS STORE"],["TJ MAXX","TJMAXX"],["BURLINGTON"],["MARSHALLS"]].map(p=>({patterns:p,category:"Uniforms"})),
 
-  // ──ADVERTISING ──...[["FACEBOOK ADS","FACEBOOK.COM"],["META ADS"],["GOOGLE ADS"],["YELP"],["THUMBTACK"],["HOMEADVISOR"],["ANGI "],["NEXTDOOR"],["VISTAPRINT"],["4IMPRINT"],["INDEED"],["ZIPRECRUITER"],["INSTY PRINTS"]].map(p=>({patterns:p,category:"Advertising & Marketing"})),
+  // ──ADVERTISING ──
+  ...[["FACEBOOK ADS","FACEBOOK.COM"],["META ADS"],["GOOGLE ADS"],["YELP"],["THUMBTACK"],["HOMEADVISOR"],["ANGI "],["NEXTDOOR"],["VISTAPRINT"],["4IMPRINT"],["INDEED"],["ZIPRECRUITER"],["INSTY PRINTS"]].map(p=>({patterns:p,category:"Advertising & Marketing"})),
 
-  // ──BANK FEES ──...[["OVERDRAFT"],["NSF FEE"],["MONTHLY FEE","MONTHLY SERVICE FEE"],["SERVICE FEE"],["ATM FEE","ATM WITHDRAWAL FEE"],["WIRE FEE"],["LATE FEE"],["RETURNED ITEM"],["STOP PAYMENT"],["MINIMUM BALANCE"],["TRAN OVER"],["MAURERS YOUR IMA"]].map(p=>({patterns:p,category:"Bank Fees"})),
+  // ──BANK FEES ──
+  ...[["OVERDRAFT"],["NSF FEE"],["MONTHLY FEE","MONTHLY SERVICE FEE"],["SERVICE FEE"],["ATM FEE","ATM WITHDRAWAL FEE"],["WIRE FEE"],["LATE FEE"],["RETURNED ITEM"],["STOP PAYMENT"],["MINIMUM BALANCE"],["TRAN OVER"],["MAURERS YOUR IMA"]].map(p=>({patterns:p,category:"Bank Fees"})),
 
-  // ──MISC ──...[["USPS"],["UPS STORE"],["FEDEX"]].map(p=>({patterns:p,category:"Operating Expenses - Delivery & Postage"})),
+  // ──MISC ──
+  ...[["USPS"],["UPS STORE"],["FEDEX"]].map(p=>({patterns:p,category:"Operating Expenses - Delivery & Postage"})),
   ...[["STAPLES"],["OFFICE DEPOT"],["OFFICEMAX"]].map(p=>({patterns:p,category:"Office Supplies"})),
   { patterns:["UHAUL","U-HAUL"], category:"Operating Expenses - Supplies" },
   ...[["PUBLIC STORAGE"],["EXTRA SPACE STORAGE"],["CUBESMART"],["STORAGE "],["LEGACY SELF STORAGE","LEGACY STORAGE"]].map(p=>({patterns:p,category:"Rent & Lease"})),
@@ -390,51 +420,32 @@ const sl = async () => { try { const r=await window.storage.list("client:"); ret
 
   function downloadExcelByCategory() {
     if (typeof window.XLSX === "undefined") {
-      alert("SheetJS no está listo todavía. Espera un momento y vuelve a intentarlo.");
+      alert("SheetJS no está listo. Espera un momento e intenta de nuevo.");
       return;
     }
     const XLSX = window.XLSX;
     const wb = XLSX.utils.book_new();
-
-    // Group transactions by category
     const groups = {};
     transactions.forEach(row => {
       const cat = row.category || "Sin Categoría";
       if (!groups[cat]) groups[cat] = [];
       groups[cat].push(row);
     });
-
-    // Sort categories alphabetically
-    const sortedCats = Object.keys(groups).sort();
-
-    sortedCats.forEach(cat => {
+    Object.keys(groups).sort().forEach(cat => {
       const rows = groups[cat];
-      const sheetData = [
-        ["DATE", "TYPE", "AMOUNT", "CONCEPT", "CATEGORY", "LEVEL"]
-      ];
-      rows.forEach(r => {
-        sheetData.push([r.date, r.type, r.amount, r.concept, r.category, r.level || ""]);
-      });
-
-      // Totals row
-      const total = rows.reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
-      sheetData.push([]);
-      sheetData.push(["", "", total.toFixed(2), "TOTAL", "", ""]);
-
-      const ws = XLSX.utils.aoa_to_sheet(sheetData);
-      ws["!cols"] = [
-        { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 45 }, { wch: 30 }, { wch: 10 }
-      ];
-
-      // Sheet name: max 31 chars, strip invalid Excel chars
+      const data = [["DATE","TYPE","AMOUNT","CONCEPT","CATEGORY","LEVEL"]];
+      rows.forEach(r => data.push([r.date, r.type, r.amount, r.concept, r.category, r.level || ""]));
+      const total = rows.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+      data.push([]);
+      data.push(["","", total.toFixed(2),"TOTAL","",""]);
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      ws["!cols"] = [{wch:12},{wch:12},{wch:12},{wch:45},{wch:30},{wch:10}];
       const safeName = cat.replace(/[\/*?:\[\]]/g, "-").slice(0, 31);
       XLSX.utils.book_append_sheet(wb, ws, safeName);
     });
-
-    const clientName = (clientData?.name || "client").replace(/\s/g, "_");
-    XLSX.writeFile(wb, `WaveBook_${clientName}_by_category.xlsx`);
+    const name = (clientData?.name || "client").replace(/\s/g, "_");
+    XLSX.writeFile(wb, `WaveBook_${name}_by_category.xlsx`);
   }
-
 
   const deposits     = transactions.filter(r=>r.type==="DEPOSIT");
   const withdrawals  = transactions.filter(r=>r.type==="WITHDRAWAL");
@@ -509,7 +520,7 @@ const sl = async () => { try { const r=await window.storage.list("client:"); ret
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
           {clientData&&<span style={{color:"#888",fontSize:12}}>{clientData.name}</span>}
           <button style={{...S.btn,background:"#2a2a2a",color:"#f7f6f2",padding:"5px 14px",fontSize:11,border:"1px solid #3a3a3a"}} onClick={()=>{setScreen("home");setFile(null);setTransactions([])}}>
-            [emoji_55357][emoji_56421]Clientes {clients.length>0&&<span style={{background:"#c8a96e",color:"#fff",borderRadius:10,padding:"1px 6px",fontSize:10,marginLeft:5}}>{clients.length}</span>}
+            Clientes {clients.length>0&&<span style={{background:"#c8a96e",color:"#fff",borderRadius:10,padding:"1px 6px",fontSize:10,marginLeft:5}}>{clients.length}</span>}
           </button>
         </div>
       </div>
@@ -540,7 +551,7 @@ const sl = async () => { try { const r=await window.storage.list("client:"); ret
 
           {clients.length>0&&(
             <div style={S.card}>
-              <h2 style={{fontSize:15,fontWeight:700,marginBottom:14}}>[emoji_55357][emoji_56513]Clientes ({clients.length})</h2>
+              <h2 style={{fontSize:15,fontWeight:700,marginBottom:14}}>Clientes ({clients.length})</h2>
               <div style={{display:"flex",flexDirection:"column",gap:8}}>
                 {clients.map(c=>{
                   const bt=BUSINESS_TYPES.find(b=>b.id===c.businessType);
@@ -550,7 +561,7 @@ const sl = async () => { try { const r=await window.storage.list("client:"); ret
                       <div>
                         <div style={{fontWeight:600,fontSize:14}}>{c.name}</div>
                         <div style={{color:"#999",fontSize:12,marginTop:2}}>
-                          {bt?.icon} {bt?.label} \'b7 [emoji_55358][emoji_56800]{ml} aprendidas \'b7 [emoji_55357][emoji_56516]{(c.history||[]).length} procesados
+                          {bt?.icon} {bt?.label} \'b7 {ml} aprendidas \'b7 {(c.history||[]).length} procesados
                         </div>
                       </div>
                       <button style={{...S.btn,...S.btnPrimary,fontSize:11,padding:"6px 14px"}}>Abrir →</button>
@@ -569,7 +580,7 @@ const sl = async () => { try { const r=await window.storage.list("client:"); ret
         <div style={S.page}>
           <div style={{marginBottom:20}}>
             <h1 style={S.h1}>{clientData.name}</h1>
-            <p style={S.sub}>{BUSINESS_TYPES.find(b=>b.id===clientData.businessType)?.icon} {BUSINESS_TYPES.find(b=>b.id===clientData.businessType)?.label} \'b7 [emoji_55358][emoji_56800]{Object.keys(clientData.learnedMerchants||{}).length} aprendidas</p>
+            <p style={S.sub}>{BUSINESS_TYPES.find(b=>b.id===clientData.businessType)?.icon} {BUSINESS_TYPES.find(b=>b.id===clientData.businessType)?.label} \'b7 {Object.keys(clientData.learnedMerchants||{}).length} aprendidas</p>
           </div>
 
           <div style={S.card}>
@@ -577,7 +588,7 @@ const sl = async () => { try { const r=await window.storage.list("client:"); ret
               onDragOver={e=>{e.preventDefault();setDragOver(true)}} onDragLeave={()=>setDragOver(false)}
               onDrop={e=>{e.preventDefault();setDragOver(false);const f=e.dataTransfer.files[0];if(f?.type==="application/pdf")setFile(f)}}
               onClick={()=>fileRef.current.click()}>
-              <div style={{fontSize:36,marginBottom:10}}>[emoji_55357][emoji_56516]</div>
+              <div style={{fontSize:36,marginBottom:10}}></div>
               {file?(<><div style={{fontWeight:600,color:"#c8a96e"}}>{file.name}</div><div style={{color:"#999",fontSize:12,marginTop:3}}>{(file.size/1024).toFixed(0)} KB</div></>)
                    :(<><div style={{fontWeight:500}}>Arrastra el bank statement aqu\'ed</div><div style={{color:"#999",fontSize:12,marginTop:3}}>o click \'b7 Solo PDF bancario digital</div></>)}
               <input ref={fileRef} type="file" accept=".pdf" style={{display:"none"}} onChange={e=>{const f=e.target.files[0];if(f)setFile(f)}} />
@@ -585,14 +596,14 @@ const sl = async () => { try { const r=await window.storage.list("client:"); ret
             {file&&(
               <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:14}}>
                 <button style={{...S.btn,...S.btnOutline}} onClick={()=>setFile(null)}>Cambiar</button>
-                <button style={{...S.btn,...S.btnGold}} onClick={runExtraction}>[emoji_55357][emoji_56960]Procesar</button>
+                <button style={{...S.btn,...S.btnGold}} onClick={runExtraction}>Procesar</button>
               </div>
             )}
           </div>
 
           {Object.keys(clientData.learnedMerchants||{}).length>0&&(
             <div style={S.card}>
-              <div style={{fontSize:12,fontWeight:700,marginBottom:10,color:"#666"}}>[emoji_55358][emoji_56800]MEMORIA ({Object.keys(clientData.learnedMerchants).length} reglas)</div>
+              <div style={{fontSize:12,fontWeight:700,marginBottom:10,color:"#666"}}>MEMORIA ({Object.keys(clientData.learnedMerchants).length} reglas)</div>
               <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                 {Object.entries(clientData.learnedMerchants).map(([k,v])=>(
                   <div key={k} style={{background:"#f7f6f2",border:"1px solid #e8e4dc",borderRadius:6,padding:"3px 9px",fontSize:11}}>
@@ -640,14 +651,14 @@ const sl = async () => { try { const r=await window.storage.list("client:"); ret
                   <div><span style={S.label}>MONTO</span><div style={{fontWeight:600,color:isDeposit?"#166534":"#991b1b"}}>{isDeposit?"+":""}{ask.amount}</div></div>
                   <div style={{flex:1}}><span style={S.label}>CONCEPTO</span><div style={{fontWeight:600}}>{ask.concept}</div></div>
                 </div>
-                {ask.reason&&<div style={{marginTop:8,fontSize:12,color:"#888"}}>[emoji_55357][emoji_56481]{ask.reason}</div>}
+                {ask.reason&&<div style={{marginTop:8,fontSize:12,color:"#888"}}>{ask.reason}</div>}
               </div>
 
               {isZelle&&!isDeposit&&zelleName&&(
                 <div style={{marginBottom:16}}>
                   <span style={S.label}>ZELLE A: <strong style={{color:"#1a1a1a"}}>{zelleName}</strong></span>
                   <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
-                    {[{l:"[emoji_55357][emoji_56439]Subcontractor",c:"Subcontractor Expense"},{l:"[emoji_55357][emoji_56508]Payroll",c:"Payroll & Wages"},{l:"[emoji_55356][emoji_57312]Owner Draw",c:"Owner Draw"},{l:"[emoji_55357][emoji_56550]COGS Materials",c:"COGS - Materials"},{l:"[emoji_55357][emoji_56580]Transfer Out",c:"Transfer Out"},{l:"[emoji_55356][emoji_57213]️Meals",c:"Meals & Entertainment"}].map(o=>(
+                    {[{l:"Subcontractor",c:"Subcontractor Expense"},{l:"Payroll",c:"Payroll & Wages"},{l:"Owner Draw",c:"Owner Draw"},{l:"COGS Materials",c:"COGS - Materials"},{l:"Transfer Out",c:"Transfer Out"},{l:"️Meals",c:"Meals & Entertainment"}].map(o=>(
                       <button key={o.c} className="ropt" onClick={()=>resolveAsk(o.c,true,zelleName)}>{o.l}</button>
                     ))}
                   </div>
@@ -658,7 +669,7 @@ const sl = async () => { try { const r=await window.storage.list("client:"); ret
                 <div style={{marginBottom:16}}>
                   <span style={S.label}>ZELLE DE: <strong style={{color:"#1a1a1a"}}>{zelleName}</strong></span>
                   <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
-                    {[{l:"[emoji_55357][emoji_56496]Revenue Services",c:"Revenue - Services"},{l:"[emoji_55357][emoji_56496]Revenue Restaurant",c:"Revenue - Restaurant"},{l:"[emoji_55356][emoji_57318]Owner Investment",c:"Owner Investment"},{l:"[emoji_55357][emoji_56580]Transfer In",c:"Transfer In"},{l:"[emoji_55357][emoji_56548]Loan Proceeds",c:"Loan Proceeds"}].map(o=>(
+                    {[{l:"Revenue Services",c:"Revenue - Services"},{l:"Revenue Restaurant",c:"Revenue - Restaurant"},{l:"Owner Investment",c:"Owner Investment"},{l:"Transfer In",c:"Transfer In"},{l:"Loan Proceeds",c:"Loan Proceeds"}].map(o=>(
                       <button key={o.c} className="ropt" onClick={()=>resolveAsk(o.c,true,zelleName)}>{o.l}</button>
                     ))}
                   </div>
@@ -720,7 +731,7 @@ const sl = async () => { try { const r=await window.storage.list("client:"); ret
               <button style={{...S.btn,...S.btnOutline,fontSize:11}} onClick={()=>downloadWave("DEPOSIT")}>⬇Wave DEPOSITS</button>
               <button style={{...S.btn,...S.btnOutline,fontSize:11}} onClick={()=>downloadWave("WITHDRAWAL")}>⬇Wave WITHDRAWALS</button>
               <button style={{...S.btn,...S.btnPrimary,fontSize:11}} onClick={downloadCSV}>⬇CSV Completo</button>
-                            <button style={{...S.btn,background:"#217346",color:"#fff",fontSize:11}} onClick={downloadExcelByCategory}>⬇ Excel por Categoría</button>
+                            <button style={{...S.btn, background:"#217346", color:"#fff", fontSize:11}} onClick={downloadExcelByCategory}>⬇ Excel por Categoría</button>
               <button style={{...S.btn,...S.btnGold}} onClick={finalize}>✓Finalizar</button>
             </div>
           </div>
@@ -741,7 +752,7 @@ const sl = async () => { try { const r=await window.storage.list("client:"); ret
           {checkReportRows.length>0&&(
             <div style={{...S.card,padding:0,overflow:"hidden",marginBottom:12}}>
               <div style={{background:"#92400e",color:"#fff",padding:"8px 14px",fontSize:11,fontWeight:700,letterSpacing:1}}>
-                [emoji_55357][emoji_56523]REPORTE DE CHEQUES \'97 Subcontractors ({checks.length} cheques \'b7 Total: ${checks.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})})
+                REPORTE DE CHEQUES \'97 Subcontractors ({checks.length} cheques \'b7 Total: ${checks.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})})
               </div>
               <div style={{padding:0}}>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 80px 110px",padding:"7px 14px",background:"#f7f6f2",borderBottom:"1px solid #e8e4dc"}}>
@@ -771,7 +782,7 @@ const sl = async () => { try { const r=await window.storage.list("client:"); ret
         <div style={{...S.page,textAlign:"center",paddingTop:60}}>
           <div style={{fontSize:52,marginBottom:14}}>✅</div>
           <h1 style={S.h1}>\'a1Statement completado!</h1>
-          <p style={{color:"#888",marginTop:6,marginBottom:10,fontSize:13}}>{transactions.length} transacciones \'b7 [emoji_55357][emoji_56580]{transfers.length} transfers autom\'e1ticos \'b7 [emoji_55358][emoji_56800]{Object.keys(clientData?.learnedMerchants||{}).length} en memoria</p>
+          <p style={{color:"#888",marginTop:6,marginBottom:10,fontSize:13}}>{transactions.length} transacciones \'b7 {transfers.length} transfers autom\'e1ticos \'b7 {Object.keys(clientData?.learnedMerchants||{}).length} en memoria</p>
           <div style={{display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap",marginTop:20}}>
             <button style={{...S.btn,...S.btnOutline}} onClick={()=>{setFile(null);setTransactions([]);setScreen("upload")}}>Otro PDF</button>
             <button style={{...S.btn,...S.btnPrimary}} onClick={()=>{setFile(null);setTransactions([]);setScreen("home")}}>Dashboard</button>

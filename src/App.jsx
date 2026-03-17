@@ -570,7 +570,7 @@ export default function App() {
     btn:{padding:"11px 24px",borderRadius:10,border:"none",cursor:"pointer",fontSize:14,fontWeight:600,transition:"all 0.15s"},
     btnPrimary:{background:"#0f1f4b",color:"#fff"},
     btnGold:{background:"#1a56db",color:"#fff"},
-    btnOutline:{background:"transparent",color:"#ffffff",border:"1px solid #475569"},
+    btnOutline:{background:"#1a56db",color:"#ffffff",border:"1px solid #1a56db"},
     btnSm:{padding:"5px 12px",borderRadius:6,border:"none",cursor:"pointer",fontSize:11,fontWeight:600},
     input:{width:"100%",padding:"12px 16px",borderRadius:10,border:"1px solid #ddd",fontSize:15,outline:"none",fontFamily:"inherit"},
     label:{fontSize:12,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:7,display:"block"},
@@ -777,7 +777,7 @@ export default function App() {
                   )}
                   {splitParts.length>0&&(
                     <button onClick={()=>{setSplitParts([]);setSplitPartNum(1);setTransactions([]);}}
-                      style={{marginLeft:"auto",fontSize:10,color:"#ef4444",background:"transparent",border:"1px solid #ef4444",borderRadius:6,padding:"2px 8px",cursor:"pointer"}}>
+                      style={{marginLeft:"auto",fontSize:10,color:"#fff",background:"#ef4444",border:"none",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontWeight:600}}>
                       Reiniciar
                     </button>
                   )}
@@ -798,7 +798,7 @@ export default function App() {
 
             {file&&(
               <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:14}}>
-                <button style={{...S.btn,...S.btnOutline,color:"#fff",borderColor:"#475569"}} onClick={()=>setFile(null)}>Cambiar</button>
+                <button style={{...S.btn,background:"#1a56db",color:"#fff",border:"none"}} onClick={()=>setFile(null)}>Cambiar</button>
                 <button style={{...S.btn,...S.btnGold}} onClick={runExtraction}>
                   {splitMode ? `🚀 Procesar Parte ${splitPartNum}` : "🚀 Procesar"}
                 </button>
@@ -1023,7 +1023,7 @@ export default function App() {
               )}
             </div>
             <div style={{display:"flex",gap:8}}>
-              <button style={{...S.btn,...S.btnOutline,fontSize:12,color:"#fff",borderColor:"#475569"}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
+              <button style={{...S.btn,...S.btnOutline,fontSize:12,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
                 Saltar conciliación →
               </button>
               <button style={{...S.btn,...S.btnGold}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
@@ -1149,7 +1149,7 @@ export default function App() {
           )}
 
           <div style={{display:"flex",justifyContent:"flex-end",marginTop:16,gap:10}}>
-            <button style={{...S.btn,...S.btnOutline,color:"#fff",borderColor:"#475569"}} onClick={()=>setScreen("upload")}>← Volver</button>
+            <button style={{...S.btn,...S.btnOutline,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>setScreen("upload")}>← Volver</button>
             <button style={{...S.btn,...S.btnGold,fontSize:14,padding:"10px 28px"}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
               {askQueue.length>0 ? `Resolver ${askQueue.length} ambigüedades →` : "Ver transacciones →"}
             </button>
@@ -1171,7 +1171,7 @@ export default function App() {
           <div style={S.page}>
             <div style={{marginBottom:20,display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
               <div><h1 style={S.h1}>Resolver Ambigüedades</h1><p style={S.sub}>{currentAsk+1} de {askQueue.length} · Respuestas se guardan en memoria</p></div>
-              <button style={{...S.btn,...S.btnOutline,fontSize:12,color:"#fff",borderColor:"#475569"}} onClick={()=>setScreen("review")}>Saltar todos →</button>
+              <button style={{...S.btn,...S.btnOutline,fontSize:12,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>setScreen("review")}>Saltar todos →</button>
             </div>
             <div style={{height:4,background:"#e2e8f0",borderRadius:2,marginBottom:22,overflow:"hidden"}}>
               <div style={{height:"100%",background:"#1a56db",width:`${(currentAsk/askQueue.length)*100}%`,transition:"width 0.3s"}} />
@@ -1225,7 +1225,7 @@ export default function App() {
                 </div>
               </div>
               <div style={{display:"flex",justifyContent:"space-between"}}>
-                <button style={{...S.btn,...S.btnOutline,fontSize:11,color:"#fff",borderColor:"#475569"}} onClick={()=>{if(currentAsk+1<askQueue.length)setCurrentAsk(currentAsk+1);else setScreen("review");}}>Dejar como ASK TO CLIENT</button>
+                <button style={{...S.btn,...S.btnOutline,fontSize:11,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>{if(currentAsk+1<askQueue.length)setCurrentAsk(currentAsk+1);else setScreen("review");}}>Dejar como ASK TO CLIENT</button>
                 <span style={{fontSize:11,color:"#bbb"}}>{askQueue.length-currentAsk-1} restantes</span>
               </div>
             </div>
@@ -1259,8 +1259,8 @@ export default function App() {
               <button style={{...S.btn,background:"#edf2f7",color:"#1a1a1a",fontSize:11,padding:"6px 12px"}} onClick={()=>setScreen("reconcile")}>⚖️ Ver Conciliación</button>
             </div>
             <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-              <button style={{...S.btn,...S.btnOutline,fontSize:11,color:"#fff",borderColor:"#475569"}} onClick={()=>downloadWave("DEPOSIT")}>⬇ Wave DEPOSITS</button>
-              <button style={{...S.btn,...S.btnOutline,fontSize:11,color:"#fff",borderColor:"#475569"}} onClick={()=>downloadWave("WITHDRAWAL")}>⬇ Wave WITHDRAWALS</button>
+              <button style={{...S.btn,...S.btnOutline,fontSize:11,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>downloadWave("DEPOSIT")}>⬇ Wave DEPOSITS</button>
+              <button style={{...S.btn,...S.btnOutline,fontSize:11,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>downloadWave("WITHDRAWAL")}>⬇ Wave WITHDRAWALS</button>
               <button style={{...S.btn,...S.btnPrimary,fontSize:11}} onClick={downloadCSV}>⬇ CSV Completo</button>
               <button style={{...S.btn,...S.btnGold}} onClick={finalize}>✓ Finalizar</button>
             </div>
@@ -1312,7 +1312,7 @@ export default function App() {
           <h1 style={S.h1}>¡Statement completado!</h1>
           <p style={{color:"#888",marginTop:6,marginBottom:10,fontSize:13}}>{transactions.length} transacciones · 🔄 {transfers.length} transfers automáticos · 🧠 {Object.keys(clientData?.learnedMerchants||{}).length} en memoria</p>
           <div style={{display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap",marginTop:20}}>
-            <button style={{...S.btn,...S.btnOutline,color:"#fff",borderColor:"#475569"}} onClick={()=>{setFile(null);setTransactions([]);setBalances([]);setScreen("upload")}}>Otro PDF</button>
+            <button style={{...S.btn,...S.btnOutline,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>{setFile(null);setTransactions([]);setBalances([]);setScreen("upload")}}>Otro PDF</button>
             <button style={{...S.btn,...S.btnPrimary}} onClick={()=>{setFile(null);setTransactions([]);setBalances([]);setScreen("home")}}>Dashboard</button>
           </div>
         </div>

@@ -1616,7 +1616,7 @@ function FraseRotativa({ frases }) {
         setIdx(i => (i + 1) % frases.length);
         setVisible(true);
       }, 400);
-    }, 5000);
+    }, 12000);
     return () => clearInterval(interval);
   }, [frases.length]);
 

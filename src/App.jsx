@@ -1222,7 +1222,7 @@ export default function App() {
         <div style={S.page}>
           <div style={{display:"flex",gap:10,marginBottom:18,flexWrap:"wrap"}}>
             {[
-              {l:"Total",       v:transactions.length, c:"#1a1a1a"},
+              {l:"Total",       v:transactions.length, c:"#111111"},
               {l:"Deposits",    v:deposits.length,     c:"#166534"},
               {l:"Withdrawals", v:withdrawals.length,  c:"#991b1b"},
               {l:"Transfers",   v:transfers.length,    c:"#0369a1"},

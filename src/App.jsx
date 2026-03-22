@@ -1073,13 +1073,32 @@ export default function App() {
       )}
 
       {/* ── EXTRACTING ── */}
-      {screen==="extracting"&&(
+      {screen==="extracting"&&(()=>{
+        const FRASES = [
+          "☕ Puedes ir por un café... déjame trabajar a mí.",
+          "🤓 Mientras trabajo, ¿qué te parece estar aprendiendo con Mau?",
+          "💡 Dato curioso: esto antes te tomaba 3 horas. Ahora... unos segundos.",
+          "🚀 Mau dice: 'El que automatiza primero, gana primero.'",
+          "🧠 Estoy leyendo cada línea del estado de cuenta. Tú relájate.",
+          "📊 Bookkeeping inteligente. Así se hace en el siglo 21.",
+          "🎯 Categorías, saldos, cheques... nada se me escapa.",
+          "😎 Tranquilo, yo soy más rápido que cualquier contador manual.",
+          "💰 Cada centavo importa. Por eso los cuento todos.",
+          "🌮 ¿Ya comiste? Yo trabajo mejor que tú con hambre.",
+          "🏗️ Construyendo tu reporte... ladrillo por ladrillo.",
+          "⚡ Si esto fuera manual, ya ibas en la página 2. Yo voy en la 14.",
+          "🎓 Mau enseña, yo aprendo, tú ganas. Equipo perfecto.",
+          "📱 Puedes revisar Instagram... ya yo me encargo aquí.",
+          "🤝 Mientras yo analizo, piensa en tu próximo cliente.",
+        ];
+        return (
         <div style={{position:"fixed",inset:0,background:"#05080f",zIndex:999,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
           <style>{`
             @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
             @keyframes robotGlow{0%,100%{box-shadow:0 0 40px rgba(26,86,219,0.6),0 0 80px rgba(26,86,219,0.3)}50%{box-shadow:0 0 60px rgba(26,86,219,1),0 0 120px rgba(26,86,219,0.6)}}
             @keyframes dotPulse{0%,100%{transform:scale(1);opacity:0.5}50%{transform:scale(1.4);opacity:1}}
             @keyframes matrixRain{0%{transform:translateY(-100%);opacity:1}100%{transform:translateY(100vh);opacity:0}}
+            @keyframes fadePhrase{0%{opacity:0;transform:translateY(8px)}15%{opacity:1;transform:translateY(0)}85%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-8px)}}
             .robot-glow{animation:robotGlow 2s ease-in-out infinite}
             .robot-float{animation:float 4s ease-in-out infinite}
           `}</style>
@@ -1092,45 +1111,47 @@ export default function App() {
             ))}
           </div>
 
-          <div className="robot-float robot-glow" style={{borderRadius:"50%",position:"relative",marginBottom:32}}>
+          <div className="robot-float robot-glow" style={{borderRadius:"50%",position:"relative",marginBottom:28}}>
             <img src="/mau-agent.jpeg" alt="Mau Agent" style={{width:180,height:180,objectFit:"cover",borderRadius:"50%",border:"4px solid #1a56db",display:"block"}} />
             <div style={{position:"absolute",inset:-12,borderRadius:"50%",border:"2px solid rgba(26,86,219,0.4)",borderTopColor:"#1a56db",animation:"spin 3s linear infinite"}} />
             <div style={{position:"absolute",inset:-24,borderRadius:"50%",border:"1px solid rgba(26,86,219,0.2)",borderBottomColor:"#1a56db",animation:"spin 5s linear infinite reverse"}} />
           </div>
 
-          <h2 style={{fontSize:26,fontWeight:700,color:"#ffffff",marginBottom:16,fontFamily:"'Playfair Display',serif",textShadow:"0 0 20px rgba(26,86,219,0.5)"}}>
+          <h2 style={{fontSize:26,fontWeight:700,color:"#ffffff",marginBottom:6,fontFamily:"'Playfair Display',serif",textShadow:"0 0 20px rgba(26,86,219,0.5)"}}>
             Procesando Statement...
           </h2>
 
+          {/* ── FRASE ROTATIVA ── */}
+          <FraseRotativa frases={FRASES} />
+
           {/* ── BARRA DE PROGRESO ── */}
-          <div style={{width:420,marginBottom:10}}>
+          <div style={{width:440,marginBottom:8,marginTop:18}}>
             <div style={{background:"rgba(255,255,255,0.1)",borderRadius:20,height:10,overflow:"hidden"}}>
               <div style={{
                 height:"100%",
                 width:`${progress.pct}%`,
                 background:"linear-gradient(90deg,#1a56db,#22c55e)",
                 borderRadius:20,
-                transition:"width 0.5s ease"
+                transition:"width 0.12s linear"
               }} />
             </div>
           </div>
 
-          <div style={{display:"flex",alignItems:"center",gap:12,justifyContent:"center"}}>
-            <p style={{color:"#94a3b8",fontSize:13,fontFamily:"monospace",letterSpacing:1,maxWidth:340,textAlign:"center"}}>
+          <div style={{display:"flex",alignItems:"center",gap:12,justifyContent:"center",marginBottom:16}}>
+            <p style={{color:"#94a3b8",fontSize:12,fontFamily:"monospace",letterSpacing:1,maxWidth:340,textAlign:"center"}}>
               {progress.text}
             </p>
-            <span style={{color:"#1a56db",fontSize:22,fontWeight:700,fontFamily:"monospace",minWidth:52,textAlign:"right"}}>
-              {progress.pct}%
-            </span>
+            <AnimatedPct target={progress.pct} />
           </div>
 
-          <div style={{display:"flex",gap:10,marginTop:20}}>
+          <div style={{display:"flex",gap:10}}>
             {[0,1,2,3,4].map(i=>(
               <div key={i} style={{width:10,height:10,borderRadius:"50%",background:"#1a56db",animation:`dotPulse 1s ease-in-out infinite`,animationDelay:`${i*0.15}s`,boxShadow:"0 0 8px #1a56db"}} />
             ))}
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* ── RECONCILE ── */}
       {screen==="reconcile"&&(
@@ -1580,6 +1601,79 @@ export default function App() {
         );
       })()}
     </div>
+  );
+}
+
+// ── FRASE ROTATIVA ──────────────────────────────────────────────────────────
+function FraseRotativa({ frases }) {
+  const [idx, setIdx] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setIdx(i => (i + 1) % frases.length);
+        setVisible(true);
+      }, 400);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [frases.length]);
+
+  return (
+    <div style={{height:32,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+      <p style={{
+        color:"#f0c040",
+        fontSize:13,
+        fontStyle:"italic",
+        textAlign:"center",
+        maxWidth:420,
+        transition:"opacity 0.4s ease, transform 0.4s ease",
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(-8px)",
+        margin:0,
+        padding:"0 20px",
+      }}>
+        {frases[idx]}
+      </p>
+    </div>
+  );
+}
+
+// ── ANIMATED PERCENT ─────────────────────────────────────────────────────────
+function AnimatedPct({ target }) {
+  const [display, setDisplay] = useState(0);
+  const ref = useRef(display);
+
+  useEffect(() => {
+    if (target <= ref.current) {
+      ref.current = target;
+      setDisplay(target);
+      return;
+    }
+    const diff = target - ref.current;
+    // Advance 1 by 1 smoothly
+    const step = Math.max(1, Math.floor(diff / 8));
+    const timer = setInterval(() => {
+      ref.current = Math.min(ref.current + step, target);
+      setDisplay(ref.current);
+      if (ref.current >= target) clearInterval(timer);
+    }, 40);
+    return () => clearInterval(timer);
+  }, [target]);
+
+  return (
+    <span style={{
+      color:"#1a56db",
+      fontSize:22,
+      fontWeight:700,
+      fontFamily:"monospace",
+      minWidth:56,
+      textAlign:"right",
+      textShadow:"0 0 12px rgba(26,86,219,0.6)"
+    }}>
+      {display}%
+    </span>
   );
 }
 

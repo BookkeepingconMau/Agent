@@ -648,6 +648,128 @@ export default function App() {
     triggerDownload(`${clientName}_${safeName}.csv`, csv);
   }
 
+  function downloadPnL() {
+    const clientName = (clientData?.name || "client").replace(/\s/g, "_");
+    const fmt2 = (n) => Number(n||0).toFixed(2);
+
+    // ── Mapeo de categorías ──
+    const INCOME_CATS        = ["Income - Services", "Other Income"];
+    const COGS_CATS          = ["COGS - Materials","COGS - Labor","COGS - Fuel (Production)","COGS - Food & Beverage","Subcontractor Expense"];
+    const OPEX_CATS          = ["Payroll & Wages","Advertising & Marketing","Bank Fees","Insurance","Rent & Lease","Repairs & Maintenance","Software & Subscriptions","Taxes & Licenses","Telephone & Internet","Travel & Transportation","Uniforms","Utilities","Vehicle - Fuel (Non-Production)","Vehicle - Maintenance","Operating Expenses - Supplies","Operating Expenses - Delivery & Postage","Operating Expenses - Parking","Office Supplies","Meals & Entertainment"];
+    const OTHER_INCOME_CATS  = ["Refund Received"];
+    const OTHER_EXPENSE_CATS = [];
+    const PERSONAL_CATS      = ["Owner Draw","Loan Payment","Transfer Out","Transfer In"];
+
+    // ── Calcular totales por categoría ──
+    const sumCat = (cats) => {
+      let total = 0;
+      cats.forEach(cat => {
+        transactions.filter(r => r.category === cat).forEach(r => {
+          total += Math.abs(parseFloat(r.amount)||0);
+        });
+      });
+      return total;
+    };
+
+    const sumByCat = (cats) => {
+      const result = {};
+      cats.forEach(cat => {
+        const total = transactions.filter(r => r.category === cat).reduce((s,r) => s + Math.abs(parseFloat(r.amount)||0), 0);
+        if (total > 0) result[cat] = total;
+      });
+      return result;
+    };
+
+    const incomeDetail   = sumByCat(INCOME_CATS);
+    const cogsDetail     = sumByCat(COGS_CATS);
+    const opexDetail     = sumByCat(OPEX_CATS);
+    const otherIncDetail = sumByCat(OTHER_INCOME_CATS);
+    const otherExpDetail = sumByCat(OTHER_EXPENSE_CATS);
+    const personalDetail = sumByCat(PERSONAL_CATS);
+
+    const totalIncome    = Object.values(incomeDetail).reduce((a,b)=>a+b,0);
+    const totalCOGS      = Object.values(cogsDetail).reduce((a,b)=>a+b,0);
+    const grossProfit    = totalIncome - totalCOGS;
+    const totalOpex      = Object.values(opexDetail).reduce((a,b)=>a+b,0);
+    const totalOtherInc  = Object.values(otherIncDetail).reduce((a,b)=>a+b,0);
+    const totalOtherExp  = Object.values(otherExpDetail).reduce((a,b)=>a+b,0);
+    const netProfit      = grossProfit - totalOpex + totalOtherInc - totalOtherExp;
+    const totalPersonal  = Object.values(personalDetail).reduce((a,b)=>a+b,0);
+
+    // ── Construir CSV ──
+    const rows = [];
+
+    // Header
+    rows.push(`PROFIT & LOSS STATEMENT`);
+    rows.push(`Client:,${clientData?.name || ""}`);
+    rows.push(`Period:,${balances[0]?.period_start || ""} to ${balances[0]?.period_end || ""}`);
+    rows.push(`Bank:,${bankInfo?.bank_name || ""}`);
+    rows.push(``);
+
+    // INCOME
+    rows.push(`INCOME,,`);
+    Object.entries(incomeDetail).forEach(([cat,amt]) => rows.push(`,${cat},$${fmt2(amt)}`));
+    rows.push(`TOTAL INCOME,,$${fmt2(totalIncome)}`);
+    rows.push(``);
+
+    // COGS
+    rows.push(`COST OF GOODS SOLD,,`);
+    Object.entries(cogsDetail).forEach(([cat,amt]) => rows.push(`,${cat},$${fmt2(amt)}`));
+    rows.push(`TOTAL COGS,,$${fmt2(totalCOGS)}`);
+    rows.push(``);
+
+    // GROSS PROFIT
+    rows.push(`GROSS PROFIT,,$${fmt2(grossProfit)}`);
+    rows.push(``);
+
+    // OPERATING EXPENSES
+    rows.push(`OPERATING EXPENSES,,`);
+    Object.entries(opexDetail).forEach(([cat,amt]) => rows.push(`,${cat},$${fmt2(amt)}`));
+    rows.push(`TOTAL OPERATING EXPENSES,,$${fmt2(totalOpex)}`);
+    rows.push(``);
+
+    // OTHER INCOME
+    if (totalOtherInc > 0) {
+      rows.push(`OTHER INCOME,,`);
+      Object.entries(otherIncDetail).forEach(([cat,amt]) => rows.push(`,${cat},$${fmt2(amt)}`));
+      rows.push(`TOTAL OTHER INCOME,,$${fmt2(totalOtherInc)}`);
+      rows.push(``);
+    }
+
+    // OTHER EXPENSES
+    if (totalOtherExp > 0) {
+      rows.push(`OTHER EXPENSES,,`);
+      Object.entries(otherExpDetail).forEach(([cat,amt]) => rows.push(`,${cat},$${fmt2(amt)}`));
+      rows.push(`TOTAL OTHER EXPENSES,,$${fmt2(totalOtherExp)}`);
+      rows.push(``);
+    }
+
+    // NET PROFIT
+    rows.push(`NET PROFIT,,$${fmt2(netProfit)}`);
+    rows.push(``);
+    rows.push(``);
+
+    // ── SECCIÓN 2: MOVIMIENTOS PERSONALES ──
+    rows.push(`PERSONAL & NON-BUSINESS MOVEMENTS,,`);
+    rows.push(`Category,Description,Amount`);
+
+    PERSONAL_CATS.forEach(cat => {
+      const txs = transactions.filter(r => r.category === cat);
+      if (txs.length === 0) return;
+      rows.push(``);
+      rows.push(`${cat},,`);
+      txs.forEach(r => rows.push(`,${r.date} - ${r.concept},$${fmt2(Math.abs(parseFloat(r.amount)||0))}`));
+      const catTotal = txs.reduce((s,r) => s + Math.abs(parseFloat(r.amount)||0), 0);
+      rows.push(`,SUBTOTAL ${cat},$${fmt2(catTotal)}`);
+    });
+
+    rows.push(``);
+    rows.push(`TOTAL PERSONAL MOVEMENTS,,$${fmt2(totalPersonal)}`);
+
+    const csv = rows.join("\n");
+    triggerDownload(`PnL_${clientName}.csv`, csv);
+  }
+
   const deposits     = transactions.filter(r=>r.type==="DEPOSIT");
   const withdrawals  = transactions.filter(r=>r.type==="WITHDRAWAL");
   const asks         = transactions.filter(r=>r.category==="ASK TO CLIENT");
@@ -1261,6 +1383,7 @@ export default function App() {
               <button style={{...S.btn,...S.btnOutline,fontSize:11,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>downloadWave("DEPOSIT")}>⬇ Wave DEPOSITS</button>
               <button style={{...S.btn,...S.btnOutline,fontSize:11,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>downloadWave("WITHDRAWAL")}>⬇ Wave WITHDRAWALS</button>
               <button style={{...S.btn,...S.btnPrimary,fontSize:11}} onClick={downloadCSV}>⬇ CSV Completo</button>
+              <button style={{...S.btn,background:"#166534",color:"#fff",fontSize:11,fontWeight:700}} onClick={downloadPnL}>📊 P&L + Personales</button>
               <button style={{...S.btn,...S.btnGold}} onClick={finalize}>✓ Finalizar</button>
             </div>
           </div>

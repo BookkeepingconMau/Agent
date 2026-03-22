@@ -390,11 +390,15 @@ Example: {"bank_name":"Mabrey Bank","bank_id":"mabrey_bank","total_pages":16,"pe
 // ─── AGENT 1: EXTRACT TRANSACTIONS ───────────────────────────────────────────
 async function extractTransactions(b64, bankId = "default") {
   const bankSpecificInstructions = BANK_PROMPTS[bankId] || BANK_PROMPTS.default;
+  // MSU FCU: never extract from Cleared Check Summary — drafts already in ledger
+  const skipCheckSummaryRule = bankId === "msu_federal_credit_union"
+    ? "DO NOT extract from the Cleared Check Summary table or any summary/totals pages — those transactions are already in the main ledger as Draft lines and would create duplicates."
+    : 'Also extract ALL checks from any "Cleared Check Summary", "Checks Paid", "Draft Summary", or similar table.';
   const system = `You are a STRICT bank statement extraction agent. Your job is to extract EVERY single transaction with ZERO omissions.
 ${bankSpecificInstructions}
 UNIVERSAL CRITICAL RULES:
 1. Extract ALL transactions from the main ledger (line by line transactions).
-2. Also extract ALL checks from any "Cleared Check Summary", "Checks Paid", "Draft Summary", or similar table.
+2. ${skipCheckSummaryRule}
 3. De-duplicate: if a transaction appears in BOTH the main ledger AND a summary table, include it ONCE only.
 4. NEVER skip, group, summarize, or invent transactions.
 5. DATE format: MM/DD/YYYY. DEPOSITS positive. WITHDRAWALS negative (use minus sign).
@@ -418,6 +422,19 @@ UNIVERSAL CRITICAL RULES:
     if ((type==="DEPOSIT"||type==="WITHDRAWAL") && date && amount && concept)
       rows.push({ type, date, amount, concept, category:"", level:"" });
   });
+  // ── MSU FCU: dedup por número de draft/cheque en código (doble seguridad) ──
+  if (bankId === "msu_federal_credit_union") {
+    const seenNums = new Set();
+    return rows.filter(row => {
+      const upper = row.concept.toUpperCase();
+      const m = upper.match(/(?:CHECK\s*#?|DRAFT\s*)(\d{3,6})/);
+      if (m) {
+        if (seenNums.has(m[1])) return false;
+        seenNums.add(m[1]);
+      }
+      return true;
+    });
+  }
   return rows;
 }
 // ─── AGENT 2: EXTRACT BALANCES ────────────────────────────────────────────────

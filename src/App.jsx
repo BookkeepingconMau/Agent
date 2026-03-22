@@ -464,6 +464,8 @@ export default function App() {
   const [splitPartNum, setSplitPartNum] = useState(1);
   const [selectedCat, setSelectedCat]   = useState("");
   const [bankInfo, setBankInfo]         = useState(null);
+  const [showDevModal, setShowDevModal] = useState(false);
+  const [copied, setCopied]             = useState(false);
   const fileRef = useRef();
 
   useEffect(() => { loadList(); }, []);
@@ -824,7 +826,7 @@ export default function App() {
       <div style={{position:"fixed",bottom:20,right:24,zIndex:1000,opacity:0.85,transition:"opacity 0.2s"}}
         onMouseEnter={e=>e.currentTarget.style.opacity=1}
         onMouseLeave={e=>e.currentTarget.style.opacity=0.85}>
-        <img src="/logo-mau.png" alt="Mau Bautista" style={{width:120,height:"auto",filter:"brightness(1.1)"}} />
+        <img src="/logo-mau.png" alt="Mau Bautista" onClick={()=>Object.keys(clientData?.learnedMerchants||{}).length>0&&setShowDevModal(true)} style={{width:120,height:"auto",filter:"brightness(1.1)",cursor:"pointer"}} />
       </div>
       <style>{`
         body{background:#05080f}
@@ -1443,6 +1445,50 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* ── DEV MODAL SECRETO ── */}
+      {showDevModal && (()=>{
+        const learned = clientData?.learnedMerchants || {};
+        const today = new Date().toLocaleDateString("es-MX");
+        const codeLines = Object.entries(learned)
+          .map(([k,v]) => `  { patterns:["${k}"], category:"${v}" },`)
+          .join("\n");
+        const fullCode = `// Reglas aprendidas - ${today}\n// Cliente: ${clientData?.name || ""}\n// Pegar en MERCHANT_DICT en App.jsx\n\n${codeLines}`;
+        return (
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}
+            onClick={()=>setShowDevModal(false)}>
+            <div style={{background:"#0f1f4b",border:"1px solid #1a56db",borderRadius:16,padding:28,maxWidth:640,width:"100%",maxHeight:"80vh",overflow:"hidden",display:"flex",flexDirection:"column"}}
+              onClick={e=>e.stopPropagation()}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+                <div>
+                  <div style={{color:"#fff",fontWeight:700,fontSize:16}}>🧠 Reglas Aprendidas</div>
+                  <div style={{color:"#94a3b8",fontSize:12,marginTop:2}}>{Object.keys(learned).length} reglas · {clientData?.name}</div>
+                </div>
+                <button onClick={()=>setShowDevModal(false)}
+                  style={{background:"transparent",border:"none",color:"#94a3b8",fontSize:20,cursor:"pointer",lineHeight:1}}>✕</button>
+              </div>
+              <div style={{background:"#020a1a",borderRadius:10,padding:16,flex:1,overflowY:"auto",fontFamily:"monospace",fontSize:12,color:"#22c55e",lineHeight:1.8,whiteSpace:"pre-wrap",border:"1px solid rgba(26,86,219,0.3)"}}>
+                {fullCode}
+              </div>
+              <div style={{display:"flex",gap:8,marginTop:14,justifyContent:"flex-end"}}>
+                <div style={{fontSize:11,color:"#64748b",alignSelf:"center",flex:1}}>
+                  Copia este código y pégalo en MERCHANT_DICT
+                </div>
+                <button
+                  onClick={()=>{
+                    navigator.clipboard.writeText(fullCode);
+                    setCopied(true);
+                    setTimeout(()=>setCopied(false),2000);
+                  }}
+                  style={{padding:"8px 20px",borderRadius:8,border:"none",cursor:"pointer",fontSize:13,fontWeight:700,
+                    background:copied?"#22c55e":"#1a56db",color:"#fff",transition:"all 0.2s"}}>
+                  {copied ? "✅ Copiado!" : "📋 Copiar código"}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

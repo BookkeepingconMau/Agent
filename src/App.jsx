@@ -205,7 +205,7 @@ const MERCHANT_DICT = [
 ];
 
 const DEPOSIT_CATEGORIES    = ["Income - Services","Other Income","Loan Proceeds","Owner Investment","Transfer In","Refund Received","ASK TO CLIENT"];
-const WITHDRAWAL_CATEGORIES = ["COGS - Materials","COGS - Labor","COGS - Fuel (Production)","COGS - Food & Beverage","Subcontractor Expense","Payroll & Wages","Advertising & Marketing","Bank Fees","Insurance","Loan Payment","Meals & Entertainment","Office Supplies","Operating Expenses - Delivery & Postage","Operating Expenses - Parking","Operating Expenses - Supplies","Rent & Lease","Repairs & Maintenance","Software & Subscriptions","Taxes & Licenses","Telephone & Internet","Transfer Out","Travel & Transportation","Uniforms","Utilities","Vehicle - Fuel (Non-Production)","Vehicle - Maintenance","Owner Draw","ASK TO CLIENT"];
+const WITHDRAWAL_CATEGORIES = ["COGS - Materials","COGS - Labor","COGS - Fuel (Production)","COGS - Food & Beverage","Subcontractor Expense","Payroll & Wages","Advertising & Marketing","Bank Fees","Donations","Insurance","Loan Payment","Meals & Entertainment","Office Supplies","Operating Expenses - Delivery & Postage","Operating Expenses - Parking","Operating Expenses - Supplies","Personal Payment","Rent & Lease","Repairs & Maintenance","Software & Subscriptions","Taxes & Licenses","Telephone & Internet","Transfer Out","Travel & Transportation","Uniforms","Utilities","Vehicle - Fuel (Non-Production)","Vehicle - Maintenance","Owner Draw","ASK TO CLIENT"];
 
 const TRANSFER_IN_KEYWORDS  = ["INTERNET XFER FROM","XFER FROM CHKG","XFER FROM SAV","TRANSFER FROM","ONLINE TRANSFER FROM","FUNDS TRANSFER IN","MOBILE XFER FROM","TRANSFER FROM SHARE","COMPUTERLINE TRANSFER FROM","DEPOSIT TRANSFER FROM"];
 const TRANSFER_OUT_KEYWORDS = ["INTERNET XFER TO","XFER TO CHKG","XFER TO SAV","TRANSFER TO","ONLINE TRANSFER TO","FUNDS TRANSFER OUT","MOBILE XFER TO","WITHDRAWAL TRANSFER TO","COMPUTERLINE TRANSFER TO","COMPUTERLINE M2M"];
@@ -683,8 +683,8 @@ export default function App() {
     const COGS_CATS          = ["COGS - Materials","COGS - Labor","COGS - Fuel (Production)","COGS - Food & Beverage","Subcontractor Expense"];
     const OPEX_CATS          = ["Payroll & Wages","Advertising & Marketing","Bank Fees","Insurance","Rent & Lease","Repairs & Maintenance","Software & Subscriptions","Taxes & Licenses","Telephone & Internet","Travel & Transportation","Uniforms","Utilities","Vehicle - Fuel (Non-Production)","Vehicle - Maintenance","Operating Expenses - Supplies","Operating Expenses - Delivery & Postage","Operating Expenses - Parking","Office Supplies","Meals & Entertainment"];
     const OTHER_INCOME_CATS  = ["Refund Received"];
-    const OTHER_EXPENSE_CATS = [];
-    const PERSONAL_CATS      = ["Owner Draw","Loan Payment","Transfer Out","Transfer In"];
+    const OTHER_EXPENSE_CATS = ["Donations"];
+    const PERSONAL_CATS      = ["Owner Draw","Personal Payment","Loan Payment","Transfer Out","Transfer In"];
 
     // ── Calcular totales por categoría ──
     const sumCat = (cats) => {
@@ -850,7 +850,7 @@ export default function App() {
       <div style={{position:"fixed",bottom:20,right:24,zIndex:1000,opacity:0.85,transition:"opacity 0.2s"}}
         onMouseEnter={e=>e.currentTarget.style.opacity=1}
         onMouseLeave={e=>e.currentTarget.style.opacity=0.85}>
-        <img src="/logo-mau.png" alt="Mau Bautista" onClick={()=>Object.keys(clientData?.learnedMerchants||{}).length>0&&setShowDevModal(true)} style={{width:120,height:"auto",filter:"brightness(1.1)",cursor:"pointer"}} />
+        <img src="/logo-mau.png" alt="Mau Bautista" onClick={()=>setShowDevModal(true)} style={{width:120,height:"auto",filter:"brightness(1.1)",cursor:"pointer"}} />
       </div>
       <style>{`
         body{background:#05080f}
@@ -1319,7 +1319,7 @@ export default function App() {
                 <div style={{marginBottom:16}}>
                   <span style={S.label}>ZELLE A: <strong style={{color:"#1a1a1a"}}>{zelleName}</strong></span>
                   <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
-                    {[{l:"👷 Subcontractor",c:"Subcontractor Expense"},{l:"💼 Payroll",c:"Payroll & Wages"},{l:"🏠 Owner Draw",c:"Owner Draw"},{l:"📦 COGS Materials",c:"COGS - Materials"},{l:"🔄 Transfer Out",c:"Transfer Out"},{l:"🍽️ Meals",c:"Meals & Entertainment"}].map(o=>(
+                    {[{l:"👷 Subcontractor",c:"Subcontractor Expense"},{l:"💼 Payroll",c:"Payroll & Wages"},{l:"🏠 Owner Draw",c:"Owner Draw"},{l:"👤 Personal Payment",c:"Personal Payment"},{l:"🙏 Donations",c:"Donations"},{l:"📦 COGS Materials",c:"COGS - Materials"},{l:"🔄 Transfer Out",c:"Transfer Out"},{l:"🍽️ Meals",c:"Meals & Entertainment"}].map(o=>(
                       <button key={o.c} className="ropt" onClick={()=>resolveAsk(o.c,true,zelleName)}>{o.l}</button>
                     ))}
                   </div>
@@ -1340,7 +1340,7 @@ export default function App() {
                 <div style={{marginBottom:16}}>
                   <span style={S.label}>ATM WITHDRAWAL</span>
                   <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
-                    {["Owner Draw","COGS - Materials","Meals & Entertainment","Payroll & Wages","Operating Expenses - Supplies"].map(c=>(
+                    {["Owner Draw","Personal Payment","Donations","COGS - Materials","Meals & Entertainment","Payroll & Wages","Operating Expenses - Supplies"].map(c=>(
                       <button key={c} className="ropt" onClick={()=>resolveAsk(c,false,"")}>{c}</button>
                     ))}
                   </div>
@@ -1474,10 +1474,26 @@ export default function App() {
       {showDevModal && (()=>{
         const learned = clientData?.learnedMerchants || {};
         const today = new Date().toLocaleDateString("es-MX");
-        const codeLines = Object.entries(learned)
+
+        // Also include manually resolved transactions from current session
+        const sessionResolved = transactions
+          .filter(r => r.level === "RESOLVED" && r.concept && r.category && r.category !== "ASK TO CLIENT")
+          .reduce((acc, r) => {
+            // Extract clean merchant key from concept
+            const key = r.concept.replace(/CHECK #\d+\s*-?\s*/i,"").replace(/ZELLE\s*(TRANSFER\s*(IN|OUT)\s*-\s*)?/i,"").trim().split(" ").slice(0,3).join(" ").toUpperCase();
+            if (key && key.length > 2 && !acc[key]) acc[key] = r.category;
+            return acc;
+          }, {});
+
+        // Merge both sources, learnedMerchants takes priority
+        const allRules = { ...sessionResolved, ...learned };
+        const today2 = new Date().toLocaleDateString("es-MX");
+        const codeLines = Object.entries(allRules)
           .map(([k,v]) => `  { patterns:["${k}"], category:"${v}" },`)
           .join("\n");
-        const fullCode = `// Reglas aprendidas - ${today}\n// Cliente: ${clientData?.name || ""}\n// Pegar en MERCHANT_DICT en App.jsx\n\n${codeLines}`;
+        const fullCode = Object.keys(allRules).length > 0
+          ? `// Reglas aprendidas - ${today2}\n// Cliente: ${clientData?.name || ""}\n// Pegar dentro de MERCHANT_DICT en App.jsx\n\n${codeLines}`
+          : `// Sin reglas aprendidas aún\n// Procesa un statement y resuelve las ambigüedades primero`;
         return (
           <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}
             onClick={()=>setShowDevModal(false)}>
@@ -1486,7 +1502,7 @@ export default function App() {
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
                 <div>
                   <div style={{color:"#fff",fontWeight:700,fontSize:16}}>🧠 Reglas Aprendidas</div>
-                  <div style={{color:"#94a3b8",fontSize:12,marginTop:2}}>{Object.keys(learned).length} reglas · {clientData?.name}</div>
+                  <div style={{color:"#94a3b8",fontSize:12,marginTop:2}}>{Object.keys(allRules).length} reglas · {clientData?.name}</div>
                 </div>
                 <button onClick={()=>setShowDevModal(false)}
                   style={{background:"transparent",border:"none",color:"#94a3b8",fontSize:20,cursor:"pointer",lineHeight:1}}>✕</button>

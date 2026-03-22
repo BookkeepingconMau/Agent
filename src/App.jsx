@@ -373,6 +373,30 @@ Extract ALL account/subaccount balances from the statement.
 For EACH account/subaccount found, extract:
 - account_name, account_number (last 4 or "N/A"), beginning_balance, total_deposits, total_withdrawals, ending_balance, period_start, period_end
 
+IMPORTANT — Different banks use different formats:
+
+MABREY BANK format (page 1 summary box):
+- Look for lines like "X Deposits $XX,XXX.XX" and "X Checks/Debits $XX,XXX.XX"
+- beginning_balance and ending_balance may not be shown — use 0 if not found
+- total_deposits = the Deposits amount
+- total_withdrawals = the Checks/Debits amount
+
+ARVEST BANK format (page 1 Account Summary):
+- "8 Credit(s) This Period $XX,XXX.XX" = total_deposits
+- "143 Debit(s) This Period $XX,XXX.XX" = total_withdrawals
+- Beginning Balance and Ending Balance are shown explicitly
+
+BANK OF AMERICA format (page 1 Account summary):
+- "Deposits and other credits $X,XXX.XX" = total_deposits
+- "Withdrawals and other debits -$X,XXX.XX" = total_withdrawals
+
+CHASE format (page 1 RESUMEN DE CUENTA / ACCOUNT SUMMARY):
+- "Depósitos y Adiciones" or "Deposits and Additions" = total_deposits
+- "Retiros Electrónicos" or "Electronic Withdrawals" = total_withdrawals
+
+DEFAULT: Look for Beginning Balance, Total Deposits, Total Withdrawals, Ending Balance in any summary table.
+
+If beginning_balance or ending_balance are not shown, use 0.
 Respond ONLY with valid JSON array. No markdown. No explanation.
 Example: [{"account_name":"Business Checking","account_number":"1234","beginning_balance":5000.00,"total_deposits":10000.00,"total_withdrawals":8000.00,"ending_balance":7000.00,"period_start":"01/01/2024","period_end":"01/31/2024"}]`;
   const text = await callClaude([{ role:"user", content:[

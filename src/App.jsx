@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-
 const BUSINESS_TYPES = [
   { id: "construction",  label: "Construction / Trades",     icon: "🏗️" },
   { id: "hvac",          label: "HVAC / Clima",              icon: "🌬️" },
@@ -16,13 +15,10 @@ const BUSINESS_TYPES = [
   { id: "barbershop",    label: "Barbería / Salón",          icon: "💇" },
   { id: "general",       label: "General Services",          icon: "⚙️" },
 ];
-
 const tradesFuel = (cat) => ({ construction:cat,hvac:cat,roofing:cat,drywall:cat,electrical:cat,plumbing:cat,landscaping:cat,cleaning:"Vehicle - Fuel (Non-Production)",food_events:"Vehicle - Fuel (Non-Production)",restaurant:"Vehicle - Fuel (Non-Production)",trucking:"COGS - Fuel (Production)",property_mgmt:"Vehicle - Fuel (Non-Production)",barbershop:"Vehicle - Fuel (Non-Production)",general:"Vehicle - Fuel (Non-Production)" });
 const tradesMat  = (fallback="ASK TO CLIENT") => ({ construction:"COGS - Materials",hvac:"COGS - Materials",roofing:"COGS - Materials",drywall:"COGS - Materials",electrical:"COGS - Materials",plumbing:"COGS - Materials",landscaping:"COGS - Materials",cleaning:"COGS - Materials",food_events:"COGS - Materials",restaurant:fallback,trucking:"Operating Expenses - Supplies",property_mgmt:"Repairs & Maintenance",barbershop:"COGS - Materials",general:fallback });
-
 // ─── BANK PROMPTS LIBRARY ─────────────────────────────────────────────────────
 const BANK_PROMPTS = {
-
   mabrey_bank: `You are a STRICT check extraction agent for MABREY BANK statements.
 The CHECKS PAID section appears near the END of the statement in a TWO-COLUMN grid:
 DATE    CHECK NO    AMOUNT    ||    DATE    CHECK NO    AMOUNT
@@ -34,7 +30,6 @@ Amounts use comma formatting like 40,005.00 — parse correctly.
 Use the DATE shown next to each check individually.
 AMOUNT must be negative.
 OUTPUT: Raw CSV — TYPE,DATE,AMOUNT,CONCEPT. No headers. No markdown.`,
-
   bank_of_oklahoma: `You are a STRICT extraction agent for BANK OF OKLAHOMA (BOK) statements.
 BOK STATEMENT STRUCTURE — READ IN THIS ORDER:
 1. DEPOSITS section (pages 1 and 3): simple list, DATE on left, AMOUNT on right. Extract ALL.
@@ -48,7 +43,6 @@ DEPOSITS positive. WITHDRAWALS and CHECKS negative.
 Dates format MM-DD-YY → convert to MM/DD/YYYY.
 AMOUNT must be negative for withdrawals and checks.
 OUTPUT: Raw CSV — TYPE,DATE,AMOUNT,CONCEPT. No headers. No markdown.`,
-
   arvest_bank: `You are a STRICT extraction agent for ARVEST BANK statements.
 ARVEST BANK STRUCTURE:
 1. DEPOSITS section: Simple list — DATE, DESCRIPTION, AMOUNT (positive). Extract ALL.
@@ -67,7 +61,6 @@ ARVEST BANK STRUCTURE:
 6. IGNORE pages with check images — those are NOT transaction data.
 DEPOSITS positive. ELECTRONIC DEBITS amounts already have minus sign — keep negative.
 OUTPUT: Raw CSV — TYPE,DATE,AMOUNT,CONCEPT. No headers. No markdown.`,
-
   bank_of_america: `You are a STRICT extraction agent for BANK OF AMERICA statements.
 BANK OF AMERICA STRUCTURE:
 1. DEPOSITS AND OTHER CREDITS section: Simple list — Date, Description, Amount (positive). Extract ALL.
@@ -82,11 +75,9 @@ Deposits are positive. Withdrawals shown as negative — keep negative.
 Dates format MM/DD/YY — convert to MM/DD/YYYY.
 "Subtotal for card account" and "Total" lines are NOT transactions — skip them.
 OUTPUT: Raw CSV — TYPE,DATE,AMOUNT,CONCEPT. No headers. No markdown.`,
-
   chase: `You are a STRICT extraction agent for CHASE BANK statements.
 IMPORTANT: This statement may be in SPANISH. Column headers in Spanish:
 FECHA = Date, DESCRIPCIÓN = Description, CANTIDAD = Amount
-
 CHASE BANK STRUCTURE:
 1. DEPÓSITOS Y ADICIONES (DEPOSITS AND ADDITIONS): All are deposits — positive amounts. Extract ALL.
 2. RETIROS ELECTRÓNICOS (ELECTRONIC WITHDRAWALS): All are withdrawals.
@@ -99,7 +90,6 @@ Each transaction may span multiple lines — use first line description as conce
 "Total de depósitos" and "Total de retiros" are summary lines — NOT transactions, skip them.
 SALDO FINAL DIARIO section — NOT transactions, skip entirely.
 OUTPUT: Raw CSV — TYPE,DATE,AMOUNT,CONCEPT. No headers. No markdown.`,
-
   default: `You are a STRICT bank statement extraction agent.
 Extract ALL transactions: deposits, withdrawals, checks, fees, transfers.
 DEPOSITS positive. WITHDRAWALS negative.
@@ -109,7 +99,6 @@ Summary totals and balance rows are NOT transactions — skip them.
 Blank pages — skip entirely.
 OUTPUT: Raw CSV — TYPE,DATE,AMOUNT,CONCEPT. No headers. No markdown.`
 };
-
 const MERCHANT_DICT = [
   // ── FUEL ──
   ...[["QT","QUIKTRIP","QUICK TRIP"],["RACETRAC"],["VALERO"],["STRIPES"],["MURPHY USA","MURPHY EXPRESS"],["CIRCLE K"],["SPEEDWAY"],["WAWA"],["THORNTONS"],["SHELL"],["CHEVRON"],["EXXON","EXXONMOBIL"],["BP ","BP#"],["MARATHON"],["CASEY"],["KWIK TRIP","KWIKTRIP"],["LOVES","LOVE'S"],["PILOT TRAVEL","PILOT FLYING"],["FLYING J"],["ARCO"],[" 76 "," 76#"],["SUNOCO"],["KROGER FUEL","KROGER GAS"],["NEW HUDSON PETROLEUM"]].map(p=>({ patterns:p, category:tradesFuel("COGS - Fuel (Production)"), amountRule:{under15:"Meals & Entertainment"} })),
@@ -172,7 +161,8 @@ const MERCHANT_DICT = [
   ...[["STATE FARM"],["GEICO"],["PROGRESSIVE","PROG MICHIGAN"],["ALLSTATE"],["FARMERS INS"],["NATIONWIDE"],["LIBERTY MUTUAL"],["WORKERS COMP"]].map(p=>({patterns:p,category:"Insurance"})),
   ...[["CAMINO FINANCIAL"],["KABBAGE"],["ONDECK"],["BLUEVINE"],["FUNDBOX"],["CREDIBLY"],["LENDIO"],["LAFCU"]].map(p=>({patterns:p,category:"Loan Payment"})),
   ...[["VERIZON","VZWRLSS"],["AT&T","ATT "],["T-MOBILE","TMOBILE"],["METRO PCS","METROPCS"],["BOOST MOBILE"],["CRICKET "],["SIMPLE MOBILE"],["TRACFONE"],["SPECTRUM"],["XFINITY","COMCAST"],["DIRECTV"],["DISH NETWORK"]].map(p=>({patterns:p,category:"Telephone & Internet"})),
-  ...[["QUICKBOOKS"],["INTUIT"],["CANVA"],["ADOBE"],["MICROSOFT 365"],["GOOGLE WORKSPACE"],["DROPBOX"],["ZOOM"],["SLACK"],["SHOPIFY"],["GODADDY"],["WIX"],["BUILDIUM"],["APPFOLIO"],["MAILCHIMP"],["CONSTANTCONTACT"]].map(p=>({patterns:p,category:"Software & Subscriptions"})),
+  // ── SOFTWARE — INTUIT removido de aquí, ahora se maneja en categorize() ──
+  ...[["QUICKBOOKS"],["CANVA"],["ADOBE"],["MICROSOFT 365"],["GOOGLE WORKSPACE"],["DROPBOX"],["ZOOM"],["SLACK"],["SHOPIFY"],["GODADDY"],["WIX"],["BUILDIUM"],["APPFOLIO"],["MAILCHIMP"],["CONSTANTCONTACT"]].map(p=>({patterns:p,category:"Software & Subscriptions"})),
   // ── STREAMING / ENTERTAINMENT ──
   { patterns:["NETFLIX"], category:"Meals & Entertainment" },
   { patterns:["SPOTIFY"], category:"Meals & Entertainment" },
@@ -214,7 +204,6 @@ const MERCHANT_DICT = [
   { patterns:["PARKING"], category:"Operating Expenses - Parking" },
   ...[["IRS ","IRS*"],["STATE TAX","SALES TAX"]].map(p=>({patterns:p,category:"Taxes & Licenses"})),
   { patterns:["GUITAR CENTER"], category:"ASK TO CLIENT" },
-
   // ── MABREY BANK / CONSTRUCTION (Najera) ──────────────────────────────────
   { patterns:["MAVERIK","POS DEB MAVERIK","DBT CRD MAVERIK"], category:"Vehicle - Fuel (Non-Production)" },
   { patterns:["ATWOOD","POS DEB ATWOOD"], category:"COGS - Materials" },
@@ -231,13 +220,10 @@ const MERCHANT_DICT = [
   { patterns:["DDA B/P TOTAL"], category:"Telephone & Internet" },
   { patterns:["IPAY BILL PAY"], category:"Bank Fees" },
 ];
-
 const DEPOSIT_CATEGORIES    = ["Income - Services","Other Income","Loan Proceeds","Owner Investment","Transfer In","Refund Received","ASK TO CLIENT"];
 const WITHDRAWAL_CATEGORIES = ["COGS - Materials","COGS - Labor","COGS - Fuel (Production)","COGS - Food & Beverage","Subcontractor Expense","Payroll & Wages","Advertising & Marketing","Bank Fees","Donations","Insurance","Loan Payment","Meals & Entertainment","Office Supplies","Operating Expenses - Delivery & Postage","Operating Expenses - Parking","Operating Expenses - Supplies","Personal Payment","Rent & Lease","Repairs & Maintenance","Software & Subscriptions","Taxes & Licenses","Telephone & Internet","Transfer Out","Travel & Transportation","Uniforms","Utilities","Vehicle - Fuel (Non-Production)","Vehicle - Maintenance","Owner Draw","ASK TO CLIENT"];
-
 const TRANSFER_IN_KEYWORDS  = ["INTERNET XFER FROM","XFER FROM CHKG","XFER FROM SAV","TRANSFER FROM","ONLINE TRANSFER FROM","FUNDS TRANSFER IN","MOBILE XFER FROM","TRANSFER FROM SHARE","COMPUTERLINE TRANSFER FROM","DEPOSIT TRANSFER FROM"];
 const TRANSFER_OUT_KEYWORDS = ["INTERNET XFER TO","XFER TO CHKG","XFER TO SAV","TRANSFER TO","ONLINE TRANSFER TO","FUNDS TRANSFER OUT","MOBILE XFER TO","WITHDRAWAL TRANSFER TO","COMPUTERLINE TRANSFER TO","COMPUTERLINE M2M"];
-
 function detectTransfer(concept) {
   const upper = concept.toUpperCase();
   const isIn  = TRANSFER_IN_KEYWORDS.some(k => upper.includes(k));
@@ -249,7 +235,6 @@ function detectTransfer(concept) {
   const label  = last4 ? `${cat} (****${last4})` : cat;
   return { category: cat, level:"TRANSFER", enrichedConcept: label };
 }
-
 function detectCheck(concept) {
   const upper = concept.toUpperCase();
   if (!upper.includes("CHECK") && !upper.match(/\bCHK\b/) && !upper.match(/\bCK#?\b/) && !upper.includes("DRAFT")) return null;
@@ -266,7 +251,6 @@ function detectCheck(concept) {
   if (payee)    parts.push(`- ${payee}`);
   return { checkNum, payee, enrichedConcept: parts.join(" ") };
 }
-
 function categorize(concept, amount, isDeposit, businessType, learnedMerchants) {
   const upper = concept.toUpperCase();
   const amt   = Math.abs(parseFloat(amount) || 0);
@@ -279,6 +263,19 @@ function categorize(concept, amount, isDeposit, businessType, learnedMerchants) 
   for (const [key, cat] of Object.entries(learnedMerchants)) {
     if (upper.includes(key.toUpperCase())) return { category:cat, level:"MEMORY" };
   }
+
+  // ── INTUIT: lógica por concepto (Payroll vs Software vs ASK) ─────────────
+  if (upper.includes("INTUIT")) {
+    if (upper.includes("PAYROLL") || upper.includes("PAYR"))
+      return { category:"Payroll & Wages", level:"HARD" };
+    if (upper.includes("QBOOKS") || upper.includes("QUICKBOOKS") || upper.includes("TURBO") || upper.includes("SUBSCR"))
+      return { category:"Software & Subscriptions", level:"HARD" };
+    if (/INTUIT\s+\d{8,}/.test(upper))
+      return { category:"Payroll & Wages", level:"HARD" };
+    return { category:"ASK TO CLIENT", level:"ASK", reason:"Intuit — ¿Payroll, QuickBooks o TurboTax?" };
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   if (isDeposit) {
     if (upper.includes("ZELLE") && upper.includes("TRANSFER IN")) return { category:"ASK TO CLIENT", level:"ASK", reason:"Zelle recibido — ¿Income o Owner Investment?" };
     if (amt >= 1000) return { category:"Income - Services", level:"HARD" };
@@ -302,7 +299,6 @@ function categorize(concept, amount, isDeposit, businessType, learnedMerchants) 
   }
   return { category:"ASK TO CLIENT", level:"ASK", reason:"Merchant no identificado" };
 }
-
 // ─── CLAUDE API ───────────────────────────────────────────────────────────────
 async function callClaude(messages, system) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -318,7 +314,6 @@ async function callClaude(messages, system) {
   const data = await res.json();
   return data.content?.map(b=>b.text||"").join("") || "";
 }
-
 // ─── AGENT 0: DETECT BANK ────────────────────────────────────────────────────
 async function detectBank(b64) {
   const system = `You are a bank statement identifier.
@@ -330,7 +325,6 @@ Read ONLY the first page of this PDF and return ONLY a valid JSON object with:
 - period_end: end date MM/DD/YYYY
 - total_deposits: total deposits amount from summary (number only, no $ sign)
 - total_withdrawals: total withdrawals amount from summary (number only, no $ sign)
-
 To identify bank_id use these clues:
 - "Mabrey Bank" or "MabreyBank" → "mabrey_bank"
 - "Bank of Oklahoma" or "BOK" or "bok.com" → "bank_of_oklahoma"
@@ -338,15 +332,12 @@ To identify bank_id use these clues:
 - "Bank of America" or "bankofamerica.com" or "BANK OF AMERICA" → "bank_of_america"
 - "Chase" or "JPMorgan Chase" or "chase.com" → "chase"
 - Any other bank → "unknown"
-
 Respond ONLY with valid JSON. No markdown. No explanation.
 Example: {"bank_name":"Mabrey Bank","bank_id":"mabrey_bank","total_pages":16,"period_start":"02/02/2026","period_end":"03/01/2026","total_deposits":75616.02,"total_withdrawals":86217.03}`;
-
   const text = await callClaude([{ role:"user", content:[
     { type:"document", source:{ type:"base64", media_type:"application/pdf", data:b64 } },
     { type:"text", text:"Identify this bank statement. Return JSON only." }
   ]}], system);
-
   try {
     const clean = text.replace(/```json|```/g,"").trim();
     return JSON.parse(clean);
@@ -354,15 +345,11 @@ Example: {"bank_name":"Mabrey Bank","bank_id":"mabrey_bank","total_pages":16,"pe
     return { bank_name:"Desconocido", bank_id:"unknown", total_pages:0, period_start:"", period_end:"", total_deposits:0, total_withdrawals:0 };
   }
 }
-
 // ─── AGENT 1: EXTRACT TRANSACTIONS ───────────────────────────────────────────
 async function extractTransactions(b64, bankId = "default") {
   const bankSpecificInstructions = BANK_PROMPTS[bankId] || BANK_PROMPTS.default;
-
   const system = `You are a STRICT bank statement extraction agent. Your job is to extract EVERY single transaction with ZERO omissions.
-
 ${bankSpecificInstructions}
-
 UNIVERSAL CRITICAL RULES:
 1. Extract ALL transactions from the main ledger (line by line transactions).
 2. Also extract ALL checks from any "Cleared Check Summary", "Checks Paid", "Draft Summary", or similar table.
@@ -374,12 +361,10 @@ UNIVERSAL CRITICAL RULES:
 8. Include ALL: fees, ATM, transfers, dividends, POS, ACH, drafts, checks, wire transfers.
 9. Exclude ONLY: balance rows, running balance values, summary totals, account header rows, blank pages.
 10. CHECK IMAGES: If PDF contains check images, extract beneficiary name as "CHECK #[number] - [Name]".`;
-
   const text = await callClaude([{ role:"user", content:[
     { type:"document", source:{ type:"base64", media_type:"application/pdf", data:b64 } },
     { type:"text", text:"Extract ALL transactions. Raw CSV: TYPE,DATE,AMOUNT,CONCEPT" }
   ]}], system);
-
   const rows = [];
   text.trim().split("\n").forEach(line => {
     const parts = line.split(",");
@@ -393,37 +378,29 @@ UNIVERSAL CRITICAL RULES:
   });
   return rows;
 }
-
 // ─── AGENT 2: EXTRACT BALANCES ────────────────────────────────────────────────
 async function extractBalances(b64) {
   const system = `You are a bank statement balance extraction agent.
 Extract ALL account/subaccount balances from the statement.
 For EACH account/subaccount found, extract:
 - account_name, account_number (last 4 or "N/A"), beginning_balance, total_deposits, total_withdrawals, ending_balance, period_start, period_end
-
 IMPORTANT — Different banks use different formats:
-
 MABREY BANK format (page 1 summary box):
 - Look for lines like "X Deposits $XX,XXX.XX" and "X Checks/Debits $XX,XXX.XX"
 - beginning_balance and ending_balance may not be shown — use 0 if not found
 - total_deposits = the Deposits amount
 - total_withdrawals = the Checks/Debits amount
-
 ARVEST BANK format (page 1 Account Summary):
 - "8 Credit(s) This Period $XX,XXX.XX" = total_deposits
 - "143 Debit(s) This Period $XX,XXX.XX" = total_withdrawals
 - Beginning Balance and Ending Balance are shown explicitly
-
 BANK OF AMERICA format (page 1 Account summary):
 - "Deposits and other credits $X,XXX.XX" = total_deposits
 - "Withdrawals and other debits -$X,XXX.XX" = total_withdrawals
-
 CHASE format (page 1 RESUMEN DE CUENTA / ACCOUNT SUMMARY):
 - "Depósitos y Adiciones" or "Deposits and Additions" = total_deposits
 - "Retiros Electrónicos" or "Electronic Withdrawals" = total_withdrawals
-
 DEFAULT: Look for Beginning Balance, Total Deposits, Total Withdrawals, Ending Balance in any summary table.
-
 If beginning_balance or ending_balance are not shown, use 0.
 Respond ONLY with valid JSON array. No markdown. No explanation.
 Example: [{"account_name":"Business Checking","account_number":"1234","beginning_balance":5000.00,"total_deposits":10000.00,"total_withdrawals":8000.00,"ending_balance":7000.00,"period_start":"01/01/2024","period_end":"01/31/2024"}]`;
@@ -434,7 +411,6 @@ Example: [{"account_name":"Business Checking","account_number":"1234","beginning
   try {
     const clean = text.replace(/```json|```/g,"").trim();
     const parsed = JSON.parse(clean);
-    // Validate — if all amounts are 0, return empty so UI shows warning
     if (parsed.length > 0) {
       const hasData = parsed.some(b =>
         (parseFloat(b.total_deposits)||0) > 0 || (parseFloat(b.total_withdrawals)||0) > 0
@@ -444,7 +420,6 @@ Example: [{"account_name":"Business Checking","account_number":"1234","beginning
     return parsed;
   } catch { return []; }
 }
-
 // ─── SECOND PASS ──────────────────────────────────────────────────────────────
 async function extractTransactionsSecondPass(b64, missingDeposits, missingWithdrawals, existingRows, bankId = "default") {
   const system = `You are a STRICT bank statement extraction agent doing a SECOND PASS for ${bankId.replace(/_/g," ").toUpperCase()}.
@@ -470,7 +445,6 @@ No headers, no markdown, no explanation.`;
   });
   return rows;
 }
-
 // ─── CHECK SUMMARY PASS ───────────────────────────────────────────────────────
 async function extractCheckSummary(b64, bankId = "default") {
   const bankPrompt = BANK_PROMPTS[bankId] || BANK_PROMPTS.default;
@@ -497,13 +471,11 @@ AMOUNT must be negative. No headers. No markdown.`;
   });
   return rows;
 }
-
 // ─── STORAGE ──────────────────────────────────────────────────────────────────
 const sc = async (id) => { try { const r=await window.storage.get(`client:${id}`); return r?JSON.parse(r.value):null; } catch { return null; } };
 const ss = async (id,d) => { try { await window.storage.set(`client:${id}`,JSON.stringify(d)); } catch {} };
 const sl = async () => { try { const r=await window.storage.list("client:"); return r?.keys||[]; } catch { return []; } };
 const fmt = (n) => Number(n||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
-
 // ─── APP ──────────────────────────────────────────────────────────────────────
 export default function App() {
   const [screen, setScreen]             = useState("home");
@@ -527,16 +499,13 @@ export default function App() {
   const [showDevModal, setShowDevModal] = useState(false);
   const [copied, setCopied]             = useState(false);
   const fileRef = useRef();
-
   useEffect(() => { loadList(); }, []);
-
   async function loadList() {
     const keys = await sl();
     const loaded = [];
     for (const k of keys) { const d=await sc(k.replace("client:","")); if(d) loaded.push({id:k.replace("client:",""),...d}); }
     setClients(loaded);
   }
-
   async function createClient() {
     if (!newName.trim() || !newType) return;
     const id   = newName.toLowerCase().replace(/\s+/g,"_")+"_"+Date.now();
@@ -547,42 +516,33 @@ export default function App() {
     setNewName(""); setNewType("");
     setScreen("upload");
   }
-
   async function selectClient(id) {
     const data = await sc(id);
     setClientId(id); setClientData(data);
     setScreen("upload");
   }
-
   const setP = (text, pct) => setProgress({ text, pct });
-
   async function runExtraction() {
     if (!file || !clientData) return;
     setScreen("extracting");
     setP("Agente 0: Leyendo PDF...", 3);
-
     const b64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(",")[1]); r.onerror=rej; r.readAsDataURL(file); });
-
     // ── AGENT 0: Detect bank ──
     setP("Agente 0: Identificando banco...", 5);
     const detectedBank = await detectBank(b64);
     setBankInfo(detectedBank);
     const bankId = detectedBank.bank_id || "unknown";
     const totalPages = detectedBank.total_pages || 0;
-
     setP(`✅ Banco: ${detectedBank.bank_name} · ${totalPages} páginas`, 8);
-
     // ── AGENT 1: Extract transactions ──
     setP("Agente 1: Extrayendo transacciones...", 12);
     const rows = await extractTransactions(b64, bankId);
     setP(`✅ ${rows.length} transacciones encontradas`, 35);
-
     // ── AGENT 2: Extract balances ──
     setP("Agente 2: Extrayendo saldos...", 40);
     const bals = await extractBalances(b64);
     setBalances(bals);
     setP(`✅ ${bals.length} cuenta(s) detectada(s)`, 48);
-
     // ── SMART MULTI-PASS ──
     let allRows = rows;
     if (bals.length > 0) {
@@ -592,7 +552,6 @@ export default function App() {
       const extractedWith = rows.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
       const withDiff = bankWith - extractedWith;
       const depDiff  = bankDep  - extractedDep;
-
       if (withDiff > 50) {
         setP(`⚡ Agente 2A: Buscando cheques faltantes ($${withDiff.toFixed(0)})...`, 52);
         const checkRows = await extractCheckSummary(b64, bankId);
@@ -606,12 +565,10 @@ export default function App() {
         allRows = [...rows, ...newCheckRows];
         setP(`✅ Pasada cheques: +${newCheckRows.length} encontrados`, 60);
       }
-
       const newExtDep  = allRows.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
       const newExtWith = allRows.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
       const remDepDiff  = bankDep  - newExtDep;
       const remWithDiff = bankWith - newExtWith;
-
       if (remDepDiff > 50 || remWithDiff > 50) {
         setP(`⚡ Agente 2B: Buscando transacciones adicionales...`, 63);
         const secondRows = await extractTransactionsSecondPass(b64, remDepDiff > 0 ? remDepDiff : 0, remWithDiff > 0 ? remWithDiff : 0, allRows, bankId);
@@ -622,7 +579,6 @@ export default function App() {
         setP(`✅ Pasada adicional: +${newRows.length} más encontradas`, 68);
       }
     }
-
     // ── AGENT 3: Categorize ──
     setP("Agente 3: Categorizando transacciones...", 72);
     const categorized = allRows.map(row => {
@@ -631,19 +587,15 @@ export default function App() {
       return { ...row, concept: result.enrichedConcept||row.concept, category:result.category, level:result.level, reason:result.reason||"", payee:result.payee||null, checkNum:result.checkNum||null };
     });
     setP("✅ Categorización completada", 85);
-
     let finalTransactions = categorized;
     if (splitMode && splitParts.length > 0) {
       const allPrevious = splitParts.flat();
       finalTransactions = [...allPrevious, ...categorized];
     }
-
     const asks = finalTransactions.filter(r=>r.category==="ASK TO CLIENT");
     setTransactions(finalTransactions);
     setAskQueue(asks); setCurrentAsk(0);
-
     setP("✅ Procesamiento completado", 100);
-
     setTimeout(() => {
       if (splitMode) {
         setSplitParts(prev => [...prev, categorized]);
@@ -655,7 +607,6 @@ export default function App() {
       }
     }, 600);
   }
-
   function resolveAsk(category, learn, learnKey) {
     const ask = askQueue[currentAsk];
     const updated = [...transactions];
@@ -670,17 +621,14 @@ export default function App() {
     if (currentAsk+1<askQueue.length) setCurrentAsk(currentAsk+1);
     else setScreen("review");
   }
-
   function updateCategory(idx, cat) {
     setTransactions(prev=>prev.map((r,i)=>i===idx?{...r,category:cat}:r));
   }
-
   async function finalize() {
     const entry = { date:new Date().toISOString().split("T")[0], file:file?.name, bank:bankInfo?.bank_name||"", depositsCount:transactions.filter(r=>r.type==="DEPOSIT").length, withdrawalsCount:transactions.filter(r=>r.type==="WITHDRAWAL").length, askCount:transactions.filter(r=>r.category==="ASK TO CLIENT").length };
     const nd = { ...clientData, history:[...(clientData.history||[]),entry] };
     setClientData(nd); await ss(clientId,nd); setScreen("done");
   }
-
   function triggerDownload(filename, csvContent) {
     const encoded = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
     const a = document.createElement("a");
@@ -709,30 +657,15 @@ export default function App() {
       rows.map(r => `${r.date},${r.type},${r.amount},"${r.concept}","${r.category}"`).join("\n");
     triggerDownload(`${clientName}_${safeName}.csv`, csv);
   }
-
   function downloadPnL() {
     const clientName = (clientData?.name || "client").replace(/\s/g, "_");
     const fmt2 = (n) => Number(n||0).toFixed(2);
-
-    // ── Mapeo de categorías ──
     const INCOME_CATS        = ["Income - Services", "Other Income"];
     const COGS_CATS          = ["COGS - Materials","COGS - Labor","COGS - Fuel (Production)","COGS - Food & Beverage","Subcontractor Expense"];
     const OPEX_CATS          = ["Payroll & Wages","Advertising & Marketing","Bank Fees","Insurance","Rent & Lease","Repairs & Maintenance","Software & Subscriptions","Taxes & Licenses","Telephone & Internet","Travel & Transportation","Uniforms","Utilities","Vehicle - Fuel (Non-Production)","Vehicle - Maintenance","Operating Expenses - Supplies","Operating Expenses - Delivery & Postage","Operating Expenses - Parking","Office Supplies","Meals & Entertainment"];
     const OTHER_INCOME_CATS  = ["Refund Received"];
     const OTHER_EXPENSE_CATS = ["Donations"];
     const PERSONAL_CATS      = ["Owner Draw","Personal Payment","Loan Payment","Transfer Out","Transfer In"];
-
-    // ── Calcular totales por categoría ──
-    const sumCat = (cats) => {
-      let total = 0;
-      cats.forEach(cat => {
-        transactions.filter(r => r.category === cat).forEach(r => {
-          total += Math.abs(parseFloat(r.amount)||0);
-        });
-      });
-      return total;
-    };
-
     const sumByCat = (cats) => {
       const result = {};
       cats.forEach(cat => {
@@ -741,14 +674,12 @@ export default function App() {
       });
       return result;
     };
-
     const incomeDetail   = sumByCat(INCOME_CATS);
     const cogsDetail     = sumByCat(COGS_CATS);
     const opexDetail     = sumByCat(OPEX_CATS);
     const otherIncDetail = sumByCat(OTHER_INCOME_CATS);
     const otherExpDetail = sumByCat(OTHER_EXPENSE_CATS);
     const personalDetail = sumByCat(PERSONAL_CATS);
-
     const totalIncome    = Object.values(incomeDetail).reduce((a,b)=>a+b,0);
     const totalCOGS      = Object.values(cogsDetail).reduce((a,b)=>a+b,0);
     const grossProfit    = totalIncome - totalCOGS;
@@ -757,64 +688,43 @@ export default function App() {
     const totalOtherExp  = Object.values(otherExpDetail).reduce((a,b)=>a+b,0);
     const netProfit      = grossProfit - totalOpex + totalOtherInc - totalOtherExp;
     const totalPersonal  = Object.values(personalDetail).reduce((a,b)=>a+b,0);
-
-    // ── Construir CSV ──
     const rows = [];
-
-    // Header
     rows.push(`PROFIT & LOSS STATEMENT`);
     rows.push(`Client:,${clientData?.name || ""}`);
     rows.push(`Period:,${balances[0]?.period_start || ""} to ${balances[0]?.period_end || ""}`);
     rows.push(`Bank:,${bankInfo?.bank_name || ""}`);
     rows.push(``);
-
-    // INCOME
     rows.push(`INCOME,,`);
     Object.entries(incomeDetail).forEach(([cat,amt]) => rows.push(`,${cat},$${fmt2(amt)}`));
     rows.push(`TOTAL INCOME,,$${fmt2(totalIncome)}`);
     rows.push(``);
-
-    // COGS
     rows.push(`COST OF GOODS SOLD,,`);
     Object.entries(cogsDetail).forEach(([cat,amt]) => rows.push(`,${cat},$${fmt2(amt)}`));
     rows.push(`TOTAL COGS,,$${fmt2(totalCOGS)}`);
     rows.push(``);
-
-    // GROSS PROFIT
     rows.push(`GROSS PROFIT,,$${fmt2(grossProfit)}`);
     rows.push(``);
-
-    // OPERATING EXPENSES
     rows.push(`OPERATING EXPENSES,,`);
     Object.entries(opexDetail).forEach(([cat,amt]) => rows.push(`,${cat},$${fmt2(amt)}`));
     rows.push(`TOTAL OPERATING EXPENSES,,$${fmt2(totalOpex)}`);
     rows.push(``);
-
-    // OTHER INCOME
     if (totalOtherInc > 0) {
       rows.push(`OTHER INCOME,,`);
       Object.entries(otherIncDetail).forEach(([cat,amt]) => rows.push(`,${cat},$${fmt2(amt)}`));
       rows.push(`TOTAL OTHER INCOME,,$${fmt2(totalOtherInc)}`);
       rows.push(``);
     }
-
-    // OTHER EXPENSES
     if (totalOtherExp > 0) {
       rows.push(`OTHER EXPENSES,,`);
       Object.entries(otherExpDetail).forEach(([cat,amt]) => rows.push(`,${cat},$${fmt2(amt)}`));
       rows.push(`TOTAL OTHER EXPENSES,,$${fmt2(totalOtherExp)}`);
       rows.push(``);
     }
-
-    // NET PROFIT
     rows.push(`NET PROFIT,,$${fmt2(netProfit)}`);
     rows.push(``);
     rows.push(``);
-
-    // ── SECCIÓN 2: MOVIMIENTOS PERSONALES ──
     rows.push(`PERSONAL & NON-BUSINESS MOVEMENTS,,`);
     rows.push(`Category,Description,Amount`);
-
     PERSONAL_CATS.forEach(cat => {
       const txs = transactions.filter(r => r.category === cat);
       if (txs.length === 0) return;
@@ -824,14 +734,10 @@ export default function App() {
       const catTotal = txs.reduce((s,r) => s + Math.abs(parseFloat(r.amount)||0), 0);
       rows.push(`,SUBTOTAL ${cat},$${fmt2(catTotal)}`);
     });
-
     rows.push(``);
     rows.push(`TOTAL PERSONAL MOVEMENTS,,$${fmt2(totalPersonal)}`);
-
-    const csv = rows.join("\n");
-    triggerDownload(`PnL_${clientName}.csv`, csv);
+    triggerDownload(`PnL_${clientName}.csv`, rows.join("\n"));
   }
-
   const deposits     = transactions.filter(r=>r.type==="DEPOSIT");
   const withdrawals  = transactions.filter(r=>r.type==="WITHDRAWAL");
   const asks         = transactions.filter(r=>r.category==="ASK TO CLIENT");
@@ -840,7 +746,6 @@ export default function App() {
   const autoResolved = transactions.filter(r=>["HARD","BUSINESS"].includes(r.level)).length;
   const memHits      = transactions.filter(r=>r.level==="MEMORY").length;
   const askPct       = transactions.length ? Math.round(asks.length/transactions.length*100) : 0;
-
   const checkReport = checks.reduce((acc, r) => {
     const name = r.payee || `Sin nombre (Cheque #${r.checkNum||"?"})`;
     if (!acc[name]) acc[name] = { count:0, total:0, checks:[] };
@@ -851,11 +756,9 @@ export default function App() {
     return acc;
   }, {});
   const checkReportRows = Object.entries(checkReport).sort((a,b)=>b[1].total-a[1].total);
-
   const totalDepositsAmt    = deposits.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
   const totalWithdrawalsAmt = withdrawals.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
   const categoriesWithCount = [...new Set(transactions.map(r => r.category))].filter(c => c && c !== "").sort().map(c => ({ cat: c, count: transactions.filter(r => r.category === c).length }));
-
   const S = {
     app:{minHeight:"100vh",background:"#05080f",fontFamily:"'DM Sans',system-ui,sans-serif",color:"#1a1a1a",position:"relative"},
     page:{maxWidth:1320,margin:"0 auto",padding:"44px 36px",position:"relative",zIndex:1},
@@ -869,7 +772,6 @@ export default function App() {
     input:{width:"100%",padding:"12px 16px",borderRadius:10,border:"1px solid #ddd",fontSize:15,outline:"none",fontFamily:"inherit"},
     label:{fontSize:12,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:7,display:"block"},
   };
-
   const levelColor = l => ({
     HARD:    {bg:"#dcfce7",color:"#166534"},
     MEMORY:  {bg:"#dbeafe",color:"#1e40af"},
@@ -878,9 +780,7 @@ export default function App() {
     TRANSFER:{bg:"#e0f2fe",color:"#0369a1"},
     CHECK:   {bg:"#dbeafe",color:"#1e40af"},
   }[l] || {bg:"#fee2e2",color:"#991b1b"});
-
   const KNOWN_BANKS = Object.keys(BANK_PROMPTS).filter(k => k !== "default");
-
   return (
     <div style={S.app}>
       <div style={{position:"fixed",bottom:20,right:24,zIndex:1000,opacity:0.85,transition:"opacity 0.2s"}}
@@ -912,14 +812,12 @@ export default function App() {
         @keyframes twinkle2{0%,100%{opacity:0.6;transform:scale(1)}40%{opacity:1;transform:scale(1.3)}70%{opacity:0.1;transform:scale(0.7)}}
         @keyframes twinkle3{0%,100%{opacity:0.8}30%{opacity:0.1}60%{opacity:1}90%{opacity:0.3}}
       `}</style>
-
       {/* Starfield */}
       <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
         {[{l:"2%",t:"5%",w:3,c:"bg-s1"},{l:"7%",t:"15%",w:2,c:"bg-s2"},{l:"13%",t:"8%",w:1.5,c:"bg-s3"},{l:"18%",t:"25%",w:2.5,c:"bg-s1"},{l:"23%",t:"3%",w:2,c:"bg-s2"},{l:"29%",t:"18%",w:1.5,c:"bg-s3"},{l:"35%",t:"10%",w:3,c:"bg-s1"},{l:"41%",t:"22%",w:1.5,c:"bg-s2"},{l:"47%",t:"6%",w:2,c:"bg-s3"},{l:"53%",t:"14%",w:2.5,c:"bg-s1"},{l:"59%",t:"28%",w:1.5,c:"bg-s2"},{l:"65%",t:"4%",w:2,c:"bg-s3"},{l:"71%",t:"20%",w:3,c:"bg-s1"},{l:"77%",t:"9%",w:1.5,c:"bg-s2"},{l:"83%",t:"16%",w:2,c:"bg-s3"},{l:"89%",t:"7%",w:2.5,c:"bg-s1"},{l:"95%",t:"24%",w:1.5,c:"bg-s2"},{l:"5%",t:"40%",w:2,c:"bg-s3"},{l:"11%",t:"55%",w:1.5,c:"bg-s1"},{l:"17%",t:"45%",w:2.5,c:"bg-s2"},{l:"33%",t:"50%",w:1.5,c:"bg-s3"},{l:"45%",t:"60%",w:2,c:"bg-s1"},{l:"57%",t:"42%",w:1.5,c:"bg-s2"},{l:"69%",t:"58%",w:2.5,c:"bg-s3"},{l:"81%",t:"48%",w:1.5,c:"bg-s1"},{l:"93%",t:"38%",w:2,c:"bg-s2"},{l:"8%",t:"75%",w:1.5,c:"bg-s3"},{l:"22%",t:"80%",w:2.5,c:"bg-s1"},{l:"38%",t:"70%",w:1.5,c:"bg-s2"},{l:"52%",t:"85%",w:2,c:"bg-s3"},{l:"66%",t:"72%",w:1.5,c:"bg-s1"},{l:"78%",t:"88%",w:2.5,c:"bg-s2"},{l:"91%",t:"65%",w:1.5,c:"bg-s3"},{l:"4%",t:"90%",w:2,c:"bg-s1"},{l:"26%",t:"95%",w:1.5,c:"bg-s2"},{l:"48%",t:"92%",w:2.5,c:"bg-s3"},{l:"72%",t:"96%",w:1.5,c:"bg-s1"},{l:"86%",t:"82%",w:2,c:"bg-s2"},{l:"97%",t:"90%",w:1.5,c:"bg-s3"}].map((s,i)=>(
           <div key={i} className={`bg-star ${s.c}`} style={{left:s.l,top:s.t,width:s.w,height:s.w}} />
         ))}
       </div>
-
       {/* ── HOME ── */}
       {screen==="home"&&(
         <div style={S.page}>
@@ -975,7 +873,6 @@ export default function App() {
           {clients.length===0&&<div style={{textAlign:"center",padding:"40px 0",color:"#64748b",fontSize:13}}>Crea tu primer cliente para empezar</div>}
         </div>
       )}
-
       {/* ── UPLOAD ── */}
       {screen==="upload"&&clientData&&(
         <div style={S.page}>
@@ -1021,7 +918,6 @@ export default function App() {
                 </div>
               )}
             </div>
-
             <div className={`drop${dragOver?" over":""}`}
               onDragOver={e=>{e.preventDefault();setDragOver(true)}} onDragLeave={()=>setDragOver(false)}
               onDrop={e=>{e.preventDefault();setDragOver(false);const f=e.dataTransfer.files[0];if(f?.type==="application/pdf")setFile(f)}}
@@ -1031,7 +927,6 @@ export default function App() {
                    :(<><div style={{fontWeight:500,color:"#1a1a1a"}}>Arrastra el bank statement aquí</div><div style={{color:"#64748b",fontSize:12,marginTop:3}}>o click · Solo PDF bancario digital</div></>)}
               <input ref={fileRef} type="file" accept=".pdf" style={{display:"none"}} onChange={e=>{const f=e.target.files[0];if(f)setFile(f)}} />
             </div>
-
             {file&&(
               <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:14}}>
                 <button style={{...S.btn,background:"#1a56db",color:"#fff",border:"none"}} onClick={()=>setFile(null)}>Cambiar</button>
@@ -1041,7 +936,6 @@ export default function App() {
               </div>
             )}
           </div>
-
           {/* Biblioteca de bancos */}
           <div style={S.card}>
             <div style={{fontSize:12,fontWeight:700,marginBottom:10,color:"#94a3b8"}}>🏦 BIBLIOTECA DE BANCOS ({KNOWN_BANKS.length} bancos)</div>
@@ -1056,7 +950,6 @@ export default function App() {
               Si tu banco no aparece aquí, la app lo procesará con el modo genérico y te avisará al finalizar.
             </div>
           </div>
-
           {Object.keys(clientData.learnedMerchants||{}).length>0&&(
             <div style={S.card}>
               <div style={{fontSize:12,fontWeight:700,marginBottom:10,color:"#94a3b8"}}>🧠 MEMORIA ({Object.keys(clientData.learnedMerchants).length} reglas)</div>
@@ -1071,7 +964,6 @@ export default function App() {
           )}
         </div>
       )}
-
       {/* ── EXTRACTING ── */}
       {screen==="extracting"&&(()=>{
         const FRASES = [
@@ -1102,7 +994,6 @@ export default function App() {
             .robot-glow{animation:robotGlow 2s ease-in-out infinite}
             .robot-float{animation:float 4s ease-in-out infinite}
           `}</style>
-
           <div style={{position:"absolute",inset:0,overflow:"hidden",opacity:0.05}}>
             {[0,1,2,3,4,5,6,7,8,9].map((i)=>(
               <div key={i} style={{position:"absolute",left:`${i*10+2}%`,top:0,fontSize:11,color:"#1a56db",fontFamily:"monospace",lineHeight:1.6,animation:`matrixRain ${3+i*0.3}s linear infinite`,animationDelay:`${i*0.2}s`}}>
@@ -1110,21 +1001,15 @@ export default function App() {
               </div>
             ))}
           </div>
-
           <div className="robot-float robot-glow" style={{borderRadius:"50%",position:"relative",marginBottom:28}}>
             <img src="/mau-agent.jpeg" alt="Mau Agent" style={{width:180,height:180,objectFit:"cover",borderRadius:"50%",border:"4px solid #1a56db",display:"block"}} />
             <div style={{position:"absolute",inset:-12,borderRadius:"50%",border:"2px solid rgba(26,86,219,0.4)",borderTopColor:"#1a56db",animation:"spin 3s linear infinite"}} />
             <div style={{position:"absolute",inset:-24,borderRadius:"50%",border:"1px solid rgba(26,86,219,0.2)",borderBottomColor:"#1a56db",animation:"spin 5s linear infinite reverse"}} />
           </div>
-
           <h2 style={{fontSize:26,fontWeight:700,color:"#ffffff",marginBottom:6,fontFamily:"'Playfair Display',serif",textShadow:"0 0 20px rgba(26,86,219,0.5)"}}>
             Procesando Statement...
           </h2>
-
-          {/* ── FRASE ROTATIVA ── */}
           <FraseRotativa frases={FRASES} />
-
-          {/* ── BARRA DE PROGRESO ── */}
           <div style={{width:440,marginBottom:8,marginTop:18}}>
             <div style={{background:"rgba(255,255,255,0.1)",borderRadius:20,height:10,overflow:"hidden"}}>
               <div style={{
@@ -1136,14 +1021,12 @@ export default function App() {
               }} />
             </div>
           </div>
-
           <div style={{display:"flex",alignItems:"center",gap:12,justifyContent:"center",marginBottom:16}}>
             <p style={{color:"#94a3b8",fontSize:12,fontFamily:"monospace",letterSpacing:1,maxWidth:340,textAlign:"center"}}>
               {progress.text}
             </p>
             <AnimatedPct target={progress.pct} />
           </div>
-
           <div style={{display:"flex",gap:10}}>
             {[0,1,2,3,4].map(i=>(
               <div key={i} style={{width:10,height:10,borderRadius:"50%",background:"#1a56db",animation:`dotPulse 1s ease-in-out infinite`,animationDelay:`${i*0.15}s`,boxShadow:"0 0 8px #1a56db"}} />
@@ -1152,7 +1035,6 @@ export default function App() {
         </div>
         );
       })()}
-
       {/* ── RECONCILE ── */}
       {screen==="reconcile"&&(
         <div style={S.page}>
@@ -1186,8 +1068,6 @@ export default function App() {
               </button>
             </div>
           </div>
-
-          {/* ── BANCO DETECTADO ── */}
           {bankInfo && (
             <div style={{...S.card, marginBottom:14, padding:"14px 18px"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:8}}>
@@ -1211,8 +1091,6 @@ export default function App() {
                   </span>
                 )}
               </div>
-
-              {/* Aviso banco desconocido */}
               {bankInfo.bank_id === "unknown" && (
                 <div style={{marginTop:10,padding:"10px 14px",background:"#fef3c7",borderRadius:8,border:"1px solid #fde68a",fontSize:12,color:"#92400e"}}>
                   ⚠️ <strong>Banco no encontrado en la biblioteca.</strong> Se procesó con el modo genérico — puede haber diferencias.
@@ -1222,8 +1100,6 @@ export default function App() {
                   </span>
                 </div>
               )}
-
-              {/* Aviso PDF grande */}
               {bankInfo.total_pages > 15 && !splitMode && (
                 <div style={{marginTop:10,padding:"10px 14px",background:"#e0f2fe",borderRadius:8,border:"1px solid #7dd3fc",fontSize:12,color:"#0369a1"}}>
                   💡 <strong>PDF de {bankInfo.total_pages} páginas detectado.</strong> Para mejor precisión en statements grandes, considera usar el <strong>Modo PDF Dividido</strong> — divide el PDF en partes de 10-15 páginas y procésalas por separado.
@@ -1231,8 +1107,6 @@ export default function App() {
               )}
             </div>
           )}
-
-          {/* Summary totals */}
           <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
             {[
               {l:"Transacciones",v:transactions.length,c:"#111111"},
@@ -1246,7 +1120,6 @@ export default function App() {
               </div>
             ))}
           </div>
-
           {balances.length>0 ? (
             <div style={{...S.card,padding:0,overflow:"hidden"}}>
               <div style={{background:"#0f1f4b",color:"#fff",padding:"10px 16px",fontSize:12,fontWeight:700,letterSpacing:1}}>
@@ -1300,7 +1173,6 @@ export default function App() {
               <div style={{fontSize:12,color:"#64748b"}}>Puedes continuar de todas formas.</div>
             </div>
           )}
-
           {balances.length>0&&(
             <div style={{...S.card,marginTop:14}}>
               <div style={{fontSize:12,fontWeight:700,color:"#64748b",marginBottom:12,letterSpacing:1}}>🔎 BANCO vs EXTRAÍDO</div>
@@ -1334,7 +1206,6 @@ export default function App() {
               })()}
             </div>
           )}
-
           <div style={{display:"flex",justifyContent:"flex-end",marginTop:16,gap:10}}>
             <button style={{...S.btn,...S.btnOutline,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>setScreen("upload")}>← Volver</button>
             <button style={{...S.btn,...S.btnGold,fontSize:14,padding:"10px 28px"}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
@@ -1343,7 +1214,6 @@ export default function App() {
           </div>
         </div>
       )}
-
       {/* ── RESOLVE ── */}
       {screen==="resolve"&&askQueue.length>0&&(()=>{
         const ask=askQueue[currentAsk];
@@ -1433,7 +1303,6 @@ export default function App() {
           </div>
         );
       })()}
-
       {/* ── REVIEW ── */}
       {screen==="review"&&(
         <div style={S.page}>
@@ -1454,15 +1323,12 @@ export default function App() {
               </div>
             ))}
           </div>
-
           {askPct>15&&<div style={{background:"#fef3c7",border:"1px solid #f59e0b",borderRadius:8,padding:"9px 14px",marginBottom:12,fontSize:12,color:"#92400e"}}>⚠️ <strong>ALERTA:</strong> {askPct}% supera el límite de 15%</div>}
-
           <div style={{display:"flex",gap:7,marginBottom:12,flexWrap:"wrap",alignItems:"center",justifyContent:"space-between"}}>
             <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
               <button style={{...S.btn,background:"#edf2f7",color:"#1a1a1a",fontSize:11,padding:"6px 12px"}} onClick={()=>setScreen("reconcile")}>⚖️ Conciliación</button>
             </div>
             <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
-              {/* Descarga por categoría */}
               <div style={{display:"flex",gap:0,alignItems:"center",border:"1px solid #1a56db",borderRadius:10,overflow:"hidden",background:"#fff"}}>
                 <select value={selectedCat} onChange={e=>setSelectedCat(e.target.value)}
                   style={{padding:"7px 10px",border:"none",fontSize:11,fontFamily:"inherit",color:"#1a1a1a",background:"transparent",cursor:"pointer",outline:"none",maxWidth:220,minWidth:160}}>
@@ -1484,7 +1350,6 @@ export default function App() {
               <button style={{...S.btn,...S.btnGold}} onClick={finalize}>✓ Finalizar</button>
             </div>
           </div>
-
           {deposits.length>0&&(
             <div style={{...S.card,padding:0,overflow:"hidden",marginBottom:12}}>
               <div style={{background:"#166534",color:"#fff",padding:"8px 14px",fontSize:11,fontWeight:700,letterSpacing:1}}>▲ DEPOSITS ({deposits.length})</div>
@@ -1524,7 +1389,6 @@ export default function App() {
           )}
         </div>
       )}
-
       {/* ── DONE ── */}
       {screen==="done"&&(
         <div style={{...S.page,textAlign:"center",paddingTop:60}}>
@@ -1540,23 +1404,16 @@ export default function App() {
           </div>
         </div>
       )}
-
       {/* ── DEV MODAL SECRETO ── */}
       {showDevModal && (()=>{
         const learned = clientData?.learnedMerchants || {};
-        const today = new Date().toLocaleDateString("es-MX");
-
-        // Also include manually resolved transactions from current session
         const sessionResolved = transactions
           .filter(r => r.level === "RESOLVED" && r.concept && r.category && r.category !== "ASK TO CLIENT")
           .reduce((acc, r) => {
-            // Extract clean merchant key from concept
             const key = r.concept.replace(/CHECK #\d+\s*-?\s*/i,"").replace(/ZELLE\s*(TRANSFER\s*(IN|OUT)\s*-\s*)?/i,"").trim().split(" ").slice(0,3).join(" ").toUpperCase();
             if (key && key.length > 2 && !acc[key]) acc[key] = r.category;
             return acc;
           }, {});
-
-        // Merge both sources, learnedMerchants takes priority
         const allRules = { ...sessionResolved, ...learned };
         const today2 = new Date().toLocaleDateString("es-MX");
         const codeLines = Object.entries(allRules)
@@ -1603,12 +1460,10 @@ export default function App() {
     </div>
   );
 }
-
 // ── FRASE ROTATIVA ──────────────────────────────────────────────────────────
 function FraseRotativa({ frases }) {
   const [idx, setIdx] = useState(0);
   const [visible, setVisible] = useState(true);
-
   useEffect(() => {
     const interval = setInterval(() => {
       setVisible(false);
@@ -1619,7 +1474,6 @@ function FraseRotativa({ frases }) {
     }, 12000);
     return () => clearInterval(interval);
   }, [frases.length]);
-
   return (
     <div style={{height:32,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
       <p style={{
@@ -1639,12 +1493,10 @@ function FraseRotativa({ frases }) {
     </div>
   );
 }
-
 // ── ANIMATED PERCENT ─────────────────────────────────────────────────────────
 function AnimatedPct({ target }) {
   const [display, setDisplay] = useState(0);
   const ref = useRef(display);
-
   useEffect(() => {
     if (target <= ref.current) {
       ref.current = target;
@@ -1652,7 +1504,6 @@ function AnimatedPct({ target }) {
       return;
     }
     const diff = target - ref.current;
-    // Advance 1 by 1 smoothly
     const step = Math.max(1, Math.floor(diff / 8));
     const timer = setInterval(() => {
       ref.current = Math.min(ref.current + step, target);
@@ -1661,7 +1512,6 @@ function AnimatedPct({ target }) {
     }, 40);
     return () => clearInterval(timer);
   }, [target]);
-
   return (
     <span style={{
       color:"#1a56db",
@@ -1676,7 +1526,6 @@ function AnimatedPct({ target }) {
     </span>
   );
 }
-
 function TableRows({rows,allRows,updateCategory,cats,levelColor}) {
   return (
     <div>

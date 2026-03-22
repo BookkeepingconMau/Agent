@@ -381,6 +381,7 @@ export default function App() {
   const [splitMode, setSplitMode]       = useState(false);
   const [splitParts, setSplitParts]     = useState([]);
   const [splitPartNum, setSplitPartNum] = useState(1);
+  const [selectedCat, setSelectedCat]   = useState(""); // ── NUEVO: categoría seleccionada
   const fileRef = useRef();
 
   useEffect(() => { loadList(); }, []);
@@ -431,7 +432,6 @@ export default function App() {
       const depDiff  = bankDep  - extractedDep;
       const withDiff = bankWith - extractedWith;
 
-      // PASS 2A: If withdrawals missing > $50, do dedicated check summary extraction
       if (withDiff > 50) {
         setProgress("⚡ Agente 2A: Extrayendo resumen de cheques faltantes ($" + withDiff.toFixed(2) + ")...");
         const checkRows = await extractCheckSummary(b64);
@@ -446,7 +446,6 @@ export default function App() {
         setProgress("✅ Pasada de cheques: +" + newCheckRows.length + " cheques encontrados");
       }
 
-      // PASS 2B: If still missing (deposits or withdrawals), do general second pass
       const newExtDep  = allRows.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
       const newExtWith = allRows.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
       const remDepDiff  = bankDep  - newExtDep;
@@ -463,13 +462,13 @@ export default function App() {
       }
     }
 
-        setProgress("Agente 3: Categorizando...");
+    setProgress("Agente 3: Categorizando...");
     const categorized = allRows.map(row => {
       const isDeposit = row.type==="DEPOSIT";
       const result = categorize(row.concept, row.amount, isDeposit, clientData.businessType, clientData.learnedMerchants||{});
       return { ...row, concept: result.enrichedConcept||row.concept, category:result.category, level:result.level, reason:result.reason||"", payee:result.payee||null, checkNum:result.checkNum||null };
     });
-    // In split mode: merge with previous parts instead of replacing
+
     let finalTransactions = categorized;
     if (splitMode && splitParts.length > 0) {
       const allPrevious = splitParts.flat();
@@ -482,10 +481,9 @@ export default function App() {
     setProgress("");
 
     if (splitMode) {
-      // Save this part and go back to upload for next part
       setSplitParts(prev => [...prev, categorized]);
       setSplitPartNum(prev => prev + 1);
-      setBalances(bals); // keep balances from first part
+      setBalances(bals);
       setScreen("reconcile");
     } else {
       setScreen("reconcile");
@@ -526,15 +524,30 @@ export default function App() {
     a.click();
     document.body.removeChild(a);
   }
+
   function downloadWave(type) {
     const rows = transactions.filter(r=>r.type===type);
     const csv = "DATE,AMOUNT,*,CONCEPT\n" + rows.map(r=>`${r.date},${r.amount},,"${r.concept}"`).join("\n");
     triggerDownload(`wave_${type.toLowerCase()}_import.csv`, csv);
   }
+
   function downloadCSV() {
     const csv = "DATE,AMOUNT,*,CONCEPT,CATEGORY\n" + transactions.map(r=>`${r.date},${r.amount},,"${r.concept}","${r.category}"`).join("\n");
     triggerDownload(`wave_completo_${(clientData?.name||"client").replace(/\s/g,"_")}.csv`, csv);
   }
+
+  // ── NUEVO: Descarga por categoría ──────────────────────────────────────────
+  function downloadByCategory(cat) {
+    if (!cat) return;
+    const rows = transactions.filter(r => r.category === cat);
+    if (rows.length === 0) return;
+    const safeName = cat.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+    const clientName = (clientData?.name || "client").replace(/\s/g, "_");
+    const csv = "DATE,TYPE,AMOUNT,CONCEPT,CATEGORY\n" +
+      rows.map(r => `${r.date},${r.type},${r.amount},"${r.concept}","${r.category}"`).join("\n");
+    triggerDownload(`${clientName}_${safeName}.csv`, csv);
+  }
+  // ──────────────────────────────────────────────────────────────────────────
 
   const deposits     = transactions.filter(r=>r.type==="DEPOSIT");
   const withdrawals  = transactions.filter(r=>r.type==="WITHDRAWAL");
@@ -556,9 +569,15 @@ export default function App() {
   }, {});
   const checkReportRows = Object.entries(checkReport).sort((a,b)=>b[1].total-a[1].total);
 
-  // Totals from extracted transactions
   const totalDepositsAmt    = deposits.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
   const totalWithdrawalsAmt = withdrawals.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+
+  // ── Categorías únicas con conteo para el dropdown ──────────────────────────
+  const categoriesWithCount = [...new Set(transactions.map(r => r.category))]
+    .filter(c => c && c !== "")
+    .sort()
+    .map(c => ({ cat: c, count: transactions.filter(r => r.category === c).length }));
+  // ──────────────────────────────────────────────────────────────────────────
 
   const S = {
     app:{minHeight:"100vh",background:"#05080f",fontFamily:"'DM Sans',system-ui,sans-serif",color:"#1a1a1a",position:"relative"},
@@ -587,7 +606,7 @@ export default function App() {
 
   return (
     <div style={S.app}>
-      {/* Fixed logo bottom right - all screens */}
+      {/* Fixed logo bottom right */}
       <div style={{position:"fixed",bottom:20,right:24,zIndex:1000,opacity:0.85,transition:"opacity 0.2s"}}
         onMouseEnter={e=>e.currentTarget.style.opacity=1}
         onMouseLeave={e=>e.currentTarget.style.opacity=0.85}>
@@ -661,7 +680,6 @@ export default function App() {
               .s5{animation:twinkle2 2.7s ease-in-out infinite}
               .shooting{position:absolute;width:60px;height:1px;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.8));animation:shootingstar 4s ease-in-out infinite;animation-delay:2s}
             `}</style>
-            {/* Stars */}
             {[
               {l:"4%",t:"15%",w:2,h:2,c:"s1"},{l:"8%",t:"70%",w:1,h:1,c:"s2"},{l:"12%",t:"35%",w:1.5,h:1.5,c:"s3"},
               {l:"16%",t:"85%",w:1,h:1,c:"s4"},{l:"20%",t:"10%",w:2.5,h:2.5,c:"s1"},{l:"22%",t:"55%",w:1,h:1,c:"s5"},
@@ -746,7 +764,6 @@ export default function App() {
             <p style={S.sub}>{BUSINESS_TYPES.find(b=>b.id===clientData.businessType)?.icon} {BUSINESS_TYPES.find(b=>b.id===clientData.businessType)?.label} · 🧠 {Object.keys(clientData.learnedMerchants||{}).length} aprendidas</p>
           </div>
           <div style={S.card}>
-            {/* Split mode toggle - always visible */}
             <div style={{marginBottom:16,padding:"12px 16px",background:"rgba(26,86,219,0.1)",borderRadius:10,border:"1px solid rgba(26,86,219,0.3)"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                 <div>
@@ -795,7 +812,6 @@ export default function App() {
               <input ref={fileRef} type="file" accept=".pdf" style={{display:"none"}} onChange={e=>{const f=e.target.files[0];if(f)setFile(f)}} />
             </div>
 
-
             {file&&(
               <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:14}}>
                 <button style={{...S.btn,background:"#1a56db",color:"#fff",border:"none"}} onClick={()=>setFile(null)}>Cambiar</button>
@@ -841,8 +857,6 @@ export default function App() {
             .data-particle{position:absolute;font-size:13px;font-family:monospace;animation:dataFlow 2.5s ease-in-out infinite;pointer-events:none;font-weight:700;text-shadow:0 0 8px currentColor}
             .counter-anim{animation:counter 1.5s ease-in-out infinite}
           `}</style>
-
-          {/* Matrix rain background */}
           <div style={{position:"absolute",inset:0,overflow:"hidden",opacity:0.07}}>
             {[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19].map((i)=>(
               <div key={i} style={{position:"absolute",left:`${i*5+2}%`,top:0,fontSize:11,color:"#1a56db",fontFamily:"monospace",lineHeight:1.6,animation:`matrixRain ${3+i*0.3}s linear infinite`,animationDelay:`${i*0.2}s`}}>
@@ -850,14 +864,8 @@ export default function App() {
               </div>
             ))}
           </div>
-
-          {/* Main layout */}
           <div style={{display:"grid",gridTemplateColumns:"1fr 280px 1fr",gap:32,alignItems:"center",width:"90%",maxWidth:1100,position:"relative",zIndex:1}}>
-
-            {/* LEFT SCREENS */}
             <div style={{display:"flex",flexDirection:"column",gap:20}}>
-
-              {/* Transactions screen */}
               <div className="screen-pulse" style={{background:"rgba(5,15,40,0.95)",borderRadius:14,border:"1px solid #1a56db",padding:18,position:"relative",overflow:"hidden"}}>
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
                   <div style={{width:8,height:8,borderRadius:"50%",background:"#ef4444"}} />
@@ -884,8 +892,6 @@ export default function App() {
                 ))}
                 <div style={{position:"absolute",bottom:0,left:0,right:0,height:2,background:"linear-gradient(90deg,transparent,#1a56db,transparent)",animation:"scanline 3s linear infinite"}} />
               </div>
-
-              {/* Reconciliation screen */}
               <div className="screen-pulse-green" style={{background:"rgba(5,25,15,0.95)",borderRadius:14,border:"1px solid #22c55e",padding:18,position:"relative",overflow:"hidden"}}>
                 <div style={{fontSize:11,color:"#22c55e",fontFamily:"monospace",fontWeight:700,marginBottom:10}}>⚖️ RECONCILIATION ENGINE</div>
                 {[
@@ -905,17 +911,12 @@ export default function App() {
                 <div style={{position:"absolute",bottom:0,left:0,right:0,height:2,background:"linear-gradient(90deg,transparent,#22c55e,transparent)",animation:"scanline 2.5s linear infinite"}} />
               </div>
             </div>
-
-            {/* CENTER - Robot */}
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:16}}>
               <div className="robot-float robot-glow" style={{borderRadius:"50%",position:"relative"}}>
                 <img src="/mau-agent.jpeg" alt="Mau Agent" style={{width:220,height:220,objectFit:"cover",borderRadius:"50%",border:"4px solid #1a56db",display:"block"}} />
-                {/* Orbit ring */}
                 <div style={{position:"absolute",inset:-12,borderRadius:"50%",border:"2px solid rgba(26,86,219,0.4)",borderTopColor:"#1a56db",animation:"spin 3s linear infinite"}} />
                 <div style={{position:"absolute",inset:-24,borderRadius:"50%",border:"1px solid rgba(26,86,219,0.2)",borderBottomColor:"#1a56db",animation:"spin 5s linear infinite reverse"}} />
               </div>
-
-              {/* Floating data around robot */}
               {[
                 {v:"ACH",c:"#1a56db",delay:"0s"},{v:"PDF",c:"#22c55e",delay:"0.5s"},
                 {v:"$$$",c:"#f59e0b",delay:"1s"},{v:"CSV",c:"#1a56db",delay:"1.5s"},
@@ -927,19 +928,13 @@ export default function App() {
                   color:p.c,animationDelay:p.delay,position:"absolute"
                 }}>{p.v}</div>
               ))}
-
-              {/* Progress dots */}
               <div style={{display:"flex",gap:10,marginTop:8}}>
                 {[0,1,2,3,4].map(i=>(
                   <div key={i} style={{width:10,height:10,borderRadius:"50%",background:"#1a56db",animation:`dotPulse 1s ease-in-out infinite`,animationDelay:`${i*0.15}s`,boxShadow:"0 0 8px #1a56db"}} />
                 ))}
               </div>
             </div>
-
-            {/* RIGHT SCREENS */}
             <div style={{display:"flex",flexDirection:"column",gap:20}}>
-
-              {/* Categories screen */}
               <div className="screen-pulse" style={{background:"rgba(5,15,40,0.95)",borderRadius:14,border:"1px solid #1a56db",padding:18,position:"relative",overflow:"hidden",animationDelay:"0.5s"}}>
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
                   <div style={{width:8,height:8,borderRadius:"50%",background:"#ef4444"}} />
@@ -965,8 +960,6 @@ export default function App() {
                 ))}
                 <div style={{position:"absolute",bottom:0,left:0,right:0,height:2,background:"linear-gradient(90deg,transparent,#8b5cf6,transparent)",animation:"scanline 2s linear infinite"}} />
               </div>
-
-              {/* Check detection screen */}
               <div className="screen-pulse" style={{background:"rgba(5,15,40,0.95)",borderRadius:14,border:"1px solid #f59e0b",padding:18,position:"relative",overflow:"hidden",animationDelay:"1s"}}>
                 <div style={{fontSize:11,color:"#f59e0b",fontFamily:"monospace",fontWeight:700,marginBottom:10}}>📋 CHECK DETECTION</div>
                 {[
@@ -986,8 +979,6 @@ export default function App() {
               </div>
             </div>
           </div>
-
-          {/* Bottom status */}
           <div style={{marginTop:32,textAlign:"center",position:"relative",zIndex:1}}>
             <h2 style={{fontSize:26,fontWeight:700,color:"#ffffff",marginBottom:8,fontFamily:"'Playfair Display',serif",textShadow:"0 0 20px rgba(26,86,219,0.5)"}}>
               Procesando Statement...
@@ -1031,8 +1022,6 @@ export default function App() {
               </button>
             </div>
           </div>
-
-          {/* Summary totals */}
           <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
             {[
               {l:"Transacciones",v:transactions.length,c:"#ffffff"},
@@ -1046,8 +1035,6 @@ export default function App() {
               </div>
             ))}
           </div>
-
-          {/* Per-account table */}
           {balances.length>0 ? (
             <div style={{...S.card,padding:0,overflow:"hidden"}}>
               <div style={{background:"#0f1f4b",color:"#fff",padding:"10px 16px",fontSize:12,fontWeight:700,letterSpacing:1}}>
@@ -1112,8 +1099,6 @@ export default function App() {
               <div style={{fontSize:12,color:"#64748b"}}>Puedes continuar de todas formas.</div>
             </div>
           )}
-
-          {/* Comparison */}
           {balances.length>0&&(
             <div style={{...S.card,marginTop:14}}>
               <div style={{fontSize:12,fontWeight:700,color:"#64748b",marginBottom:12,letterSpacing:1}}>🔎 COMPARACIÓN: BANCO vs TRANSACCIONES EXTRAÍDAS</div>
@@ -1147,7 +1132,6 @@ export default function App() {
               })()}
             </div>
           )}
-
           <div style={{display:"flex",justifyContent:"flex-end",marginTop:16,gap:10}}>
             <button style={{...S.btn,...S.btnOutline,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>setScreen("upload")}>← Volver</button>
             <button style={{...S.btn,...S.btnGold,fontSize:14,padding:"10px 28px"}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
@@ -1254,17 +1238,43 @@ export default function App() {
             ))}
           </div>
           {askPct>15&&<div style={{background:"#fef3c7",border:"1px solid #f59e0b",borderRadius:8,padding:"9px 14px",marginBottom:12,fontSize:12,color:"#92400e"}}>⚠️ <strong>ALERTA:</strong> {askPct}% supera el límite de 15%</div>}
+
+          {/* ── BARRA DE BOTONES CON DESCARGA POR CATEGORÍA ── */}
           <div style={{display:"flex",gap:7,marginBottom:12,flexWrap:"wrap",alignItems:"center",justifyContent:"space-between"}}>
             <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
               <button style={{...S.btn,background:"#edf2f7",color:"#1a1a1a",fontSize:11,padding:"6px 12px"}} onClick={()=>setScreen("reconcile")}>⚖️ Ver Conciliación</button>
             </div>
-            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
+
+              {/* ── NUEVO: Selector + botón de descarga por categoría ── */}
+              <div style={{display:"flex",gap:0,alignItems:"center",border:"1px solid #1a56db",borderRadius:10,overflow:"hidden",background:"#fff"}}>
+                <select
+                  value={selectedCat}
+                  onChange={e => setSelectedCat(e.target.value)}
+                  style={{padding:"7px 10px",border:"none",fontSize:11,fontFamily:"inherit",color:"#1a1a1a",background:"transparent",cursor:"pointer",outline:"none",maxWidth:220,minWidth:160}}>
+                  <option value="">— Elegir categoría —</option>
+                  {categoriesWithCount.map(({cat,count}) => (
+                    <option key={cat} value={cat}>{cat} ({count})</option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => downloadByCategory(selectedCat)}
+                  disabled={!selectedCat}
+                  style={{padding:"7px 14px",border:"none",borderLeft:"1px solid #1a56db",cursor:selectedCat?"pointer":"not-allowed",fontSize:11,fontWeight:700,
+                    background:selectedCat?"#1a56db":"#94a3b8",color:"#fff",fontFamily:"inherit",transition:"all 0.15s",whiteSpace:"nowrap"}}>
+                  ⬇ Por Categoría
+                </button>
+              </div>
+              {/* ── FIN NUEVO ── */}
+
               <button style={{...S.btn,...S.btnOutline,fontSize:11,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>downloadWave("DEPOSIT")}>⬇ Wave DEPOSITS</button>
               <button style={{...S.btn,...S.btnOutline,fontSize:11,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>downloadWave("WITHDRAWAL")}>⬇ Wave WITHDRAWALS</button>
               <button style={{...S.btn,...S.btnPrimary,fontSize:11}} onClick={downloadCSV}>⬇ CSV Completo</button>
               <button style={{...S.btn,...S.btnGold}} onClick={finalize}>✓ Finalizar</button>
             </div>
           </div>
+          {/* ─────────────────────────────────────────────────────────────── */}
+
           {deposits.length>0&&(
             <div style={{...S.card,padding:0,overflow:"hidden",marginBottom:12}}>
               <div style={{background:"#166534",color:"#fff",padding:"8px 14px",fontSize:11,fontWeight:700,letterSpacing:1}}>▲ DEPOSITS ({deposits.length})</div>

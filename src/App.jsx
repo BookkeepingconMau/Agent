@@ -172,7 +172,19 @@ const MERCHANT_DICT = [
   ...[["STATE FARM"],["GEICO"],["PROGRESSIVE","PROG MICHIGAN"],["ALLSTATE"],["FARMERS INS"],["NATIONWIDE"],["LIBERTY MUTUAL"],["WORKERS COMP"]].map(p=>({patterns:p,category:"Insurance"})),
   ...[["CAMINO FINANCIAL"],["KABBAGE"],["ONDECK"],["BLUEVINE"],["FUNDBOX"],["CREDIBLY"],["LENDIO"],["LAFCU"]].map(p=>({patterns:p,category:"Loan Payment"})),
   ...[["VERIZON","VZWRLSS"],["AT&T","ATT "],["T-MOBILE","TMOBILE"],["METRO PCS","METROPCS"],["BOOST MOBILE"],["CRICKET "],["SIMPLE MOBILE"],["TRACFONE"],["SPECTRUM"],["XFINITY","COMCAST"],["DIRECTV"],["DISH NETWORK"]].map(p=>({patterns:p,category:"Telephone & Internet"})),
-  ...[["QUICKBOOKS"],["INTUIT"],["CANVA"],["ADOBE"],["MICROSOFT 365"],["GOOGLE WORKSPACE"],["DROPBOX"],["ZOOM"],["SLACK"],["SHOPIFY"],["GODADDY"],["WIX"],["NETFLIX"],["SPOTIFY"],["HULU"],["DISNEY+","DISNEY PLUS"],["BUILDIUM"],["APPFOLIO"],["MAILCHIMP"],["CONSTANTCONTACT"],["AMAZON PRIME"]].map(p=>({patterns:p,category:"Software & Subscriptions"})),
+  ...[["QUICKBOOKS"],["INTUIT"],["CANVA"],["ADOBE"],["MICROSOFT 365"],["GOOGLE WORKSPACE"],["DROPBOX"],["ZOOM"],["SLACK"],["SHOPIFY"],["GODADDY"],["WIX"],["BUILDIUM"],["APPFOLIO"],["MAILCHIMP"],["CONSTANTCONTACT"]].map(p=>({patterns:p,category:"Software & Subscriptions"})),
+  // ── STREAMING / ENTERTAINMENT ──
+  { patterns:["NETFLIX"], category:"Meals & Entertainment" },
+  { patterns:["SPOTIFY"], category:"Meals & Entertainment" },
+  { patterns:["HULU"], category:"Meals & Entertainment" },
+  { patterns:["DISNEY+","DISNEY PLUS"], category:"Meals & Entertainment" },
+  { patterns:["AMAZON PRIME","PRIME VIDEO","PRIMEVIDEO"], category:"Meals & Entertainment" },
+  { patterns:["HBO MAX","HBOMAX","MAX.COM"], category:"Meals & Entertainment" },
+  { patterns:["APPLE TV","APPLETV+"], category:"Meals & Entertainment" },
+  { patterns:["PARAMOUNT+","PARAMOUNT PLUS"], category:"Meals & Entertainment" },
+  { patterns:["PEACOCK"], category:"Meals & Entertainment" },
+  { patterns:["YOUTUBE PREMIUM","YOUTUBEPREMIUM"], category:"Meals & Entertainment" },
+  { patterns:["AMAZON PRIME"] , category:"Software & Subscriptions" },
   { patterns:["SQUARE ","SQUARE*","SQ *","SQ*"], category:"ASK TO CLIENT" },
   { patterns:["STRIPE"],                         category:"ASK TO CLIENT" },
   { patterns:["KOMPANIC LLC","KOMPANIC"],         category:{restaurant:"Software & Subscriptions",food_events:"Software & Subscriptions",construction:"Software & Subscriptions",hvac:"Software & Subscriptions",roofing:"Software & Subscriptions",drywall:"Software & Subscriptions",electrical:"Software & Subscriptions",plumbing:"Software & Subscriptions",landscaping:"Software & Subscriptions",cleaning:"Software & Subscriptions",trucking:"Software & Subscriptions",property_mgmt:"Software & Subscriptions",barbershop:"Software & Subscriptions",general:"Software & Subscriptions"} },
@@ -202,6 +214,22 @@ const MERCHANT_DICT = [
   { patterns:["PARKING"], category:"Operating Expenses - Parking" },
   ...[["IRS ","IRS*"],["STATE TAX","SALES TAX"]].map(p=>({patterns:p,category:"Taxes & Licenses"})),
   { patterns:["GUITAR CENTER"], category:"ASK TO CLIENT" },
+
+  // ── MABREY BANK / CONSTRUCTION (Najera) ──────────────────────────────────
+  { patterns:["MAVERIK","POS DEB MAVERIK","DBT CRD MAVERIK"], category:"Vehicle - Fuel (Non-Production)" },
+  { patterns:["ATWOOD","POS DEB ATWOOD"], category:"COGS - Materials" },
+  { patterns:["CHARLIES","DBT CRD CHARLIES"], category:"Meals & Entertainment" },
+  { patterns:["MAZZIOS","MAZZIO"], category:"Meals & Entertainment" },
+  { patterns:["STEWART FUEL","DBT CRD STEWART"], category:"Vehicle - Fuel (Non-Production)" },
+  { patterns:["TORTILLERIA","DBT CRD TORTILLERIA"], category:"Meals & Entertainment" },
+  { patterns:["IGLESIA","DBT CRD IGLESIA"], category:"Donations" },
+  { patterns:["INS. PREM PRIMERICA","PRIMERICA"], category:"Insurance" },
+  { patterns:["JOHNNYS","POS DEB JOHNNYS"], category:"Meals & Entertainment" },
+  { patterns:["PEEPS","POS DEB PEEPS"], category:"Vehicle - Fuel (Non-Production)" },
+  { patterns:["TIL*PL","DBT CRD TIL*PL"], category:"Meals & Entertainment" },
+  { patterns:["DDA B/P PIE"], category:"Insurance" },
+  { patterns:["DDA B/P TOTAL"], category:"Telephone & Internet" },
+  { patterns:["IPAY BILL PAY"], category:"Bank Fees" },
 ];
 
 const DEPOSIT_CATEGORIES    = ["Income - Services","Other Income","Loan Proceeds","Owner Investment","Transfer In","Refund Received","ASK TO CLIENT"];
@@ -401,11 +429,19 @@ Respond ONLY with valid JSON array. No markdown. No explanation.
 Example: [{"account_name":"Business Checking","account_number":"1234","beginning_balance":5000.00,"total_deposits":10000.00,"total_withdrawals":8000.00,"ending_balance":7000.00,"period_start":"01/01/2024","period_end":"01/31/2024"}]`;
   const text = await callClaude([{ role:"user", content:[
     { type:"document", source:{ type:"base64", media_type:"application/pdf", data:b64 } },
-    { type:"text", text:"Extract all account balances as JSON array." }
+    { type:"text", text:"Extract all account balances as JSON array. Look on page 1 for any summary of deposits and withdrawals/debits." }
   ]}], system);
   try {
     const clean = text.replace(/```json|```/g,"").trim();
-    return JSON.parse(clean);
+    const parsed = JSON.parse(clean);
+    // Validate — if all amounts are 0, return empty so UI shows warning
+    if (parsed.length > 0) {
+      const hasData = parsed.some(b =>
+        (parseFloat(b.total_deposits)||0) > 0 || (parseFloat(b.total_withdrawals)||0) > 0
+      );
+      if (!hasData) return [];
+    }
+    return parsed;
   } catch { return []; }
 }
 
@@ -1506,7 +1542,7 @@ export default function App() {
           .map(([k,v]) => `  { patterns:["${k}"], category:"${v}" },`)
           .join("\n");
         const fullCode = Object.keys(allRules).length > 0
-          ? `// Reglas aprendidas - ${today2}\n// Cliente: ${clientData?.name || ""}\n// Pegar dentro de MERCHANT_DICT en App.jsx\n\n${codeLines}`
+          ? `// Reglas aprendidas - ${today2}\n// Cliente: ${clientData?.name || ""}\n// Tipo de negocio: ${clientData?.businessType || ""}\n// Pegar dentro de MERCHANT_DICT en App.jsx — buscar sección del tipo de negocio\n\n${codeLines}`
           : `// Sin reglas aprendidas aún\n// Procesa un statement y resuelve las ambigüedades primero`;
         return (
           <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}

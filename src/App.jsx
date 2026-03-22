@@ -1354,9 +1354,23 @@ export default function App() {
                   ))}
                 </div>
               </div>
-              <div style={{display:"flex",justifyContent:"space-between"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
                 <button style={{...S.btn,...S.btnOutline,fontSize:11,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>{if(currentAsk+1<askQueue.length)setCurrentAsk(currentAsk+1);else setScreen("review");}}>Dejar como ASK TO CLIENT</button>
-                <span style={{fontSize:11,color:"#bbb"}}>{askQueue.length-currentAsk-1} restantes</span>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <button
+                    disabled={currentAsk===0}
+                    onClick={()=>setCurrentAsk(currentAsk-1)}
+                    style={{...S.btn,fontSize:13,padding:"6px 14px",background:currentAsk===0?"#e2e8f0":"#0f1f4b",color:currentAsk===0?"#aaa":"#fff",border:"none",cursor:currentAsk===0?"not-allowed":"pointer"}}>
+                    ← Anterior
+                  </button>
+                  <span style={{fontSize:11,color:"#bbb",minWidth:80,textAlign:"center"}}>{currentAsk+1} / {askQueue.length}</span>
+                  <button
+                    disabled={currentAsk+1>=askQueue.length}
+                    onClick={()=>setCurrentAsk(currentAsk+1)}
+                    style={{...S.btn,fontSize:13,padding:"6px 14px",background:currentAsk+1>=askQueue.length?"#e2e8f0":"#0f1f4b",color:currentAsk+1>=askQueue.length?"#aaa":"#fff",border:"none",cursor:currentAsk+1>=askQueue.length?"not-allowed":"pointer"}}>
+                    Siguiente →
+                  </button>
+                </div>
               </div>
             </div>
           </div>

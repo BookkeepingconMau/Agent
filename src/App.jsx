@@ -90,6 +90,47 @@ Each transaction may span multiple lines — use first line description as conce
 "Total de depósitos" and "Total de retiros" are summary lines — NOT transactions, skip them.
 SALDO FINAL DIARIO section — NOT transactions, skip entirely.
 OUTPUT: Raw CSV — TYPE,DATE,AMOUNT,CONCEPT. No headers. No markdown.`,
+  msu_federal_credit_union: `You are a STRICT extraction agent for MSU FEDERAL CREDIT UNION statements.
+MSU FCU STATEMENT STRUCTURE — CRITICAL RULES:
+
+1. MULTIPLE ACCOUNTS: This statement contains multiple sub-accounts (SPARTAN SAVER, IMMA, SMALL BUSINESS CHECKING).
+   Extract ONLY transactions from the account labeled "SMALL BUSINESS CHECKING" — ignore SPARTAN SAVER and IMMA entirely.
+
+2. MAIN LEDGER (all pages of the SMALL BUSINESS CHECKING section):
+   Each transaction line has: Post Date | Trans Date (optional) | Amount | Balance | Description
+   - Positive amount = DEPOSIT
+   - Negative amount = WITHDRAWAL
+   Extract ALL transactions: ACH, POS, Debit Card, ComputerLine Transfers, Drafts, ATM deposits, Fees.
+
+3. DRAFTS: Lines like "Draft 5472" or "Draft 5481" are WITHDRAWALS.
+   Use concept "CHECK #5472", "CHECK #5481", etc.
+
+4. CLEARED CHECK SUMMARY table (near end of SMALL BUSINESS CHECKING section):
+   These checks ARE ALREADY included in the ledger as Draft lines — DO NOT extract from this table.
+   It is for reference only. Extracting it would create duplicates.
+
+5. SUMMARY PAGES ("Withdrawals and Other Charges" / "Deposits and Other Credits"):
+   These are summaries of transactions already in the ledger — DO NOT extract from them.
+   They will create duplicates.
+
+6. TRANSFERS:
+   "ComputerLine Transfer To Share XX" = WITHDRAWAL, concept "Transfer Out (Share XX)"
+   "ComputerLine Transfer From Share XX" = DEPOSIT, concept "Transfer In (Share XX)"
+   "ComputerLine Transfer To CASILLAS MAGALLO" = WITHDRAWAL, concept "Loan Payment - Casillas Magallo"
+   "ComputerLine M2M Outgoing Transaction" = WITHDRAWAL, concept "Transfer Out"
+   "ComputerLine M2M Incoming Transaction" = DEPOSIT, concept "Transfer In"
+   "ComputerLine PERSON PAY [Name]" = WITHDRAWAL, concept "PERSON PAY [Name]"
+   Include ALL of these.
+
+7. Dates format: MM-DD → convert to MM/DD/YYYY using the statement year shown on page 1.
+   If Trans Date differs from Post Date, use Post Date.
+
+8. DEPOSITS positive. WITHDRAWALS negative.
+9. "Balance Forward" and "Ending Balance" lines are NOT transactions — skip them.
+10. "Dividends Earned YTD" lines are NOT transactions — skip them.
+    Dividend entries WITH an amount and date ARE transactions — include them as DEPOSITS.
+
+OUTPUT: Raw CSV — TYPE,DATE,AMOUNT,CONCEPT. No headers. No markdown. No explanation.`,
   default: `You are a STRICT bank statement extraction agent.
 Extract ALL transactions: deposits, withdrawals, checks, fees, transfers.
 DEPOSITS positive. WITHDRAWALS negative.
@@ -331,6 +372,7 @@ To identify bank_id use these clues:
 - "Arvest" or "arvest.com" → "arvest_bank"
 - "Bank of America" or "bankofamerica.com" or "BANK OF AMERICA" → "bank_of_america"
 - "Chase" or "JPMorgan Chase" or "chase.com" → "chase"
+- "MSU Federal Credit Union" or "MSUFCU" or "msufcu.org" or "MSU FCU" or "1-800-MSU-4YOU" → "msu_federal_credit_union"
 - Any other bank → "unknown"
 Respond ONLY with valid JSON. No markdown. No explanation.
 Example: {"bank_name":"Mabrey Bank","bank_id":"mabrey_bank","total_pages":16,"period_start":"02/02/2026","period_end":"03/01/2026","total_deposits":75616.02,"total_withdrawals":86217.03}`;
@@ -400,6 +442,12 @@ BANK OF AMERICA format (page 1 Account summary):
 CHASE format (page 1 RESUMEN DE CUENTA / ACCOUNT SUMMARY):
 - "Depósitos y Adiciones" or "Deposits and Additions" = total_deposits
 - "Retiros Electrónicos" or "Electronic Withdrawals" = total_withdrawals
+MSU FEDERAL CREDIT UNION format (last summary page):
+- Look for "SMALL BUSINESS CHECKING" account section only — ignore SPARTAN SAVER and IMMA.
+- "X Deposits and Other Credits for $XX,XXX.XX" = total_deposits
+- "X Withdrawals and Other Charges for $XX,XXX.XX" = total_withdrawals
+- "Balance Forward" on the SMALL BUSINESS CHECKING section = beginning_balance
+- "Ending Balance" on the SMALL BUSINESS CHECKING section = ending_balance
 DEFAULT: Look for Beginning Balance, Total Deposits, Total Withdrawals, Ending Balance in any summary table.
 If beginning_balance or ending_balance are not shown, use 0.
 Respond ONLY with valid JSON array. No markdown. No explanation.

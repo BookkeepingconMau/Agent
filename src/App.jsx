@@ -459,13 +459,16 @@ BANK OF AMERICA format (page 1 Account summary):
 CHASE format (page 1 RESUMEN DE CUENTA / ACCOUNT SUMMARY):
 - "Depósitos y Adiciones" or "Deposits and Additions" = total_deposits
 - "Retiros Electrónicos" or "Electronic Withdrawals" = total_withdrawals
-MSU FEDERAL CREDIT UNION format (summary pages near the end):
+MSU FEDERAL CREDIT UNION format (last summary pages):
 - This statement has 3 sub-accounts: SPARTAN SAVER, IMMA, and SMALL BUSINESS CHECKING.
 - Extract ALL 3 as separate objects in the array.
 - For each sub-account find: Balance Forward = beginning_balance, Ending Balance = ending_balance.
-- For SMALL BUSINESS CHECKING specifically, the totals are on the last summary pages:
-  "XX Deposits and Other Credits for $XX,XXX.XX" = total_deposits
-  "XX Withdrawals and Other Charges for $XX,XXX.XX" = total_withdrawals
+- For SMALL BUSINESS CHECKING specifically:
+  * Find "XX Deposits and Other Credits for $XX,XXX.XX" = total_deposits
+  * Find "XX Withdrawals and Other Charges for $XX,XXX.XX" = electronic_withdrawals
+  * Find "XX Cleared Checks for $XX,XXX.XX" = checks_total
+  * CRITICAL: total_withdrawals = electronic_withdrawals + checks_total (sum both numbers)
+  * Example: "119 Withdrawals for $82,905.73" + "45 Cleared Checks for $50,888.35" = total_withdrawals: 133794.08
 - For SPARTAN SAVER and IMMA, sum the individual deposit and withdrawal lines within each section.
 DEFAULT: Look for Beginning Balance, Total Deposits, Total Withdrawals, Ending Balance in any summary table.
 If beginning_balance or ending_balance are not shown, use 0.

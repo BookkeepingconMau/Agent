@@ -1320,25 +1320,36 @@ export default function App() {
       )}
       {/* ── DEDUP ── */}
       {screen==="dedup"&&(()=>{
-        // Group withdrawals by concept — find duplicates
+        // Group withdrawals by concept+amount — only exact duplicates
         const withRows = transactions
           .map((r,i) => ({...r, _idx:i}))
           .filter(r => r.type==="WITHDRAWAL");
 
-        // Count occurrences per concept
+        // Count occurrences per concept+amount key
         const conceptCount = {};
         withRows.forEach(r => {
-          const key = r.concept.trim();
+          const key = r.concept.trim() + "||" + Math.abs(parseFloat(r.amount)||0).toFixed(2);
           conceptCount[key] = (conceptCount[key]||0) + 1;
         });
 
-        // Only show concepts that appear more than once
-        const dupConcepts = Object.keys(conceptCount).filter(k => conceptCount[k] > 1);
+        // Only show concept+amount combos that appear more than once
+        const dupKeys = Object.keys(conceptCount).filter(k => conceptCount[k] > 1);
 
-        // Group rows by concept
+        // Build display groups — key is "CONCEPT ($AMOUNT)"
+        const dupConcepts = dupKeys.map(k => {
+          const [concept, amt] = k.split("||");
+          return `${concept} ($${fmt(parseFloat(amt))})`;
+        });
+
+        // Group rows by concept+amount
         const groups = {};
-        dupConcepts.forEach(concept => {
-          groups[concept] = withRows.filter(r => r.concept.trim() === concept);
+        dupKeys.forEach(k => {
+          const [concept, amt] = k.split("||");
+          const displayKey = `${concept} ($${fmt(parseFloat(amt))})`;
+          groups[displayKey] = withRows.filter(r =>
+            r.concept.trim() === concept &&
+            Math.abs(parseFloat(r.amount)||0).toFixed(2) === amt
+          );
         });
 
         // Total marked for removal
@@ -1402,8 +1413,8 @@ export default function App() {
                     <span>📋 CONCEPTOS DUPLICADOS ({dupConcepts.length} grupos)</span>
                     <button onClick={()=>{
                       const allMarked = {};
-                      dupConcepts.forEach(concept => {
-                        const rows = groups[concept];
+                      dupConcepts.forEach(displayKey => {
+                        const rows = groups[displayKey];
                         // Mark all except first occurrence
                         rows.slice(1).forEach(r => {
                           const key = r.concept+"||"+Math.abs(parseFloat(r.amount)||0).toFixed(2)+"||"+r._idx;

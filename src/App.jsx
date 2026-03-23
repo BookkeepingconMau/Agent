@@ -563,6 +563,7 @@ export default function App() {
   const [bankInfo, setBankInfo]         = useState(null);
   const [showDevModal, setShowDevModal] = useState(false);
   const [copied, setCopied]             = useState(false);
+  const [dedupMarked, setDedupMarked]   = useState({});
   const fileRef = useRef();
   useEffect(() => { loadList(); }, []);
   async function loadList() {
@@ -685,6 +686,20 @@ export default function App() {
     }
     if (currentAsk+1<askQueue.length) setCurrentAsk(currentAsk+1);
     else setScreen("review");
+  }
+  function applyDedup(markedKeys) {
+    // markedKeys = Set of "concept||amount||index" keys to remove
+    const cleaned = transactions.filter((r, i) => {
+      const key = r.concept + "||" + Math.abs(parseFloat(r.amount)||0).toFixed(2) + "||" + i;
+      return !markedKeys.has(key);
+    });
+    // Recalculate askQueue with cleaned transactions
+    const newAsks = cleaned.filter(r => r.category === "ASK TO CLIENT");
+    setTransactions(cleaned);
+    setAskQueue(newAsks);
+    setCurrentAsk(0);
+    setDedupMarked({});
+    setScreen("reconcile");
   }
   function updateCategory(idx, cat) {
     setTransactions(prev=>prev.map((r,i)=>i===idx?{...r,category:cat}:r));
@@ -1128,7 +1143,14 @@ export default function App() {
               <button style={{...S.btn,...S.btnOutline,fontSize:12,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
                 Saltar →
               </button>
-              <button style={{...S.btn,...S.btnGold}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
+              <button style={{...S.btn,...S.btnGold}} onClick={()=>{
+                const bankWith = balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
+                const bankDep  = balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
+                const extWith  = transactions.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+                const extDep   = transactions.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+                const hasDiff  = Math.abs(bankWith-extWith)>50 || Math.abs(bankDep-extDep)>50;
+                setScreen(hasDiff ? "dedup" : askQueue.length>0 ? "resolve" : "review");
+              }}>
                 Continuar ✓
               </button>
             </div>
@@ -1273,12 +1295,195 @@ export default function App() {
           )}
           <div style={{display:"flex",justifyContent:"flex-end",marginTop:16,gap:10}}>
             <button style={{...S.btn,...S.btnOutline,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>setScreen("upload")}>← Volver</button>
-            <button style={{...S.btn,...S.btnGold,fontSize:14,padding:"10px 28px"}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
-              {askQueue.length>0 ? `Resolver ${askQueue.length} ambigüedades →` : "Ver transacciones →"}
+            <button style={{...S.btn,...S.btnGold,fontSize:14,padding:"10px 28px"}} onClick={()=>{
+              const bankWith = balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
+              const bankDep  = balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
+              const extWith  = transactions.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+              const extDep   = transactions.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+              const hasDiff  = Math.abs(bankWith-extWith)>50 || Math.abs(bankDep-extDep)>50;
+              setScreen(hasDiff ? "dedup" : askQueue.length>0 ? "resolve" : "review");
+            }}>
+              {(()=>{
+                const bankWith = balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
+                const bankDep  = balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
+                const extWith  = transactions.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+                const extDep   = transactions.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+                const hasDiff  = Math.abs(bankWith-extWith)>50 || Math.abs(bankDep-extDep)>50;
+                if (hasDiff) return "🔧 Corregir duplicados →";
+                return askQueue.length>0 ? `Resolver ${askQueue.length} ambigüedades →` : "Ver transacciones →";
+              })()}
             </button>
           </div>
         </div>
       )}
+      {/* ── DEDUP ── */}
+      {screen==="dedup"&&(()=>{
+        // Group withdrawals by concept — find duplicates
+        const withRows = transactions
+          .map((r,i) => ({...r, _idx:i}))
+          .filter(r => r.type==="WITHDRAWAL");
+
+        // Count occurrences per concept
+        const conceptCount = {};
+        withRows.forEach(r => {
+          const key = r.concept.trim();
+          conceptCount[key] = (conceptCount[key]||0) + 1;
+        });
+
+        // Only show concepts that appear more than once
+        const dupConcepts = Object.keys(conceptCount).filter(k => conceptCount[k] > 1);
+
+        // Group rows by concept
+        const groups = {};
+        dupConcepts.forEach(concept => {
+          groups[concept] = withRows.filter(r => r.concept.trim() === concept);
+        });
+
+        // Total marked for removal
+        const markedAmt = Object.entries(dedupMarked)
+          .filter(([,v]) => v)
+          .reduce((s, [k]) => {
+            const parts = k.split("||");
+            return s + (parseFloat(parts[1])||0);
+          }, 0);
+
+        const bankWith = balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
+        const extWith  = transactions.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+        const currentDiff = extWith - bankWith;
+        const afterDiff = currentDiff - markedAmt;
+        const markedCount = Object.values(dedupMarked).filter(Boolean).length;
+
+        return (
+          <div style={S.page}>
+            <div style={{marginBottom:20,display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:10}}>
+              <div>
+                <h1 style={S.h1}>🔧 Corrector de Duplicados</h1>
+                <p style={S.sub}>Selecciona las transacciones duplicadas a eliminar</p>
+              </div>
+              <div style={{display:"flex",gap:8}}>
+                <button style={{...S.btn,...S.btnOutline,fontSize:12,color:"#fff",background:"#64748b",border:"none"}}
+                  onClick={()=>setScreen("reconcile")}>← Volver</button>
+                <button style={{...S.btn,...S.btnGold}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
+                  Saltar →
+                </button>
+              </div>
+            </div>
+
+            {/* Stats bar */}
+            <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
+              {[
+                {l:"Diferencia actual",   v:`$${fmt(currentDiff)}`,  c:"#ef4444"},
+                {l:"Marcado a eliminar",  v:`$${fmt(markedAmt)}`,    c:"#f59e0b"},
+                {l:"Diferencia restante", v:`$${fmt(Math.abs(afterDiff))}`, c:Math.abs(afterDiff)<1?"#22c55e":"#ef4444"},
+                {l:"Transacciones",       v:`${markedCount} selec.`, c:"#1a56db"},
+              ].map(s=>(
+                <div key={s.l} style={{...S.card,flex:1,minWidth:140,marginBottom:0,padding:"12px 16px"}}>
+                  <div style={{fontSize:10,fontWeight:700,color:"#94a3b8",letterSpacing:1,marginBottom:4}}>{s.l}</div>
+                  <div style={{fontSize:18,fontWeight:700,color:s.c}}>{s.v}</div>
+                </div>
+              ))}
+            </div>
+
+            {dupConcepts.length === 0 ? (
+              <div style={{...S.card,textAlign:"center",padding:"40px 20px"}}>
+                <div style={{fontSize:32,marginBottom:10}}>✅</div>
+                <div style={{fontWeight:600,color:"#1a1a1a",marginBottom:6}}>No se encontraron duplicados exactos</div>
+                <div style={{fontSize:12,color:"#64748b"}}>La diferencia puede ser por transacciones faltantes, no duplicadas.</div>
+                <button style={{...S.btn,...S.btnGold,marginTop:16}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
+                  Continuar de todas formas →
+                </button>
+              </div>
+            ) : (
+              <>
+                <div style={{...S.card,padding:0,overflow:"hidden",marginBottom:14}}>
+                  <div style={{background:"#0f1f4b",color:"#fff",padding:"10px 16px",fontSize:12,fontWeight:700,letterSpacing:1,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <span>📋 CONCEPTOS DUPLICADOS ({dupConcepts.length} grupos)</span>
+                    <button onClick={()=>{
+                      const allMarked = {};
+                      dupConcepts.forEach(concept => {
+                        const rows = groups[concept];
+                        // Mark all except first occurrence
+                        rows.slice(1).forEach(r => {
+                          const key = r.concept+"||"+Math.abs(parseFloat(r.amount)||0).toFixed(2)+"||"+r._idx;
+                          allMarked[key] = true;
+                        });
+                      });
+                      setDedupMarked(allMarked);
+                    }} style={{fontSize:11,fontWeight:700,background:"#f59e0b",color:"#000",border:"none",borderRadius:6,padding:"4px 12px",cursor:"pointer"}}>
+                      Marcar todos los duplicados
+                    </button>
+                  </div>
+                  <div style={{maxHeight:460,overflowY:"auto"}}>
+                    {dupConcepts.map(concept => {
+                      const rows = groups[concept];
+                      const totalAmt = rows.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+                      return (
+                        <div key={concept} style={{borderBottom:"1px solid #e2e8f0"}}>
+                          {/* Group header */}
+                          <div style={{background:"#f8fafc",padding:"8px 16px",display:"flex",alignItems:"center",gap:10}}>
+                            <span style={{background:"#fee2e2",color:"#991b1b",borderRadius:6,padding:"2px 8px",fontSize:11,fontWeight:700}}>
+                              {rows.length}x
+                            </span>
+                            <span style={{fontWeight:700,fontSize:13,color:"#1a1a1a",flex:1}}>{concept}</span>
+                            <span style={{fontSize:12,color:"#64748b"}}>${fmt(totalAmt)} total</span>
+                          </div>
+                          {/* Individual rows */}
+                          {rows.map((r,ri) => {
+                            const key = r.concept+"||"+Math.abs(parseFloat(r.amount)||0).toFixed(2)+"||"+r._idx;
+                            const isMarked = !!dedupMarked[key];
+                            const isFirst = ri === 0;
+                            return (
+                              <div key={key} style={{display:"flex",alignItems:"center",gap:12,padding:"9px 16px 9px 32px",background:isMarked?"#fff8f8":isFirst?"#f0fdf4":"#fff",borderTop:"1px solid #f1f5f9",transition:"background 0.15s"}}>
+                                <input type="checkbox" checked={isMarked}
+                                  onChange={e => setDedupMarked(prev=>({...prev,[key]:e.target.checked}))}
+                                  style={{width:16,height:16,cursor:"pointer",accentColor:"#ef4444"}}
+                                />
+                                <div style={{fontSize:11,color:"#64748b",minWidth:70}}>{r.date}</div>
+                                <div style={{fontSize:13,fontWeight:700,color:"#ef4444",minWidth:90}}>-${fmt(Math.abs(parseFloat(r.amount)||0))}</div>
+                                <div style={{flex:1,fontSize:11,color:"#444"}}>{r.concept}</div>
+                                <div style={{fontSize:10,padding:"2px 8px",borderRadius:4,fontWeight:700,
+                                  background:isFirst?"#dcfce7":"#fee2e2",
+                                  color:isFirst?"#166534":"#991b1b"}}>
+                                  {isFirst ? "✓ ORIGINAL" : "⚠ DUPLICADO"}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
+                  <div style={{fontSize:13,color:"#64748b"}}>
+                    {markedCount > 0
+                      ? `${markedCount} transacciones marcadas — se eliminarán $${fmt(markedAmt)} de retiros`
+                      : "Marca las transacciones duplicadas para eliminarlas"}
+                  </div>
+                  <div style={{display:"flex",gap:8}}>
+                    <button style={{...S.btn,background:"#e2e8f0",color:"#64748b",fontSize:12}}
+                      onClick={()=>setDedupMarked({})}>
+                      Limpiar selección
+                    </button>
+                    <button
+                      disabled={markedCount===0}
+                      style={{...S.btn,...S.btnGold,fontSize:14,padding:"10px 28px",
+                        opacity:markedCount===0?0.5:1,cursor:markedCount===0?"not-allowed":"pointer"}}
+                      onClick={()=>{
+                        const keys = new Set(Object.entries(dedupMarked).filter(([,v])=>v).map(([k])=>k));
+                        applyDedup(keys);
+                      }}>
+                      ✅ Aplicar y recalcular ({markedCount})
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        );
+      })()}
+
       {/* ── RESOLVE ── */}
       {screen==="resolve"&&askQueue.length>0&&(()=>{
         const ask=askQueue[currentAsk];

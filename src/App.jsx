@@ -459,19 +459,21 @@ BANK OF AMERICA format (page 1 Account summary):
 CHASE format (page 1 RESUMEN DE CUENTA / ACCOUNT SUMMARY):
 - "Depósitos y Adiciones" or "Deposits and Additions" = total_deposits
 - "Retiros Electrónicos" or "Electronic Withdrawals" = total_withdrawals
-MSU FEDERAL CREDIT UNION format (last summary page):
-- Look for "SMALL BUSINESS CHECKING" account section only — ignore SPARTAN SAVER and IMMA.
-- "X Deposits and Other Credits for $XX,XXX.XX" = total_deposits
-- "X Withdrawals and Other Charges for $XX,XXX.XX" = total_withdrawals
-- "Balance Forward" on the SMALL BUSINESS CHECKING section = beginning_balance
-- "Ending Balance" on the SMALL BUSINESS CHECKING section = ending_balance
+MSU FEDERAL CREDIT UNION format (last 2 summary pages):
+CRITICAL: This statement has MULTIPLE sub-accounts. Return ONLY ONE object for SMALL BUSINESS CHECKING.
+DO NOT return objects for SPARTAN SAVER or IMMA — those are savings accounts, not the main checking.
+- Find the line "XX Deposits and Other Credits for $XX,XXX.XX" — that number is total_deposits for SMALL BUSINESS CHECKING
+- Find the line "XX Withdrawals and Other Charges for $XX,XXX.XX" — that number is total_withdrawals for SMALL BUSINESS CHECKING
+- Find "Balance Forward" under SMALL BUSINESS CHECKING section = beginning_balance (e.g. 14,521.03)
+- Find "Ending Balance" under SMALL BUSINESS CHECKING section = ending_balance (e.g. 5,585.80)
+- Return exactly: [{"account_name":"SMALL BUSINESS CHECKING","account_number":"0528","beginning_balance":14521.03,"total_deposits":124858.85,"total_withdrawals":82905.73,"ending_balance":5585.80,"period_start":"01/01/2026","period_end":"01/31/2026"}]
 DEFAULT: Look for Beginning Balance, Total Deposits, Total Withdrawals, Ending Balance in any summary table.
 If beginning_balance or ending_balance are not shown, use 0.
 Respond ONLY with valid JSON array. No markdown. No explanation.
 Example: [{"account_name":"Business Checking","account_number":"1234","beginning_balance":5000.00,"total_deposits":10000.00,"total_withdrawals":8000.00,"ending_balance":7000.00,"period_start":"01/01/2024","period_end":"01/31/2024"}]`;
   const text = await callClaude([{ role:"user", content:[
     { type:"document", source:{ type:"base64", media_type:"application/pdf", data:b64 } },
-    { type:"text", text:"Extract all account balances as JSON array. Look on page 1 for any summary of deposits and withdrawals/debits." }
+    { type:"text", text:"Extract account balances as JSON array. For MSU Federal Credit Union: look at the LAST pages for the summary totals — NOT page 1. Return ONLY the SMALL BUSINESS CHECKING account, ignore sub-accounts." }
   ]}], system);
   try {
     const clean = text.replace(/```json|```/g,"").trim();
@@ -1144,14 +1146,8 @@ export default function App() {
                 Saltar →
               </button>
               <button style={{...S.btn,...S.btnGold}} onClick={()=>{
-                const isMultiAccount = bankInfo?.bank_id === "msu_federal_credit_union";
-                const cmpBals = isMultiAccount
-                  ? (balances.filter(b=>(b.account_name||"").toUpperCase().includes("CHECKING")).length > 0
-                      ? balances.filter(b=>(b.account_name||"").toUpperCase().includes("CHECKING"))
-                      : balances)
-                  : balances;
-                const bankWith = cmpBals.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
-                const bankDep  = cmpBals.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
+                const bankWith = balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
+                const bankDep  = balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
                 const extWith  = transactions.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
                 const extDep   = transactions.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
                 const hasDiff  = Math.abs(bankWith-extWith)>50 || Math.abs(bankDep-extDep)>50;
@@ -1269,46 +1265,32 @@ export default function App() {
           {balances.length>0&&(
             <div style={{...S.card,marginTop:14}}>
               <div style={{fontSize:12,fontWeight:700,color:"#64748b",marginBottom:12,letterSpacing:1}}>🔎 BANCO vs EXTRAÍDO</div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:12}}>
+                {[
+                  {l:"Depósitos Banco",v:`$${fmt(balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0))}`,c:"#22c55e"},
+                  {l:"Depósitos Extraídos",v:`$${fmt(totalDepositsAmt)}`,c:"#22c55e"},
+                  {l:"Retiros Banco",v:`$${fmt(balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0))}`,c:"#ef4444"},
+                  {l:"Retiros Extraídos",v:`$${fmt(totalWithdrawalsAmt)}`,c:"#ef4444"},
+                ].map(s=>(
+                  <div key={s.l} style={{background:"#f7f6f2",borderRadius:8,padding:"12px 14px"}}>
+                    <div style={{fontSize:10,fontWeight:700,color:"#94a3b8",letterSpacing:0.5,marginBottom:4}}>{s.l}</div>
+                    <div style={{fontSize:16,fontWeight:700,color:s.c}}>{s.v}</div>
+                  </div>
+                ))}
+              </div>
               {(()=>{
-                // For multi-account banks (MSU FCU), compare only against the main checking account
-                const isMultiAccount = bankInfo?.bank_id === "msu_federal_credit_union";
-                const mainBalances = isMultiAccount
-                  ? balances.filter(b => (b.account_name||"").toUpperCase().includes("CHECKING"))
-                  : balances;
-                // Fallback: if no CHECKING found, use all balances
-                const compareBalances = mainBalances.length > 0 ? mainBalances : balances;
-                const bankDep  = compareBalances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
-                const bankWith = compareBalances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
+                const bankDep  = balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
+                const bankWith = balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
                 const depDiff  = Math.abs(bankDep - totalDepositsAmt);
                 const withDiff = Math.abs(bankWith - totalWithdrawalsAmt);
                 const allGood  = depDiff < 1 && withDiff < 1;
                 return (
-                  <>
-                    {isMultiAccount && (
-                      <div style={{fontSize:11,color:"#64748b",marginBottom:10,padding:"6px 10px",background:"#f0f4ff",borderRadius:6,border:"1px solid #c7d2fe"}}>
-                        ℹ️ Comparando solo contra <strong>{compareBalances[0]?.account_name || "cuenta principal"}</strong> — las subcuentas (Spartan Saver, IMMA) se concilian por separado arriba.
-                      </div>
-                    )}
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:12}}>
-                      {[
-                        {l:"Depósitos Banco",   v:`$${fmt(bankDep)}`,            c:"#22c55e"},
-                        {l:"Depósitos Extraídos",v:`$${fmt(totalDepositsAmt)}`,  c:"#22c55e"},
-                        {l:"Retiros Banco",      v:`$${fmt(bankWith)}`,           c:"#ef4444"},
-                        {l:"Retiros Extraídos",  v:`$${fmt(totalWithdrawalsAmt)}`,c:"#ef4444"},
-                      ].map(s=>(
-                        <div key={s.l} style={{background:"#f7f6f2",borderRadius:8,padding:"12px 14px"}}>
-                          <div style={{fontSize:10,fontWeight:700,color:"#94a3b8",letterSpacing:0.5,marginBottom:4}}>{s.l}</div>
-                          <div style={{fontSize:16,fontWeight:700,color:s.c}}>{s.v}</div>
-                        </div>
-                      ))}
-                    </div>
-                    <div style={{marginTop:12,padding:"10px 14px",borderRadius:8,background:allGood?"#dcfce7":"#fef3c7",border:`1px solid ${allGood?"#86efac":"#fde68a"}`}}>
-                      {allGood
-                        ? <span style={{color:"#166534",fontWeight:600,fontSize:13}}>✅ Todo cuadra — Las transacciones coinciden con los totales del banco</span>
-                        : <span style={{color:"#92400e",fontWeight:600,fontSize:13}}>⚠️ Posible diferencia — Depósitos: ${fmt(depDiff)} · Retiros: ${fmt(withDiff)}</span>
-                      }
-                    </div>
-                  </>
+                  <div style={{marginTop:12,padding:"10px 14px",borderRadius:8,background:allGood?"#dcfce7":"#fef3c7",border:`1px solid ${allGood?"#86efac":"#fde68a"}`}}>
+                    {allGood
+                      ? <span style={{color:"#166534",fontWeight:600,fontSize:13}}>✅ Todo cuadra — Las transacciones coinciden con los totales del banco</span>
+                      : <span style={{color:"#92400e",fontWeight:600,fontSize:13}}>⚠️ Posible diferencia — Depósitos: ${fmt(depDiff)} · Retiros: ${fmt(withDiff)}</span>
+                    }
+                  </div>
                 );
               })()}
             </div>
@@ -1316,28 +1298,16 @@ export default function App() {
           <div style={{display:"flex",justifyContent:"flex-end",marginTop:16,gap:10}}>
             <button style={{...S.btn,...S.btnOutline,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>setScreen("upload")}>← Volver</button>
             <button style={{...S.btn,...S.btnGold,fontSize:14,padding:"10px 28px"}} onClick={()=>{
-              const isMultiAccount = bankInfo?.bank_id === "msu_federal_credit_union";
-              const cmpBals = isMultiAccount
-                ? (balances.filter(b=>(b.account_name||"").toUpperCase().includes("CHECKING")).length > 0
-                    ? balances.filter(b=>(b.account_name||"").toUpperCase().includes("CHECKING"))
-                    : balances)
-                : balances;
-              const bankWith = cmpBals.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
-              const bankDep  = cmpBals.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
+              const bankWith = balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
+              const bankDep  = balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
               const extWith  = transactions.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
               const extDep   = transactions.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
               const hasDiff  = Math.abs(bankWith-extWith)>50 || Math.abs(bankDep-extDep)>50;
               setScreen(hasDiff ? "dedup" : askQueue.length>0 ? "resolve" : "review");
             }}>
               {(()=>{
-                const isMultiAccount = bankInfo?.bank_id === "msu_federal_credit_union";
-                const cmpBals = isMultiAccount
-                  ? (balances.filter(b=>(b.account_name||"").toUpperCase().includes("CHECKING")).length > 0
-                      ? balances.filter(b=>(b.account_name||"").toUpperCase().includes("CHECKING"))
-                      : balances)
-                  : balances;
-                const bankWith = cmpBals.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
-                const bankDep  = cmpBals.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
+                const bankWith = balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
+                const bankDep  = balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
                 const extWith  = transactions.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
                 const extDep   = transactions.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
                 const hasDiff  = Math.abs(bankWith-extWith)>50 || Math.abs(bankDep-extDep)>50;

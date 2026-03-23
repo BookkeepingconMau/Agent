@@ -1149,8 +1149,10 @@ export default function App() {
                 Saltar →
               </button>
               <button style={{...S.btn,...S.btnGold}} onClick={()=>{
-                const bankWith = balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
-                const bankDep  = balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
+                const _cb3 = balances.filter(b=>(b.account_name||"").toUpperCase().includes("CHECKING"));
+                const _cmp3 = _cb3.length > 0 ? _cb3 : balances;
+                const bankWith = _cmp3.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
+                const bankDep  = _cmp3.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
                 const extWith  = transactions.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
                 const extDep   = transactions.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
                 const hasDiff  = Math.abs(bankWith-extWith)>50 || Math.abs(bankDep-extDep)>50;
@@ -1268,32 +1270,44 @@ export default function App() {
           {balances.length>0&&(
             <div style={{...S.card,marginTop:14}}>
               <div style={{fontSize:12,fontWeight:700,color:"#64748b",marginBottom:12,letterSpacing:1}}>🔎 BANCO vs EXTRAÍDO</div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:12}}>
-                {[
-                  {l:"Depósitos Banco",v:`$${fmt(balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0))}`,c:"#22c55e"},
-                  {l:"Depósitos Extraídos",v:`$${fmt(totalDepositsAmt)}`,c:"#22c55e"},
-                  {l:"Retiros Banco",v:`$${fmt(balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0))}`,c:"#ef4444"},
-                  {l:"Retiros Extraídos",v:`$${fmt(totalWithdrawalsAmt)}`,c:"#ef4444"},
-                ].map(s=>(
-                  <div key={s.l} style={{background:"#f7f6f2",borderRadius:8,padding:"12px 14px"}}>
-                    <div style={{fontSize:10,fontWeight:700,color:"#94a3b8",letterSpacing:0.5,marginBottom:4}}>{s.l}</div>
-                    <div style={{fontSize:16,fontWeight:700,color:s.c}}>{s.v}</div>
-                  </div>
-                ))}
-              </div>
               {(()=>{
-                const bankDep  = balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
-                const bankWith = balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
+                // For multi-account statements, compare only against the main checking account
+                // to avoid counting sub-account movements that were not extracted
+                const checkingBals = balances.filter(b=>(b.account_name||"").toUpperCase().includes("CHECKING"));
+                const compareBals  = checkingBals.length > 0 ? checkingBals : balances;
+                const bankDep  = compareBals.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
+                const bankWith = compareBals.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
                 const depDiff  = Math.abs(bankDep - totalDepositsAmt);
                 const withDiff = Math.abs(bankWith - totalWithdrawalsAmt);
                 const allGood  = depDiff < 1 && withDiff < 1;
+                const isFiltered = checkingBals.length > 0 && checkingBals.length < balances.length;
                 return (
-                  <div style={{marginTop:12,padding:"10px 14px",borderRadius:8,background:allGood?"#dcfce7":"#fef3c7",border:`1px solid ${allGood?"#86efac":"#fde68a"}`}}>
-                    {allGood
-                      ? <span style={{color:"#166534",fontWeight:600,fontSize:13}}>✅ Todo cuadra — Las transacciones coinciden con los totales del banco</span>
-                      : <span style={{color:"#92400e",fontWeight:600,fontSize:13}}>⚠️ Posible diferencia — Depósitos: ${fmt(depDiff)} · Retiros: ${fmt(withDiff)}</span>
-                    }
-                  </div>
+                  <>
+                    {isFiltered && (
+                      <div style={{fontSize:11,color:"#64748b",marginBottom:10,padding:"6px 10px",background:"#f0f9ff",borderRadius:6,border:"1px solid #bae6fd"}}>
+                        ℹ️ Comparando solo <strong>{compareBals[0]?.account_name}</strong> — subcuentas conciliadas individualmente arriba
+                      </div>
+                    )}
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:12}}>
+                      {[
+                        {l:"Depósitos Banco",   v:`$${fmt(bankDep)}`,            c:"#22c55e"},
+                        {l:"Depósitos Extraídos",v:`$${fmt(totalDepositsAmt)}`,  c:"#22c55e"},
+                        {l:"Retiros Banco",      v:`$${fmt(bankWith)}`,           c:"#ef4444"},
+                        {l:"Retiros Extraídos",  v:`$${fmt(totalWithdrawalsAmt)}`,c:"#ef4444"},
+                      ].map(s=>(
+                        <div key={s.l} style={{background:"#f7f6f2",borderRadius:8,padding:"12px 14px"}}>
+                          <div style={{fontSize:10,fontWeight:700,color:"#94a3b8",letterSpacing:0.5,marginBottom:4}}>{s.l}</div>
+                          <div style={{fontSize:16,fontWeight:700,color:s.c}}>{s.v}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{marginTop:12,padding:"10px 14px",borderRadius:8,background:allGood?"#dcfce7":"#fef3c7",border:`1px solid ${allGood?"#86efac":"#fde68a"}`}}>
+                      {allGood
+                        ? <span style={{color:"#166534",fontWeight:600,fontSize:13}}>✅ Todo cuadra — Las transacciones coinciden con los totales del banco</span>
+                        : <span style={{color:"#92400e",fontWeight:600,fontSize:13}}>⚠️ Posible diferencia — Depósitos: ${fmt(depDiff)} · Retiros: ${fmt(withDiff)}</span>
+                      }
+                    </div>
+                  </>
                 );
               })()}
             </div>
@@ -1301,16 +1315,20 @@ export default function App() {
           <div style={{display:"flex",justifyContent:"flex-end",marginTop:16,gap:10}}>
             <button style={{...S.btn,...S.btnOutline,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>setScreen("upload")}>← Volver</button>
             <button style={{...S.btn,...S.btnGold,fontSize:14,padding:"10px 28px"}} onClick={()=>{
-              const bankWith = balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
-              const bankDep  = balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
+              const _cb = balances.filter(b=>(b.account_name||"").toUpperCase().includes("CHECKING"));
+              const _cmp = _cb.length > 0 ? _cb : balances;
+              const bankWith = _cmp.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
+              const bankDep  = _cmp.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
               const extWith  = transactions.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
               const extDep   = transactions.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
               const hasDiff  = Math.abs(bankWith-extWith)>50 || Math.abs(bankDep-extDep)>50;
               setScreen(hasDiff ? "dedup" : askQueue.length>0 ? "resolve" : "review");
             }}>
               {(()=>{
-                const bankWith = balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
-                const bankDep  = balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
+                const _cb2 = balances.filter(b=>(b.account_name||"").toUpperCase().includes("CHECKING"));
+                const _cmp2 = _cb2.length > 0 ? _cb2 : balances;
+                const bankWith = _cmp2.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
+                const bankDep  = _cmp2.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
                 const extWith  = transactions.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
                 const extDep   = transactions.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
                 const hasDiff  = Math.abs(bankWith-extWith)>50 || Math.abs(bankDep-extDep)>50;

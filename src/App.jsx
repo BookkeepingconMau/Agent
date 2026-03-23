@@ -459,21 +459,19 @@ BANK OF AMERICA format (page 1 Account summary):
 CHASE format (page 1 RESUMEN DE CUENTA / ACCOUNT SUMMARY):
 - "Depósitos y Adiciones" or "Deposits and Additions" = total_deposits
 - "Retiros Electrónicos" or "Electronic Withdrawals" = total_withdrawals
-MSU FEDERAL CREDIT UNION format (last 2 summary pages):
-CRITICAL: This statement has MULTIPLE sub-accounts. Return ONLY ONE object for SMALL BUSINESS CHECKING.
-DO NOT return objects for SPARTAN SAVER or IMMA — those are savings accounts, not the main checking.
-- Find the line "XX Deposits and Other Credits for $XX,XXX.XX" — that number is total_deposits for SMALL BUSINESS CHECKING
-- Find the line "XX Withdrawals and Other Charges for $XX,XXX.XX" — that number is total_withdrawals for SMALL BUSINESS CHECKING
-- Find "Balance Forward" under SMALL BUSINESS CHECKING section = beginning_balance (e.g. 14,521.03)
-- Find "Ending Balance" under SMALL BUSINESS CHECKING section = ending_balance (e.g. 5,585.80)
-- Return exactly: [{"account_name":"SMALL BUSINESS CHECKING","account_number":"0528","beginning_balance":14521.03,"total_deposits":124858.85,"total_withdrawals":82905.73,"ending_balance":5585.80,"period_start":"01/01/2026","period_end":"01/31/2026"}]
+MSU FEDERAL CREDIT UNION format (last summary page):
+- Look for "SMALL BUSINESS CHECKING" account section only — ignore SPARTAN SAVER and IMMA.
+- "X Deposits and Other Credits for $XX,XXX.XX" = total_deposits
+- "X Withdrawals and Other Charges for $XX,XXX.XX" = total_withdrawals
+- "Balance Forward" on the SMALL BUSINESS CHECKING section = beginning_balance
+- "Ending Balance" on the SMALL BUSINESS CHECKING section = ending_balance
 DEFAULT: Look for Beginning Balance, Total Deposits, Total Withdrawals, Ending Balance in any summary table.
 If beginning_balance or ending_balance are not shown, use 0.
 Respond ONLY with valid JSON array. No markdown. No explanation.
 Example: [{"account_name":"Business Checking","account_number":"1234","beginning_balance":5000.00,"total_deposits":10000.00,"total_withdrawals":8000.00,"ending_balance":7000.00,"period_start":"01/01/2024","period_end":"01/31/2024"}]`;
   const text = await callClaude([{ role:"user", content:[
     { type:"document", source:{ type:"base64", media_type:"application/pdf", data:b64 } },
-    { type:"text", text:"Extract account balances as JSON array. For MSU Federal Credit Union: look at the LAST pages for the summary totals — NOT page 1. Return ONLY the SMALL BUSINESS CHECKING account, ignore sub-accounts." }
+    { type:"text", text:"Extract all account balances as JSON array. Look on page 1 for any summary of deposits and withdrawals/debits." }
   ]}], system);
   try {
     const clean = text.replace(/```json|```/g,"").trim();

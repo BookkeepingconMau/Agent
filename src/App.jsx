@@ -573,23 +573,24 @@ export default function App() {
   const [copied, setCopied]             = useState(false);
   const [dedupMarked, setDedupMarked]   = useState({});
   const fileRef = useRef();
-  // ── HELPERS sessionStorage para persistir datos del split ──────────────────
-  // sessionStorage sobrevive re-renders, hot-reloads y navegación interna.
-  // Se limpia automáticamente al cerrar el tab (no persiste entre sesiones).
-  const saveSplitBank = (data) => {
-    try { sessionStorage.setItem("split_bankInfo", JSON.stringify(data)); } catch {}
-  };
-  const saveSplitBals = (data) => {
-    try { sessionStorage.setItem("split_balances", JSON.stringify(data)); } catch {}
-  };
-  const loadSplitBank = () => {
-    try { const v = sessionStorage.getItem("split_bankInfo"); return v ? JSON.parse(v) : null; } catch { return null; }
-  };
-  const loadSplitBals = () => {
-    try { const v = sessionStorage.getItem("split_balances"); return v ? JSON.parse(v) : []; } catch { return []; }
-  };
+  // ── REFS sincronizados — solución definitiva al problema de closure stale ──
+  // El estado de React dentro de funciones async lee el valor del render en que
+  // se creó la función (closure), no el valor actual. Los refs siempre apuntan
+  // al valor más reciente, sin importar cuántos re-renders hayan ocurrido.
+  const splitPartNumRef = useRef(1);
+  const splitModeRef    = useRef(false);
+  const bankInfoRef     = useRef(null);
+  const balancesRef     = useRef([]);
+  const splitPartsRef   = useRef([]);
+  // Mantener refs sincronizados con el estado en cada render
+  splitPartNumRef.current = splitPartNum;
+  splitModeRef.current    = splitMode;
+  bankInfoRef.current     = bankInfo;
+  balancesRef.current     = balances;
+  splitPartsRef.current   = splitParts;
   const clearSplitCache = () => {
-    try { sessionStorage.removeItem("split_bankInfo"); sessionStorage.removeItem("split_balances"); } catch {}
+    bankInfoRef.current  = null;
+    balancesRef.current  = [];
   };
   useEffect(() => { loadList(); }, []);
   async function loadList() {
@@ -620,19 +621,20 @@ export default function App() {
     setP("Agente 0: Leyendo PDF...", 3);
     const b64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(",")[1]); r.onerror=rej; r.readAsDataURL(file); });
 
+    // Leer SIEMPRE de refs — nunca del estado (closure stale)
+    const currentPartNum  = splitPartNumRef.current;
+    const currentSplitMode = splitModeRef.current;
+
     // ── AGENT 0: Detect bank ──
-    // Parte 1 (o sin split): detecta, guarda en estado + sessionStorage
-    // Partes 2+: lee de sessionStorage (sobrevive cualquier re-render o hot-reload)
     let detectedBank;
-    if (!splitMode || splitPartNum === 1) {
+    if (!currentSplitMode || currentPartNum === 1) {
       setP("Agente 0: Identificando banco...", 5);
       detectedBank = await detectBank(b64);
       setBankInfo(detectedBank);
-      saveSplitBank(detectedBank); // ← persiste en sessionStorage
+      bankInfoRef.current = detectedBank; // ← actualizar ref inmediatamente
     } else {
-      // Partes 2+ — leer de sessionStorage, nunca del estado (puede ser stale)
-      detectedBank = loadSplitBank() || { bank_name:"Desconocido", bank_id:"unknown", total_pages:0, period_start:"", period_end:"", total_deposits:0, total_withdrawals:0 };
-      setBankInfo(detectedBank); // ← actualizar estado con el valor correcto
+      // Partes 2+ — leer del ref (siempre tiene el valor más reciente)
+      detectedBank = bankInfoRef.current || { bank_name:"Desconocido", bank_id:"unknown", total_pages:0, period_start:"", period_end:"", total_deposits:0, total_withdrawals:0 };
       setP(`Agente 0: Banco ya identificado — ${detectedBank.bank_name}`, 5);
     }
     const bankId = detectedBank.bank_id || "unknown";
@@ -645,19 +647,16 @@ export default function App() {
     setP(`✅ ${rows.length} transacciones encontradas`, 35);
 
     // ── AGENT 2: Extract balances ──
-    // Parte 1 (o sin split): extrae, guarda en estado + sessionStorage
-    // Partes 2+: lee de sessionStorage (sobrevive cualquier re-render o hot-reload)
     let bals;
-    if (!splitMode || splitPartNum === 1) {
+    if (!currentSplitMode || currentPartNum === 1) {
       setP("Agente 2: Extrayendo saldos...", 40);
       bals = await extractBalances(b64);
       setBalances(bals);
-      saveSplitBals(bals); // ← persiste en sessionStorage
+      balancesRef.current = bals; // ← actualizar ref inmediatamente
       setP(`✅ ${bals.length} cuenta(s) detectada(s)`, 48);
     } else {
-      // Partes 2+ — leer de sessionStorage, nunca del estado (puede ser stale)
-      bals = loadSplitBals();
-      setBalances(bals); // ← actualizar estado con el valor correcto
+      // Partes 2+ — leer del ref (siempre tiene el valor más reciente)
+      bals = balancesRef.current.length > 0 ? balancesRef.current : [];
       setP(`✅ Saldos de Parte 1 conservados — ${bals.length} cuenta(s) · Banco: ${detectedBank.bank_name}`, 48);
     }
 
@@ -707,19 +706,26 @@ export default function App() {
     });
     setP("✅ Categorización completada", 85);
     let finalTransactions = categorized;
-    if (splitMode && splitParts.length > 0) {
-      const allPrevious = splitParts.flat();
-      finalTransactions = [...allPrevious, ...categorized];
+    if (currentSplitMode) {
+      // Construir transacciones combinando todas las partes ya cargadas
+      // Si es recarga de una parte existente, reemplazar esa parte
+      const currentParts = [...splitPartsRef.current];
+      currentParts[currentPartNum - 1] = categorized;
+      finalTransactions = currentParts.filter(Boolean).flat();
     }
     const asks = finalTransactions.filter(r=>r.category==="ASK TO CLIENT");
     setTransactions(finalTransactions);
     setAskQueue(asks); setCurrentAsk(0);
     setP("✅ Procesamiento completado", 100);
     setTimeout(() => {
-      if (splitMode) {
-        setSplitParts(prev => [...prev, categorized]);
-        setSplitPartNum(prev => prev + 1);
-        setBalances(bals);
+      if (currentSplitMode) {
+        // Reemplazar parte si ya existe (recarga), o agregar nueva
+        setSplitParts(prev => {
+          const updated = [...prev];
+          updated[currentPartNum - 1] = categorized; // índice base 0
+          return updated;
+        });
+        setSplitPartNum(prev => Math.max(prev, currentPartNum + 1));
         setScreen("reconcile");
       } else {
         setScreen("reconcile");
@@ -1033,25 +1039,44 @@ export default function App() {
               {splitMode&&(
                 <div style={{marginTop:10,display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
                   <div style={{fontSize:12,color:"#64748b"}}>Partes cargadas:</div>
-                  {[1,2,3,4].map(n=>(
-                    <div key={n} style={{width:28,height:28,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,
-                      background:n<splitPartNum?"#22c55e":n===splitPartNum?"#1a56db":"#e2e8f0",
-                      color:n<=splitPartNum?"#fff":"#94a3b8",border:n===splitPartNum?"2px solid #1a56db":"2px solid transparent"}}>
-                      {n<splitPartNum?"✓":n}
-                    </div>
-                  ))}
-                  {splitParts.length>0&&(
+                  {[1,2,3,4].map(n=>{
+                    const isDone    = splitParts[n-1] !== undefined;
+                    const isCurrent = n === splitPartNum;
+                    const isPending = !isDone && !isCurrent;
+                    return (
+                      <div
+                        key={n}
+                        title={isDone ? `Recargar Parte ${n}` : isCurrent ? `Cargando Parte ${n}` : ""}
+                        onClick={()=>{ if(isDone) setSplitPartNum(n); }}
+                        style={{
+                          width:28,height:28,borderRadius:"50%",
+                          display:"flex",alignItems:"center",justifyContent:"center",
+                          fontSize:11,fontWeight:700,
+                          background: isDone && !isCurrent ? "#22c55e" : isCurrent ? "#1a56db" : "#e2e8f0",
+                          color: isDone || isCurrent ? "#fff" : "#94a3b8",
+                          border: isCurrent ? "2px solid #1a56db" : isDone ? "2px solid #16a34a" : "2px solid transparent",
+                          cursor: isDone ? "pointer" : "default",
+                          position:"relative",
+                        }}>
+                        {isDone && !isCurrent ? "✓" : n}
+                        {isDone && !isCurrent && (
+                          <span style={{position:"absolute",top:-4,right:-4,background:"#f59e0b",borderRadius:"50%",width:12,height:12,fontSize:8,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,color:"#000"}}>↺</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {splitParts.filter(Boolean).length>0&&(
                     <div style={{fontSize:11,color:"#22c55e",marginLeft:4,fontWeight:600}}>
-                      ✅ {splitParts.reduce((s,p)=>s+p.length,0)} transacciones acumuladas
+                      ✅ {splitParts.filter(Boolean).reduce((s,p)=>s+p.length,0)} transacciones acumuladas
                     </div>
                   )}
-                  {splitParts.length>0&&(
+                  {splitParts.filter(Boolean).length>0&&(
                     <button onClick={()=>{
                       setSplitParts([]);
                       setSplitPartNum(1);
                       setTransactions([]);
-                      clearSplitCache(); // ← limpiar sessionStorage al reiniciar
-                    }}                      style={{marginLeft:"auto",fontSize:10,color:"#fff",background:"#ef4444",border:"none",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontWeight:600}}>
+                      clearSplitCache();
+                    }} style={{marginLeft:"auto",fontSize:10,color:"#fff",background:"#ef4444",border:"none",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontWeight:600}}>
                       Reiniciar
                     </button>
                   )}
@@ -1071,7 +1096,11 @@ export default function App() {
               <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:14}}>
                 <button style={{...S.btn,background:"#1a56db",color:"#fff",border:"none"}} onClick={()=>setFile(null)}>Cambiar</button>
                 <button style={{...S.btn,...S.btnGold}} onClick={runExtraction}>
-                  {splitMode ? `🚀 Procesar Parte ${splitPartNum}` : "🚀 Procesar"}
+                  {splitMode
+                    ? splitParts[splitPartNum-1]
+                      ? `🔄 Recargar Parte ${splitPartNum}`
+                      : `🚀 Procesar Parte ${splitPartNum}`
+                    : "🚀 Procesar"}
                 </button>
               </div>
             )}

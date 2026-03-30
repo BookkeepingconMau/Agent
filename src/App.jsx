@@ -572,11 +572,25 @@ export default function App() {
   const [showDevModal, setShowDevModal] = useState(false);
   const [copied, setCopied]             = useState(false);
   const [dedupMarked, setDedupMarked]   = useState({});
-  const fileRef      = useRef();
-  // ── REFS para persistir datos del split entre renders ──────────────────────
-  // useRef garantiza acceso al valor actual aunque el estado sea stale en closures
-  const bankInfoRef  = useRef(null);
-  const balancesRef  = useRef([]);
+  const fileRef = useRef();
+  // ── HELPERS sessionStorage para persistir datos del split ──────────────────
+  // sessionStorage sobrevive re-renders, hot-reloads y navegación interna.
+  // Se limpia automáticamente al cerrar el tab (no persiste entre sesiones).
+  const saveSplitBank = (data) => {
+    try { sessionStorage.setItem("split_bankInfo", JSON.stringify(data)); } catch {}
+  };
+  const saveSplitBals = (data) => {
+    try { sessionStorage.setItem("split_balances", JSON.stringify(data)); } catch {}
+  };
+  const loadSplitBank = () => {
+    try { const v = sessionStorage.getItem("split_bankInfo"); return v ? JSON.parse(v) : null; } catch { return null; }
+  };
+  const loadSplitBals = () => {
+    try { const v = sessionStorage.getItem("split_balances"); return v ? JSON.parse(v) : []; } catch { return []; }
+  };
+  const clearSplitCache = () => {
+    try { sessionStorage.removeItem("split_bankInfo"); sessionStorage.removeItem("split_balances"); } catch {}
+  };
   useEffect(() => { loadList(); }, []);
   async function loadList() {
     const keys = await sl();
@@ -607,17 +621,18 @@ export default function App() {
     const b64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(",")[1]); r.onerror=rej; r.readAsDataURL(file); });
 
     // ── AGENT 0: Detect bank ──
-    // Parte 1 (o sin split): detecta y guarda en estado + ref
-    // Partes 2+: lee SIEMPRE de la ref (nunca del estado, que puede ser stale)
+    // Parte 1 (o sin split): detecta, guarda en estado + sessionStorage
+    // Partes 2+: lee de sessionStorage (sobrevive cualquier re-render o hot-reload)
     let detectedBank;
     if (!splitMode || splitPartNum === 1) {
       setP("Agente 0: Identificando banco...", 5);
       detectedBank = await detectBank(b64);
       setBankInfo(detectedBank);
-      bankInfoRef.current = detectedBank; // ← guardar en ref para partes siguientes
+      saveSplitBank(detectedBank); // ← persiste en sessionStorage
     } else {
-      // Partes 2+ — leer de ref, no del estado (ref siempre tiene el valor correcto)
-      detectedBank = bankInfoRef.current || { bank_name:"Desconocido", bank_id:"unknown", total_pages:0, period_start:"", period_end:"", total_deposits:0, total_withdrawals:0 };
+      // Partes 2+ — leer de sessionStorage, nunca del estado (puede ser stale)
+      detectedBank = loadSplitBank() || { bank_name:"Desconocido", bank_id:"unknown", total_pages:0, period_start:"", period_end:"", total_deposits:0, total_withdrawals:0 };
+      setBankInfo(detectedBank); // ← actualizar estado con el valor correcto
       setP(`Agente 0: Banco ya identificado — ${detectedBank.bank_name}`, 5);
     }
     const bankId = detectedBank.bank_id || "unknown";
@@ -630,18 +645,19 @@ export default function App() {
     setP(`✅ ${rows.length} transacciones encontradas`, 35);
 
     // ── AGENT 2: Extract balances ──
-    // Parte 1 (o sin split): extrae y guarda en estado + ref
-    // Partes 2+: lee SIEMPRE de la ref (nunca del estado, que puede ser stale)
+    // Parte 1 (o sin split): extrae, guarda en estado + sessionStorage
+    // Partes 2+: lee de sessionStorage (sobrevive cualquier re-render o hot-reload)
     let bals;
     if (!splitMode || splitPartNum === 1) {
       setP("Agente 2: Extrayendo saldos...", 40);
       bals = await extractBalances(b64);
       setBalances(bals);
-      balancesRef.current = bals; // ← guardar en ref para partes siguientes
+      saveSplitBals(bals); // ← persiste en sessionStorage
       setP(`✅ ${bals.length} cuenta(s) detectada(s)`, 48);
     } else {
-      // Partes 2+ — leer de ref, no del estado (ref siempre tiene el valor correcto)
-      bals = balancesRef.current.length > 0 ? balancesRef.current : [];
+      // Partes 2+ — leer de sessionStorage, nunca del estado (puede ser stale)
+      bals = loadSplitBals();
+      setBalances(bals); // ← actualizar estado con el valor correcto
       setP(`✅ Saldos de Parte 1 conservados — ${bals.length} cuenta(s) · Banco: ${detectedBank.bank_name}`, 48);
     }
 
@@ -1007,8 +1023,7 @@ export default function App() {
                   setSplitMode(!splitMode);
                   setSplitParts([]);
                   setSplitPartNum(1);
-                  bankInfoRef.current  = null;   // ← limpiar ref al reiniciar
-                  balancesRef.current  = [];
+                  clearSplitCache(); // ← limpiar sessionStorage al reiniciar
                 }}
                   style={{padding:"6px 16px",borderRadius:20,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,
                     background:splitMode?"#1a56db":"#e2e8f0",color:splitMode?"#fff":"#64748b",transition:"all 0.2s"}}>
@@ -1035,8 +1050,7 @@ export default function App() {
                       setSplitParts([]);
                       setSplitPartNum(1);
                       setTransactions([]);
-                      bankInfoRef.current = null;  // ← limpiar ref al reiniciar
-                      balancesRef.current = [];
+                      clearSplitCache(); // ← limpiar sessionStorage al reiniciar
                     }}                      style={{marginLeft:"auto",fontSize:10,color:"#fff",background:"#ef4444",border:"none",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontWeight:600}}>
                       Reiniciar
                     </button>

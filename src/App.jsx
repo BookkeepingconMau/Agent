@@ -572,7 +572,11 @@ export default function App() {
   const [showDevModal, setShowDevModal] = useState(false);
   const [copied, setCopied]             = useState(false);
   const [dedupMarked, setDedupMarked]   = useState({});
-  const fileRef = useRef();
+  const fileRef      = useRef();
+  // ── REFS para persistir datos del split entre renders ──────────────────────
+  // useRef garantiza acceso al valor actual aunque el estado sea stale en closures
+  const bankInfoRef  = useRef(null);
+  const balancesRef  = useRef([]);
   useEffect(() => { loadList(); }, []);
   async function loadList() {
     const keys = await sl();
@@ -603,16 +607,17 @@ export default function App() {
     const b64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(",")[1]); r.onerror=rej; r.readAsDataURL(file); });
 
     // ── AGENT 0: Detect bank ──
-    // FIX #1: En modo split, solo detectar banco en parte 1
-    // En partes siguientes, reusar bankInfo ya guardado en estado
+    // Parte 1 (o sin split): detecta y guarda en estado + ref
+    // Partes 2+: lee SIEMPRE de la ref (nunca del estado, que puede ser stale)
     let detectedBank;
     if (!splitMode || splitPartNum === 1) {
       setP("Agente 0: Identificando banco...", 5);
       detectedBank = await detectBank(b64);
       setBankInfo(detectedBank);
+      bankInfoRef.current = detectedBank; // ← guardar en ref para partes siguientes
     } else {
-      // Partes 2+ — reusar bankInfo del estado (ya detectado en parte 1)
-      detectedBank = bankInfo || { bank_name:"Desconocido", bank_id:"unknown", total_pages:0, period_start:"", period_end:"", total_deposits:0, total_withdrawals:0 };
+      // Partes 2+ — leer de ref, no del estado (ref siempre tiene el valor correcto)
+      detectedBank = bankInfoRef.current || { bank_name:"Desconocido", bank_id:"unknown", total_pages:0, period_start:"", period_end:"", total_deposits:0, total_withdrawals:0 };
       setP(`Agente 0: Banco ya identificado — ${detectedBank.bank_name}`, 5);
     }
     const bankId = detectedBank.bank_id || "unknown";
@@ -625,17 +630,19 @@ export default function App() {
     setP(`✅ ${rows.length} transacciones encontradas`, 35);
 
     // ── AGENT 2: Extract balances ──
-    // FIX #1: Solo extraer balances en parte 1 del split (o cuando no hay split)
+    // Parte 1 (o sin split): extrae y guarda en estado + ref
+    // Partes 2+: lee SIEMPRE de la ref (nunca del estado, que puede ser stale)
     let bals;
     if (!splitMode || splitPartNum === 1) {
       setP("Agente 2: Extrayendo saldos...", 40);
       bals = await extractBalances(b64);
       setBalances(bals);
+      balancesRef.current = bals; // ← guardar en ref para partes siguientes
       setP(`✅ ${bals.length} cuenta(s) detectada(s)`, 48);
     } else {
-      // Partes 2+ — conservar balances ya extraídos de parte 1
-      bals = balances;
-      setP(`✅ Saldos conservados de Parte 1 (${bals.length} cuenta(s))`, 48);
+      // Partes 2+ — leer de ref, no del estado (ref siempre tiene el valor correcto)
+      bals = balancesRef.current.length > 0 ? balancesRef.current : [];
+      setP(`✅ Saldos de Parte 1 conservados — ${bals.length} cuenta(s) · Banco: ${detectedBank.bank_name}`, 48);
     }
 
     // ── SMART MULTI-PASS ──
@@ -996,7 +1003,13 @@ export default function App() {
                   <div style={{fontSize:13,fontWeight:700,color:"#1a1a1a"}}>📄 Modo PDF Dividido</div>
                   <div style={{fontSize:11,color:"#64748b",marginTop:2}}>Para PDFs de 20+ páginas — procesa múltiples partes y las junta automáticamente</div>
                 </div>
-                <button onClick={()=>{setSplitMode(!splitMode); setSplitParts([]); setSplitPartNum(1);}}
+                <button onClick={()=>{
+                  setSplitMode(!splitMode);
+                  setSplitParts([]);
+                  setSplitPartNum(1);
+                  bankInfoRef.current  = null;   // ← limpiar ref al reiniciar
+                  balancesRef.current  = [];
+                }}
                   style={{padding:"6px 16px",borderRadius:20,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,
                     background:splitMode?"#1a56db":"#e2e8f0",color:splitMode?"#fff":"#64748b",transition:"all 0.2s"}}>
                   {splitMode ? "✅ ON" : "OFF"}
@@ -1018,8 +1031,13 @@ export default function App() {
                     </div>
                   )}
                   {splitParts.length>0&&(
-                    <button onClick={()=>{setSplitParts([]);setSplitPartNum(1);setTransactions([]);}}
-                      style={{marginLeft:"auto",fontSize:10,color:"#fff",background:"#ef4444",border:"none",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontWeight:600}}>
+                    <button onClick={()=>{
+                      setSplitParts([]);
+                      setSplitPartNum(1);
+                      setTransactions([]);
+                      bankInfoRef.current = null;  // ← limpiar ref al reiniciar
+                      balancesRef.current = [];
+                    }}                      style={{marginLeft:"auto",fontSize:10,color:"#fff",background:"#ef4444",border:"none",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontWeight:600}}>
                       Reiniciar
                     </button>
                   )}

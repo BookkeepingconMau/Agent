@@ -69,8 +69,11 @@ BANK OF AMERICA STRUCTURE:
    - Card account section (grouped under "Card account # XXXX") — also negative amounts
    Extract ALL from both parts — do NOT stop at the subtotal line.
 3. SERVICE FEES section: Extract any fees as withdrawals.
-4. NO CHECKS in this statement type typically.
+4. CHECKS section: TWO-COLUMN table — Date | Check # | Amount || Date | Check # | Amount
+   Read BOTH columns on EVERY row. Each row = TWO separate checks.
+   Extract ALL checks.
 5. IGNORE pages marked "This page intentionally left blank".
+6. IGNORE check images pages — those are NOT transaction data.
 Deposits are positive. Withdrawals shown as negative — keep negative.
 Dates format MM/DD/YY — convert to MM/DD/YYYY.
 "Subtotal for card account" and "Total" lines are NOT transactions — skip them.
@@ -202,9 +205,7 @@ const MERCHANT_DICT = [
   ...[["STATE FARM"],["GEICO"],["PROGRESSIVE","PROG MICHIGAN"],["ALLSTATE"],["FARMERS INS"],["NATIONWIDE"],["LIBERTY MUTUAL"],["WORKERS COMP"]].map(p=>({patterns:p,category:"Insurance"})),
   ...[["CAMINO FINANCIAL"],["KABBAGE"],["ONDECK"],["BLUEVINE"],["FUNDBOX"],["CREDIBLY"],["LENDIO"],["LAFCU"]].map(p=>({patterns:p,category:"Loan Payment"})),
   ...[["VERIZON","VZWRLSS"],["AT&T","ATT "],["T-MOBILE","TMOBILE"],["METRO PCS","METROPCS"],["BOOST MOBILE"],["CRICKET "],["SIMPLE MOBILE"],["TRACFONE"],["SPECTRUM"],["XFINITY","COMCAST"],["DIRECTV"],["DISH NETWORK"]].map(p=>({patterns:p,category:"Telephone & Internet"})),
-  // ── SOFTWARE — INTUIT removido de aquí, ahora se maneja en categorize() ──
   ...[["QUICKBOOKS"],["CANVA"],["ADOBE"],["MICROSOFT 365"],["GOOGLE WORKSPACE"],["DROPBOX"],["ZOOM"],["SLACK"],["SHOPIFY"],["GODADDY"],["WIX"],["BUILDIUM"],["APPFOLIO"],["MAILCHIMP"],["CONSTANTCONTACT"]].map(p=>({patterns:p,category:"Software & Subscriptions"})),
-  // ── STREAMING / ENTERTAINMENT ──
   { patterns:["NETFLIX"], category:"Meals & Entertainment" },
   { patterns:["SPOTIFY"], category:"Meals & Entertainment" },
   { patterns:["HULU"], category:"Meals & Entertainment" },
@@ -304,8 +305,6 @@ function categorize(concept, amount, isDeposit, businessType, learnedMerchants) 
   for (const [key, cat] of Object.entries(learnedMerchants)) {
     if (upper.includes(key.toUpperCase())) return { category:cat, level:"MEMORY" };
   }
-
-  // ── INTUIT: lógica por concepto (Payroll vs Software vs ASK) ─────────────
   if (upper.includes("INTUIT")) {
     if (upper.includes("PAYROLL") || upper.includes("PAYR"))
       return { category:"Payroll & Wages", level:"HARD" };
@@ -315,8 +314,6 @@ function categorize(concept, amount, isDeposit, businessType, learnedMerchants) 
       return { category:"Payroll & Wages", level:"HARD" };
     return { category:"ASK TO CLIENT", level:"ASK", reason:"Intuit — ¿Payroll, QuickBooks o TurboTax?" };
   }
-  // ─────────────────────────────────────────────────────────────────────────
-
   if (isDeposit) {
     if (upper.includes("ZELLE") && upper.includes("TRANSFER IN")) return { category:"ASK TO CLIENT", level:"ASK", reason:"Zelle recibido — ¿Income o Owner Investment?" };
     if (amt >= 1000) return { category:"Income - Services", level:"HARD" };
@@ -390,7 +387,6 @@ Example: {"bank_name":"Mabrey Bank","bank_id":"mabrey_bank","total_pages":16,"pe
 // ─── AGENT 1: EXTRACT TRANSACTIONS ───────────────────────────────────────────
 async function extractTransactions(b64, bankId = "default") {
   const bankSpecificInstructions = BANK_PROMPTS[bankId] || BANK_PROMPTS.default;
-  // MSU FCU: never extract from Cleared Check Summary — drafts already in ledger
   const skipCheckSummaryRule = bankId === "msu_federal_credit_union"
     ? "DO NOT extract from the Cleared Check Summary table or any summary/totals pages — those transactions are already in the main ledger as Draft lines and would create duplicates."
     : 'Also extract ALL checks from any "Cleared Check Summary", "Checks Paid", "Draft Summary", or similar table.';
@@ -422,7 +418,6 @@ UNIVERSAL CRITICAL RULES:
     if ((type==="DEPOSIT"||type==="WITHDRAWAL") && date && amount && concept)
       rows.push({ type, date, amount, concept, category:"", level:"" });
   });
-  // ── MSU FCU: dedup por número de draft/cheque en código (doble seguridad) ──
   if (bankId === "msu_federal_credit_union") {
     const seenNums = new Set();
     return rows.filter(row => {
@@ -437,7 +432,9 @@ UNIVERSAL CRITICAL RULES:
   }
   return rows;
 }
+
 // ─── AGENT 2: EXTRACT BALANCES ────────────────────────────────────────────────
+// FIX #2: Prompt actualizado para Bank of America — suma Withdrawals + Checks
 async function extractBalances(b64) {
   const system = `You are a bank statement balance extraction agent.
 Extract ALL account/subaccount balances from the statement.
@@ -455,7 +452,13 @@ ARVEST BANK format (page 1 Account Summary):
 - Beginning Balance and Ending Balance are shown explicitly
 BANK OF AMERICA format (page 1 Account summary):
 - "Deposits and other credits $X,XXX.XX" = total_deposits
-- "Withdrawals and other debits -$X,XXX.XX" = total_withdrawals
+- "Withdrawals and other debits -$X,XXX.XX" = withdrawals_electronic
+- "Checks -$X,XXX.XX" = checks_total
+- CRITICAL: total_withdrawals = withdrawals_electronic + checks_total (sum BOTH lines)
+  Example: "Withdrawals and other debits -32,690.30" + "Checks -34,394.32" = total_withdrawals: 67084.62
+- If no Checks line exists, total_withdrawals = withdrawals_electronic only
+- Service fees line: add to total_withdrawals if non-zero
+- Beginning balance and Ending balance are shown explicitly — extract both
 CHASE format (page 1 RESUMEN DE CUENTA / ACCOUNT SUMMARY):
 - "Depósitos y Adiciones" or "Deposits and Additions" = total_deposits
 - "Retiros Electrónicos" or "Electronic Withdrawals" = total_withdrawals
@@ -598,22 +601,43 @@ export default function App() {
     setScreen("extracting");
     setP("Agente 0: Leyendo PDF...", 3);
     const b64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(",")[1]); r.onerror=rej; r.readAsDataURL(file); });
+
     // ── AGENT 0: Detect bank ──
-    setP("Agente 0: Identificando banco...", 5);
-    const detectedBank = await detectBank(b64);
-    setBankInfo(detectedBank);
+    // FIX #1: En modo split, solo detectar banco en parte 1
+    // En partes siguientes, reusar bankInfo ya guardado en estado
+    let detectedBank;
+    if (!splitMode || splitPartNum === 1) {
+      setP("Agente 0: Identificando banco...", 5);
+      detectedBank = await detectBank(b64);
+      setBankInfo(detectedBank);
+    } else {
+      // Partes 2+ — reusar bankInfo del estado (ya detectado en parte 1)
+      detectedBank = bankInfo || { bank_name:"Desconocido", bank_id:"unknown", total_pages:0, period_start:"", period_end:"", total_deposits:0, total_withdrawals:0 };
+      setP(`Agente 0: Banco ya identificado — ${detectedBank.bank_name}`, 5);
+    }
     const bankId = detectedBank.bank_id || "unknown";
     const totalPages = detectedBank.total_pages || 0;
     setP(`✅ Banco: ${detectedBank.bank_name} · ${totalPages} páginas`, 8);
+
     // ── AGENT 1: Extract transactions ──
     setP("Agente 1: Extrayendo transacciones...", 12);
     const rows = await extractTransactions(b64, bankId);
     setP(`✅ ${rows.length} transacciones encontradas`, 35);
+
     // ── AGENT 2: Extract balances ──
-    setP("Agente 2: Extrayendo saldos...", 40);
-    const bals = await extractBalances(b64);
-    setBalances(bals);
-    setP(`✅ ${bals.length} cuenta(s) detectada(s)`, 48);
+    // FIX #1: Solo extraer balances en parte 1 del split (o cuando no hay split)
+    let bals;
+    if (!splitMode || splitPartNum === 1) {
+      setP("Agente 2: Extrayendo saldos...", 40);
+      bals = await extractBalances(b64);
+      setBalances(bals);
+      setP(`✅ ${bals.length} cuenta(s) detectada(s)`, 48);
+    } else {
+      // Partes 2+ — conservar balances ya extraídos de parte 1
+      bals = balances;
+      setP(`✅ Saldos conservados de Parte 1 (${bals.length} cuenta(s))`, 48);
+    }
+
     // ── SMART MULTI-PASS ──
     let allRows = rows;
     if (bals.length > 0) {
@@ -650,6 +674,7 @@ export default function App() {
         setP(`✅ Pasada adicional: +${newRows.length} más encontradas`, 68);
       }
     }
+
     // ── AGENT 3: Categorize ──
     setP("Agente 3: Categorizando transacciones...", 72);
     const categorized = allRows.map(row => {
@@ -693,12 +718,10 @@ export default function App() {
     else setScreen("review");
   }
   function applyDedup(markedKeys) {
-    // markedKeys = Set of "concept||amount||index" keys to remove
     const cleaned = transactions.filter((r, i) => {
       const key = r.concept + "||" + Math.abs(parseFloat(r.amount)||0).toFixed(2) + "||" + i;
       return !markedKeys.has(key);
     });
-    // Recalculate askQueue with cleaned transactions
     const newAsks = cleaned.filter(r => r.category === "ASK TO CLIENT");
     setTransactions(cleaned);
     setAskQueue(newAsks);
@@ -1271,8 +1294,6 @@ export default function App() {
             <div style={{...S.card,marginTop:14}}>
               <div style={{fontSize:12,fontWeight:700,color:"#64748b",marginBottom:12,letterSpacing:1}}>🔎 BANCO vs EXTRAÍDO</div>
               {(()=>{
-                // For multi-account statements, compare only against the main checking account
-                // to avoid counting sub-account movements that were not extracted
                 const checkingBals = balances.filter(b=>(b.account_name||"").toUpperCase().includes("CHECKING"));
                 const compareBals  = checkingBals.length > 0 ? checkingBals : balances;
                 const bankDep  = compareBals.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
@@ -1341,28 +1362,19 @@ export default function App() {
       )}
       {/* ── DEDUP ── */}
       {screen==="dedup"&&(()=>{
-        // Group withdrawals by concept+amount — only exact duplicates
         const withRows = transactions
           .map((r,i) => ({...r, _idx:i}))
           .filter(r => r.type==="WITHDRAWAL");
-
-        // Count occurrences per concept+amount key
         const conceptCount = {};
         withRows.forEach(r => {
           const key = r.concept.trim() + "||" + Math.abs(parseFloat(r.amount)||0).toFixed(2);
           conceptCount[key] = (conceptCount[key]||0) + 1;
         });
-
-        // Only show concept+amount combos that appear more than once
         const dupKeys = Object.keys(conceptCount).filter(k => conceptCount[k] > 1);
-
-        // Build display groups — key is "CONCEPT ($AMOUNT)"
         const dupConcepts = dupKeys.map(k => {
           const [concept, amt] = k.split("||");
           return `${concept} ($${fmt(parseFloat(amt))})`;
         });
-
-        // Group rows by concept+amount
         const groups = {};
         dupKeys.forEach(k => {
           const [concept, amt] = k.split("||");
@@ -1372,21 +1384,17 @@ export default function App() {
             Math.abs(parseFloat(r.amount)||0).toFixed(2) === amt
           );
         });
-
-        // Total marked for removal
         const markedAmt = Object.entries(dedupMarked)
           .filter(([,v]) => v)
           .reduce((s, [k]) => {
             const parts = k.split("||");
             return s + (parseFloat(parts[1])||0);
           }, 0);
-
         const bankWith = balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
         const extWith  = transactions.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
         const currentDiff = extWith - bankWith;
         const afterDiff = currentDiff - markedAmt;
         const markedCount = Object.values(dedupMarked).filter(Boolean).length;
-
         return (
           <div style={S.page}>
             <div style={{marginBottom:20,display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:10}}>
@@ -1402,8 +1410,6 @@ export default function App() {
                 </button>
               </div>
             </div>
-
-            {/* Stats bar */}
             <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
               {[
                 {l:"Diferencia actual",   v:`$${fmt(currentDiff)}`,  c:"#ef4444"},
@@ -1417,7 +1423,6 @@ export default function App() {
                 </div>
               ))}
             </div>
-
             {dupConcepts.length === 0 ? (
               <div style={{...S.card,textAlign:"center",padding:"40px 20px"}}>
                 <div style={{fontSize:32,marginBottom:10}}>✅</div>
@@ -1436,7 +1441,6 @@ export default function App() {
                       const allMarked = {};
                       dupConcepts.forEach(displayKey => {
                         const rows = groups[displayKey];
-                        // Mark all except first occurrence
                         rows.slice(1).forEach(r => {
                           const key = r.concept+"||"+Math.abs(parseFloat(r.amount)||0).toFixed(2)+"||"+r._idx;
                           allMarked[key] = true;
@@ -1453,7 +1457,6 @@ export default function App() {
                       const totalAmt = rows.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
                       return (
                         <div key={concept} style={{borderBottom:"1px solid #e2e8f0"}}>
-                          {/* Group header */}
                           <div style={{background:"#f8fafc",padding:"8px 16px",display:"flex",alignItems:"center",gap:10}}>
                             <span style={{background:"#fee2e2",color:"#991b1b",borderRadius:6,padding:"2px 8px",fontSize:11,fontWeight:700}}>
                               {rows.length}x
@@ -1461,7 +1464,6 @@ export default function App() {
                             <span style={{fontWeight:700,fontSize:13,color:"#1a1a1a",flex:1}}>{concept}</span>
                             <span style={{fontSize:12,color:"#64748b"}}>${fmt(totalAmt)} total</span>
                           </div>
-                          {/* Individual rows */}
                           {rows.map((r,ri) => {
                             const key = r.concept+"||"+Math.abs(parseFloat(r.amount)||0).toFixed(2)+"||"+r._idx;
                             const isMarked = !!dedupMarked[key];
@@ -1488,7 +1490,6 @@ export default function App() {
                     })}
                   </div>
                 </div>
-
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
                   <div style={{fontSize:13,color:"#64748b"}}>
                     {markedCount > 0
@@ -1517,7 +1518,6 @@ export default function App() {
           </div>
         );
       })()}
-
       {/* ── RESOLVE ── */}
       {screen==="resolve"&&askQueue.length>0&&(()=>{
         const ask=askQueue[currentAsk];

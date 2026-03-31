@@ -39,15 +39,13 @@ BOK STATEMENT STRUCTURE — READ IN THIS ORDER:
    Asterisk (*) before number = skipped sequence — still extract.
    Use the DATE shown next to each check individually.
 4. DAILY ACCOUNT BALANCE section: NOT transactions — skip entirely.
-5. CRITICAL — CHECK IMAGE PAGES: After the checks table and daily balance, BOK statements include
-   scanned photos of physical checks. These are NOT transactions.
-   STOP extracting immediately when you see ANY of these patterns:
-   - "Check number: XXXX  Amount: $XXX.XX" as a page header
-   - Pages showing images of handwritten physical checks
-   - Lines like "7501  7502  7503" with dollar amounts but NO dates in transaction format
-   - Customer deposit slips or check stub images
-   These image pages contain the SAME check numbers already in the CHECKS table —
-   extracting them again would create duplicates. IGNORE them completely.
+5. STOP — Everything after the DAILY ACCOUNT BALANCE section is check and deposit IMAGES.
+   These image pages contain scanned photos of physical checks and deposit slips.
+   They show dollar amounts but these are NOT transactions — they are already captured above.
+   DO NOT extract ANYTHING from image pages.
+   Image pages are identified by: no transaction dates, check numbers as headers, 
+   dollar amounts without descriptions, deposit slip photos.
+   EXTRACTING FROM IMAGE PAGES WILL CREATE DUPLICATES — strictly forbidden.
 DEPOSITS positive. WITHDRAWALS and CHECKS negative.
 Dates format MM-DD-YY → convert to MM/DD/YYYY.
 AMOUNT must be negative for withdrawals and checks.

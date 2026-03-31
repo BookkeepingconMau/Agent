@@ -1224,7 +1224,6 @@ export default function App() {
             </div>
             {file&&(
               <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:14}}>
-                <button style={{...S.btn,background:"#1a56db",color:"#fff",border:"none"}} onClick={()=>setFile(null)}>Cambiar</button>
                 <button style={{...S.btn,...S.btnGold}} onClick={runExtraction}>
                   {splitMode
                     ? splitParts[splitPartNum-1]

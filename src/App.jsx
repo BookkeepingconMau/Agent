@@ -910,7 +910,100 @@ export default function App() {
     rows.push(`TOTAL PERSONAL MOVEMENTS,,$${fmt2(totalPersonal)}`);
     triggerDownload(`PnL_${clientName}.csv`, rows.join("\n"));
   }
-  const deposits     = transactions.filter(r=>r.type==="DEPOSIT");
+  function downloadDupReport(dupGroups, groups) {
+    const clientName = clientData?.name || "Cliente";
+    const bankName   = bankInfo?.bank_name || "Banco";
+    const today      = new Date().toLocaleDateString("es-MX", { day:"2-digit", month:"2-digit", year:"numeric" });
+    const totalDupAmt = Object.values(groups).reduce((s, rows) => {
+      const dupRows = rows.slice(1);
+      return s + dupRows.reduce((ss, r) => ss + Math.abs(parseFloat(r.amount)||0), 0);
+    }, 0);
+
+    // Construir HTML del reporte
+    const rowsHtml = dupGroups.map(displayKey => {
+      const rows = groups[displayKey];
+      const dupRows = rows.slice(1);
+      const dupAmt  = dupRows.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+      return `
+        <div class="group">
+          <div class="group-header">
+            <span class="badge">${rows.length}x</span>
+            <span class="concept">${displayKey}</span>
+            <span class="total-dup">Duplicado: $${fmt(dupAmt)}</span>
+          </div>
+          <table>
+            <thead><tr><th>Fecha</th><th>Monto</th><th>Concepto</th><th>Status</th></tr></thead>
+            <tbody>
+              ${rows.map((r,i) => `
+                <tr class="${i===0?'original':'duplicate'}">
+                  <td>${r.date}</td>
+                  <td>-$${fmt(Math.abs(parseFloat(r.amount)||0))}</td>
+                  <td>${r.concept}</td>
+                  <td><span class="tag ${i===0?'tag-ok':'tag-dup'}">${i===0?"✓ ORIGINAL":"⚠ DUPLICADO"}</span></td>
+                </tr>`).join("")}
+            </tbody>
+          </table>
+        </div>`;
+    }).join("");
+
+    const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<title>Reporte de Duplicados — ${clientName}</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background:#f8fafc; color:#1a1a1a; padding:32px; }
+  .header { background:#0f1f4b; color:#fff; padding:24px 28px; border-radius:12px; margin-bottom:24px; }
+  .header h1 { font-size:22px; margin-bottom:4px; }
+  .header .meta { font-size:13px; opacity:0.75; }
+  .summary { display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap; }
+  .stat { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:14px 20px; flex:1; min-width:140px; }
+  .stat .label { font-size:10px; font-weight:700; color:#94a3b8; letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
+  .stat .value { font-size:20px; font-weight:700; }
+  .group { background:#fff; border:1px solid #e2e8f0; border-radius:10px; margin-bottom:14px; overflow:hidden; }
+  .group-header { background:#f8fafc; padding:10px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #e2e8f0; }
+  .badge { background:#fee2e2; color:#991b1b; border-radius:6px; padding:2px 8px; font-size:11px; font-weight:700; }
+  .concept { font-weight:700; font-size:13px; flex:1; }
+  .total-dup { font-size:12px; color:#991b1b; font-weight:600; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  th { background:#f1f5f9; padding:8px 14px; text-align:left; font-size:10px; font-weight:700; color:#64748b; letter-spacing:0.5px; text-transform:uppercase; }
+  td { padding:9px 14px; border-top:1px solid #f1f5f9; }
+  tr.original td { background:#f0fdf4; }
+  tr.duplicate td { background:#fff8f8; }
+  .tag { border-radius:4px; padding:2px 7px; font-size:10px; font-weight:700; }
+  .tag-ok  { background:#dcfce7; color:#166534; }
+  .tag-dup { background:#fee2e2; color:#991b1b; }
+  .footer { margin-top:24px; text-align:center; font-size:11px; color:#94a3b8; }
+  @media print { body { background:#fff; padding:16px; } }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>📋 Reporte de Duplicados</h1>
+    <div class="meta">${clientName} · ${bankName} · Generado: ${today}</div>
+  </div>
+  <div class="summary">
+    <div class="stat"><div class="label">Grupos duplicados</div><div class="value" style="color:#991b1b">${dupGroups.length}</div></div>
+    <div class="stat"><div class="label">Total duplicado</div><div class="value" style="color:#f59e0b">$${fmt(totalDupAmt)}</div></div>
+    <div class="stat"><div class="label">Transacciones totales</div><div class="value">${transactions.length}</div></div>
+    <div class="stat"><div class="label">Banco</div><div class="value" style="font-size:13px;color:#1a56db">${bankName}</div></div>
+  </div>
+  ${rowsHtml}
+  <div class="footer">Reporte generado por el Agente de Mau Bautista · V&M Bookkeeping Group LLC</div>
+</body>
+</html>`;
+
+    const blob = new Blob([html], { type:"text/html;charset=utf-8" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href     = url;
+    a.download = `duplicados_${clientName.replace(/\s/g,"_")}_${bankName.replace(/\s/g,"_")}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
   const withdrawals  = transactions.filter(r=>r.type==="WITHDRAWAL");
   const asks         = transactions.filter(r=>r.category==="ASK TO CLIENT");
   const transfers    = transactions.filter(r=>r.level==="TRANSFER");
@@ -1533,19 +1626,25 @@ export default function App() {
                 <div style={{...S.card,padding:0,overflow:"hidden",marginBottom:14}}>
                   <div style={{background:"#0f1f4b",color:"#fff",padding:"10px 16px",fontSize:12,fontWeight:700,letterSpacing:1,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                     <span>📋 CONCEPTOS DUPLICADOS ({dupConcepts.length} grupos)</span>
-                    <button onClick={()=>{
-                      const allMarked = {};
-                      dupConcepts.forEach(displayKey => {
-                        const rows = groups[displayKey];
-                        rows.slice(1).forEach(r => {
-                          const key = r.concept+"||"+Math.abs(parseFloat(r.amount)||0).toFixed(2)+"||"+r._idx;
-                          allMarked[key] = true;
+                    <div style={{display:"flex",gap:8}}>
+                      <button onClick={()=>downloadDupReport(dupConcepts, groups)}
+                        style={{fontSize:11,fontWeight:700,background:"#22c55e",color:"#fff",border:"none",borderRadius:6,padding:"4px 12px",cursor:"pointer"}}>
+                        📥 Descargar Reporte
+                      </button>
+                      <button onClick={()=>{
+                        const allMarked = {};
+                        dupConcepts.forEach(displayKey => {
+                          const rows = groups[displayKey];
+                          rows.slice(1).forEach(r => {
+                            const key = r.concept+"||"+Math.abs(parseFloat(r.amount)||0).toFixed(2)+"||"+r._idx;
+                            allMarked[key] = true;
+                          });
                         });
-                      });
-                      setDedupMarked(allMarked);
-                    }} style={{fontSize:11,fontWeight:700,background:"#f59e0b",color:"#000",border:"none",borderRadius:6,padding:"4px 12px",cursor:"pointer"}}>
-                      Marcar todos los duplicados
-                    </button>
+                        setDedupMarked(allMarked);
+                      }} style={{fontSize:11,fontWeight:700,background:"#f59e0b",color:"#000",border:"none",borderRadius:6,padding:"4px 12px",cursor:"pointer"}}>
+                        Marcar todos los duplicados
+                      </button>
+                    </div>
                   </div>
                   <div style={{maxHeight:460,overflowY:"auto"}}>
                     {dupConcepts.map(concept => {

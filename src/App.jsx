@@ -680,31 +680,24 @@ export default function App() {
     }
 
     // ── SMART MULTI-PASS ──
+    // En modo split: NO correr Multi-Pass en partes intermedias
+    // Solo corre cuando NO hay split, para evitar duplicados por pasadas extras
     let allRows = rows;
-    if (bals.length > 0) {
+    if (bals.length > 0 && !currentSplitMode) {
       const bankDep  = bals.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
       const bankWith = bals.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
-
-      // En modo split, comparar contra el TOTAL acumulado de todas las partes
-      // no solo la parte actual — así el Multi-Pass sabe exactamente cuánto falta
-      const previousParts = splitPartsRef.current.filter(Boolean);
-      const previousRows  = previousParts.flat();
-      const allRowsSoFar  = [...previousRows, ...rows];
-
-      const extractedDep  = allRowsSoFar.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
-      const extractedWith = allRowsSoFar.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+      const extractedDep  = rows.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+      const extractedWith = rows.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
       const withDiff = bankWith - extractedWith;
       const depDiff  = bankDep  - extractedDep;
 
-      // Agente 2A: cheques faltantes (diferencia grande o pequeña — threshold bajo en split)
-      const checkThreshold = currentSplitMode ? 10 : 50;
-      if (withDiff > checkThreshold) {
+      // Agente 2A: cheques faltantes
+      if (withDiff > 50) {
         setP(`⚡ Agente 2A: Buscando cheques faltantes ($${withDiff.toFixed(0)})...`, 52);
         const checkRows = await extractCheckSummary(b64, bankId);
-        // Dedup: no agregar cheques que ya existen en cualquier parte previa o actual
         const newCheckRows = checkRows.filter(cr => {
           const crAmt = Math.abs(parseFloat(cr.amount)||0).toFixed(2);
-          return !allRowsSoFar.some(r => {
+          return !rows.some(r => {
             const rAmt = Math.abs(parseFloat(r.amount)||0).toFixed(2);
             return r.type === "WITHDRAWAL" && rAmt === crAmt;
           });
@@ -713,23 +706,23 @@ export default function App() {
         setP(`✅ Pasada cheques: +${newCheckRows.length} encontrados`, 60);
       }
 
-      // Recalcular con los nuevos cheques incluidos
-      const allRowsUpdated = [...previousRows, ...allRows];
-      const newExtDep  = allRowsUpdated.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
-      const newExtWith = allRowsUpdated.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+      const newExtDep  = allRows.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+      const newExtWith = allRows.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
       const remDepDiff  = bankDep  - newExtDep;
       const remWithDiff = bankWith - newExtWith;
 
-      // Agente 2B: transacciones adicionales si sigue faltando algo
+      // Agente 2B: transacciones adicionales
       if (remDepDiff > 50 || remWithDiff > 50) {
         setP(`⚡ Agente 2B: Buscando transacciones adicionales ($${Math.max(remDepDiff,remWithDiff).toFixed(0)})...`, 63);
         const secondRows = await extractTransactionsSecondPass(b64, remDepDiff > 0 ? remDepDiff : 0, remWithDiff > 0 ? remWithDiff : 0, allRows, bankId);
         const newRows = secondRows.filter(sr =>
-          !allRowsUpdated.some(r => r.date === sr.date && r.amount === sr.amount && r.type === sr.type)
+          !allRows.some(r => r.date === sr.date && r.amount === sr.amount && r.type === sr.type)
         );
         allRows = [...allRows, ...newRows];
         setP(`✅ Pasada adicional: +${newRows.length} más encontradas`, 68);
       }
+    } else if (currentSplitMode) {
+      setP(`✅ Modo split — Multi-Pass desactivado para evitar duplicados`, 68);
     }
 
     // ── AGENT 3: Categorize ──

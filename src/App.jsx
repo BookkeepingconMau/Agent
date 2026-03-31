@@ -1031,6 +1031,7 @@ export default function App() {
       setScreen(askQueue.length>0?"resolve":"review");
     }
   }
+  const deposits     = transactions.filter(r=>r.type==="DEPOSIT");
   const withdrawals  = transactions.filter(r=>r.type==="WITHDRAWAL");
   const asks         = transactions.filter(r=>r.category==="ASK TO CLIENT");
   const transfers    = transactions.filter(r=>r.level==="TRANSFER");

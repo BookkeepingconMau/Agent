@@ -32,13 +32,22 @@ AMOUNT must be negative.
 OUTPUT: Raw CSV — TYPE,DATE,AMOUNT,CONCEPT. No headers. No markdown.`,
   bank_of_oklahoma: `You are a STRICT extraction agent for BANK OF OKLAHOMA (BOK) statements.
 BOK STATEMENT STRUCTURE — READ IN THIS ORDER:
-1. DEPOSITS section (pages 1 and 3): simple list, DATE on left, AMOUNT on right. Extract ALL.
-2. WITHDRAWALS section (pages 3-7): simple list, DATE on left, AMOUNT on right. Extract ALL — this section is LONG, do NOT stop early.
-3. CHECKS section (pages 8-12): TWO-COLUMN table — Date | Number | Amount || Date | Number | Amount
+1. DEPOSITS section: simple list, DATE on left, AMOUNT on right. Extract ALL.
+2. WITHDRAWALS section: simple list, DATE on left, AMOUNT on right. Extract ALL — this section is LONG, do NOT stop early.
+3. CHECKS section: TWO-COLUMN table — Date | Number | Amount || Date | Number | Amount
    Read BOTH columns on EVERY row. Each row = TWO separate checks.
    Asterisk (*) before number = skipped sequence — still extract.
    Use the DATE shown next to each check individually.
-4. IGNORE pages after check table — those are check images, NOT transaction data.
+4. DAILY ACCOUNT BALANCE section: NOT transactions — skip entirely.
+5. CRITICAL — CHECK IMAGE PAGES: After the checks table and daily balance, BOK statements include
+   scanned photos of physical checks. These are NOT transactions.
+   STOP extracting immediately when you see ANY of these patterns:
+   - "Check number: XXXX  Amount: $XXX.XX" as a page header
+   - Pages showing images of handwritten physical checks
+   - Lines like "7501  7502  7503" with dollar amounts but NO dates in transaction format
+   - Customer deposit slips or check stub images
+   These image pages contain the SAME check numbers already in the CHECKS table —
+   extracting them again would create duplicates. IGNORE them completely.
 DEPOSITS positive. WITHDRAWALS and CHECKS negative.
 Dates format MM-DD-YY → convert to MM/DD/YYYY.
 AMOUNT must be negative for withdrawals and checks.

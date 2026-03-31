@@ -1005,6 +1005,7 @@ export default function App() {
     win.document.write(html);
     win.document.close();
   }
+  const deposits     = transactions.filter(r=>r.type==="DEPOSIT");
   const withdrawals  = transactions.filter(r=>r.type==="WITHDRAWAL");
   const asks         = transactions.filter(r=>r.category==="ASK TO CLIENT");
   const transfers    = transactions.filter(r=>r.level==="TRANSFER");

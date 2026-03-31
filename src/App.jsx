@@ -363,6 +363,11 @@ Read ONLY the first page of this PDF and return ONLY a valid JSON object with:
 - period_end: end date MM/DD/YYYY
 - total_deposits: total deposits amount from summary (number only, no $ sign)
 - total_withdrawals: total withdrawals amount from summary (number only, no $ sign)
+IMPORTANT for total_withdrawals by bank:
+- BANK OF AMERICA: total_withdrawals = "Withdrawals and other debits" + "Checks" + "Service fees" (sum all three)
+- BANK OF OKLAHOMA: total_withdrawals = "Checks & Withdrawals" + "Service Fees" (sum both lines)
+  Example: "354 Checks & Withdrawals 459,684.22" + "Service Fees 45.00" = 459729.22
+- ALL OTHER BANKS: total_withdrawals = the single withdrawals/debits line shown
 To identify bank_id use these clues:
 - "Mabrey Bank" or "MabreyBank" → "mabrey_bank"
 - "Bank of Oklahoma" or "BOK" or "bok.com" → "bank_of_oklahoma"
@@ -450,6 +455,20 @@ ARVEST BANK format (page 1 Account Summary):
 - "8 Credit(s) This Period $XX,XXX.XX" = total_deposits
 - "143 Debit(s) This Period $XX,XXX.XX" = total_withdrawals
 - Beginning Balance and Ending Balance are shown explicitly
+BANK OF OKLAHOMA (BOK) format (page 1 summary box):
+- Look for the summary block that shows:
+  "$ Starting Balance  XXX,XXX.XX"
+  "+ XX Deposits  XXX,XXX.XX"
+  "- XXX Checks & Withdrawals  XXX,XXX.XX"
+  "- Service Fees  XX.XX"
+  "= Ending Balance  XXX,XXX.XX"
+- beginning_balance = Starting Balance amount
+- total_deposits = Deposits amount (the "+ XX Deposits" line)
+- CRITICAL: total_withdrawals = Checks & Withdrawals + Service Fees (sum BOTH lines)
+  Example: "354 Checks & Withdrawals 459,684.22" + "Service Fees 45.00" = total_withdrawals: 459729.22
+- ending_balance = Ending Balance amount
+- account_number = the PRIMARY ACCOUNT number shown on page 1
+- period_start and period_end = from "Statement Period: MM-DD-YY to MM-DD-YY" → convert to MM/DD/YYYY
 BANK OF AMERICA format (page 1 Account summary):
 - "Deposits and other credits $X,XXX.XX" = total_deposits
 - "Withdrawals and other debits -$X,XXX.XX" = withdrawals_electronic

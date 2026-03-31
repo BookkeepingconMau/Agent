@@ -911,31 +911,29 @@ export default function App() {
     triggerDownload(`PnL_${clientName}.csv`, rows.join("\n"));
   }
   function downloadDupReport(dupGroups, groups) {
-    const clientName = clientData?.name || "Cliente";
-    const bankName   = bankInfo?.bank_name || "Banco";
-    const today      = new Date().toLocaleDateString("es-MX", { day:"2-digit", month:"2-digit", year:"numeric" });
+    const clientName  = clientData?.name || "Cliente";
+    const bankName    = bankInfo?.bank_name || "Banco";
+    const today       = new Date().toLocaleDateString("es-MX", { day:"2-digit", month:"2-digit", year:"numeric" });
     const totalDupAmt = Object.values(groups).reduce((s, rows) => {
-      const dupRows = rows.slice(1);
-      return s + dupRows.reduce((ss, r) => ss + Math.abs(parseFloat(r.amount)||0), 0);
+      return s + rows.slice(1).reduce((ss,r)=>ss+Math.abs(parseFloat(r.amount)||0),0);
     }, 0);
+    const totalDupCount = Object.values(groups).reduce((s,rows)=>s+rows.length-1,0);
 
-    // Construir HTML del reporte
     const rowsHtml = dupGroups.map(displayKey => {
-      const rows = groups[displayKey];
-      const dupRows = rows.slice(1);
-      const dupAmt  = dupRows.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+      const rows   = groups[displayKey];
+      const dupAmt = rows.slice(1).reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
       return `
         <div class="group">
           <div class="group-header">
             <span class="badge">${rows.length}x</span>
             <span class="concept">${displayKey}</span>
-            <span class="total-dup">Duplicado: $${fmt(dupAmt)}</span>
+            <span class="dup-amt">Duplicado: $${fmt(dupAmt)}</span>
           </div>
           <table>
             <thead><tr><th>Fecha</th><th>Monto</th><th>Concepto</th><th>Status</th></tr></thead>
             <tbody>
-              ${rows.map((r,i) => `
-                <tr class="${i===0?'original':'duplicate'}">
+              ${rows.map((r,i)=>`
+                <tr class="${i===0?'orig':'dup'}">
                   <td>${r.date}</td>
                   <td>-$${fmt(Math.abs(parseFloat(r.amount)||0))}</td>
                   <td>${r.concept}</td>
@@ -950,59 +948,62 @@ export default function App() {
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<title>Reporte de Duplicados — ${clientName}</title>
+<title>Duplicados — ${clientName}</title>
 <style>
-  * { box-sizing:border-box; margin:0; padding:0; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; background:#f8fafc; color:#1a1a1a; padding:32px; }
-  .header { background:#0f1f4b; color:#fff; padding:24px 28px; border-radius:12px; margin-bottom:24px; }
-  .header h1 { font-size:22px; margin-bottom:4px; }
-  .header .meta { font-size:13px; opacity:0.75; }
-  .summary { display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap; }
-  .stat { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:14px 20px; flex:1; min-width:140px; }
-  .stat .label { font-size:10px; font-weight:700; color:#94a3b8; letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
-  .stat .value { font-size:20px; font-weight:700; }
-  .group { background:#fff; border:1px solid #e2e8f0; border-radius:10px; margin-bottom:14px; overflow:hidden; }
-  .group-header { background:#f8fafc; padding:10px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #e2e8f0; }
-  .badge { background:#fee2e2; color:#991b1b; border-radius:6px; padding:2px 8px; font-size:11px; font-weight:700; }
-  .concept { font-weight:700; font-size:13px; flex:1; }
-  .total-dup { font-size:12px; color:#991b1b; font-weight:600; }
-  table { width:100%; border-collapse:collapse; font-size:12px; }
-  th { background:#f1f5f9; padding:8px 14px; text-align:left; font-size:10px; font-weight:700; color:#64748b; letter-spacing:0.5px; text-transform:uppercase; }
-  td { padding:9px 14px; border-top:1px solid #f1f5f9; }
-  tr.original td { background:#f0fdf4; }
-  tr.duplicate td { background:#fff8f8; }
-  .tag { border-radius:4px; padding:2px 7px; font-size:10px; font-weight:700; }
-  .tag-ok  { background:#dcfce7; color:#166534; }
-  .tag-dup { background:#fee2e2; color:#991b1b; }
-  .footer { margin-top:24px; text-align:center; font-size:11px; color:#94a3b8; }
-  @media print { body { background:#fff; padding:16px; } }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Arial,sans-serif;color:#1a1a1a;padding:28px;font-size:12px}
+  .header{background:#0f1f4b;color:#fff;padding:20px 24px;border-radius:10px;margin-bottom:20px}
+  .header h1{font-size:20px;margin-bottom:3px}
+  .header p{font-size:11px;opacity:0.7}
+  .cards{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+  .card{flex:1;min-width:120px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px}
+  .card .lbl{font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+  .card .val{font-size:18px;font-weight:700}
+  .group{border:1px solid #e2e8f0;border-radius:8px;margin-bottom:12px;overflow:hidden;page-break-inside:avoid}
+  .group-header{background:#f8fafc;padding:8px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #e2e8f0}
+  .badge{background:#fee2e2;color:#991b1b;border-radius:5px;padding:1px 7px;font-size:10px;font-weight:700}
+  .concept{font-weight:700;font-size:12px;flex:1}
+  .dup-amt{font-size:11px;color:#991b1b;font-weight:600}
+  table{width:100%;border-collapse:collapse;font-size:11px}
+  th{background:#f1f5f9;padding:6px 10px;text-align:left;font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.4px}
+  td{padding:7px 10px;border-top:1px solid #f1f5f9}
+  tr.orig td{background:#f0fdf4}
+  tr.dup td{background:#fff8f8}
+  .tag{border-radius:3px;padding:1px 6px;font-size:9px;font-weight:700}
+  .tag-ok{background:#dcfce7;color:#166534}
+  .tag-dup{background:#fee2e2;color:#991b1b}
+  .footer{margin-top:20px;text-align:center;font-size:10px;color:#94a3b8}
+  @media print{
+    body{padding:16px}
+    .no-print{display:none}
+    .group{page-break-inside:avoid}
+  }
 </style>
 </head>
 <body>
+  <div class="no-print" style="background:#1a56db;color:#fff;padding:10px 16px;border-radius:8px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+    <span>💡 Para guardar como PDF: <strong>Archivo → Imprimir → Guardar como PDF</strong></span>
+    <button onclick="window.print()" style="background:#fff;color:#1a56db;border:none;border-radius:6px;padding:6px 16px;font-weight:700;cursor:pointer;font-size:12px">🖨️ Imprimir / Guardar PDF</button>
+  </div>
   <div class="header">
     <h1>📋 Reporte de Duplicados</h1>
-    <div class="meta">${clientName} · ${bankName} · Generado: ${today}</div>
+    <p>${clientName} · ${bankName} · ${today}</p>
   </div>
-  <div class="summary">
-    <div class="stat"><div class="label">Grupos duplicados</div><div class="value" style="color:#991b1b">${dupGroups.length}</div></div>
-    <div class="stat"><div class="label">Total duplicado</div><div class="value" style="color:#f59e0b">$${fmt(totalDupAmt)}</div></div>
-    <div class="stat"><div class="label">Transacciones totales</div><div class="value">${transactions.length}</div></div>
-    <div class="stat"><div class="label">Banco</div><div class="value" style="font-size:13px;color:#1a56db">${bankName}</div></div>
+  <div class="cards">
+    <div class="card"><div class="lbl">Grupos duplicados</div><div class="val" style="color:#991b1b">${dupGroups.length}</div></div>
+    <div class="card"><div class="lbl">Transacciones dup.</div><div class="val" style="color:#f59e0b">${totalDupCount}</div></div>
+    <div class="card"><div class="lbl">Monto duplicado</div><div class="val" style="color:#f59e0b">$${fmt(totalDupAmt)}</div></div>
+    <div class="card"><div class="lbl">Total transacciones</div><div class="val">${transactions.length}</div></div>
   </div>
   ${rowsHtml}
   <div class="footer">Reporte generado por el Agente de Mau Bautista · V&M Bookkeeping Group LLC</div>
 </body>
 </html>`;
 
-    const blob = new Blob([html], { type:"text/html;charset=utf-8" });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement("a");
-    a.href     = url;
-    a.download = `duplicados_${clientName.replace(/\s/g,"_")}_${bankName.replace(/\s/g,"_")}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // Abrir en nueva ventana para imprimir/guardar como PDF
+    const win = window.open("", "_blank");
+    win.document.write(html);
+    win.document.close();
   }
   const withdrawals  = transactions.filter(r=>r.type==="WITHDRAWAL");
   const asks         = transactions.filter(r=>r.category==="ASK TO CLIENT");

@@ -684,29 +684,26 @@ export default function App() {
     }
 
     // ── SMART MULTI-PASS ──
+    // IMPORTANTE: En modo split el Multi-Pass está desactivado.
+    // Cada parte extrae solo sus transacciones — el Multi-Pass no puede
+    // comparar contra el total del banco porque en partes intermedias
+    // siempre habrá diferencia (aún no están todas las partes cargadas).
     let allRows = rows;
-    if (bals.length > 0) {
+    if (bals.length > 0 && !currentSplitMode) {
       const bankDep  = bals.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
       const bankWith = bals.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
-
-      // En modo split, comparar contra el TOTAL acumulado de todas las partes
-      const previousParts = splitPartsRef.current.filter(Boolean);
-      const previousRows  = previousParts.flat();
-      const allRowsSoFar  = [...previousRows, ...rows];
-
-      const extractedDep  = allRowsSoFar.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
-      const extractedWith = allRowsSoFar.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+      const extractedDep  = rows.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+      const extractedWith = rows.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
       const withDiff = bankWith - extractedWith;
       const depDiff  = bankDep  - extractedDep;
 
       // Agente 2A: cheques faltantes
-      const checkThreshold = currentSplitMode ? 10 : 50;
-      if (withDiff > checkThreshold) {
+      if (withDiff > 50) {
         setP(`⚡ Agente 2A: Buscando cheques faltantes ($${withDiff.toFixed(0)})...`, 52);
         const checkRows = await extractCheckSummary(b64, bankId);
         const newCheckRows = checkRows.filter(cr => {
           const crAmt = Math.abs(parseFloat(cr.amount)||0).toFixed(2);
-          return !allRowsSoFar.some(r => {
+          return !rows.some(r => {
             const rAmt = Math.abs(parseFloat(r.amount)||0).toFixed(2);
             return r.type === "WITHDRAWAL" && rAmt === crAmt;
           });
@@ -715,10 +712,8 @@ export default function App() {
         setP(`✅ Pasada cheques: +${newCheckRows.length} encontrados`, 60);
       }
 
-      // Recalcular con los nuevos cheques incluidos
-      const allRowsUpdated = [...previousRows, ...allRows];
-      const newExtDep  = allRowsUpdated.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
-      const newExtWith = allRowsUpdated.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+      const newExtDep  = allRows.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+      const newExtWith = allRows.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
       const remDepDiff  = bankDep  - newExtDep;
       const remWithDiff = bankWith - newExtWith;
 
@@ -727,7 +722,7 @@ export default function App() {
         setP(`⚡ Agente 2B: Buscando transacciones adicionales ($${Math.max(remDepDiff,remWithDiff).toFixed(0)})...`, 63);
         const secondRows = await extractTransactionsSecondPass(b64, remDepDiff > 0 ? remDepDiff : 0, remWithDiff > 0 ? remWithDiff : 0, allRows, bankId);
         const newRows = secondRows.filter(sr =>
-          !allRowsUpdated.some(r => r.date === sr.date && r.amount === sr.amount && r.type === sr.type)
+          !allRows.some(r => r.date === sr.date && r.amount === sr.amount && r.type === sr.type)
         );
         allRows = [...allRows, ...newRows];
         setP(`✅ Pasada adicional: +${newRows.length} más encontradas`, 68);
@@ -1007,7 +1002,35 @@ export default function App() {
     win.document.write(html);
     win.document.close();
   }
-  const deposits     = transactions.filter(r=>r.type==="DEPOSIT");
+  const [runningFinalPass, setRunningFinalPass] = useState(false);
+
+  async function runFinalMultiPass() {
+    if (!balances.length) {
+      setSplitMode(false);
+      setScreen(askQueue.length>0?"resolve":"review");
+      return;
+    }
+    setRunningFinalPass(true);
+    const bankDep  = balances.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
+    const bankWith = balances.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
+    const allTxs   = transactions;
+    const extDep   = allTxs.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+    const extWith  = allTxs.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+    const withDiff = bankWith - extWith;
+    const depDiff  = bankDep  - extDep;
+    // Solo correr si hay diferencia real
+    if (withDiff > 50 || depDiff > 50) {
+      // No podemos rellamar la API aquí sin el b64 — simplemente ir a dedup
+      setSplitMode(false);
+      setRunningFinalPass(false);
+      const hasDiff = Math.abs(bankWith-extWith)>50 || Math.abs(bankDep-extDep)>50;
+      setScreen(hasDiff ? "dedup" : askQueue.length>0 ? "resolve" : "review");
+    } else {
+      setSplitMode(false);
+      setRunningFinalPass(false);
+      setScreen(askQueue.length>0?"resolve":"review");
+    }
+  }
   const withdrawals  = transactions.filter(r=>r.type==="WITHDRAWAL");
   const asks         = transactions.filter(r=>r.category==="ASK TO CLIENT");
   const transfers    = transactions.filter(r=>r.level==="TRANSFER");
@@ -1352,9 +1375,11 @@ export default function App() {
                   <button style={{...S.btn,background:"#1a56db",color:"#fff",fontSize:11,padding:"5px 14px"}} onClick={()=>setScreen("upload")}>
                     ➕ Agregar Parte {splitPartNum}
                   </button>
-                  <button style={{...S.btn,background:"#22c55e",color:"#fff",fontSize:11,padding:"5px 14px"}}
-                    onClick={()=>{setSplitMode(false); setScreen(askQueue.length>0?"resolve":"review")}}>
-                    ✅ Listo — Ver transacciones
+                  <button
+                    style={{...S.btn,background:"#22c55e",color:"#fff",fontSize:11,padding:"5px 14px",opacity:runningFinalPass?0.7:1}}
+                    onClick={runFinalMultiPass}
+                    disabled={runningFinalPass}>
+                    {runningFinalPass ? "⏳ Procesando..." : "✅ Son todas las partes"}
                   </button>
                 </div>
               )}

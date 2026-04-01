@@ -1594,23 +1594,27 @@ export default function App() {
         const withRows = transactions
           .map((r,i) => ({...r, _idx:i}))
           .filter(r => r.type==="WITHDRAWAL");
+        // FIX: duplicado = mismo concepto + mismo monto + misma fecha
+        // Transacciones con misma fecha son sospechosas de ser realmente duplicadas
+        // Transacciones con fechas diferentes son transacciones legítimas repetidas
         const conceptCount = {};
         withRows.forEach(r => {
-          const key = r.concept.trim() + "||" + Math.abs(parseFloat(r.amount)||0).toFixed(2);
+          const key = r.concept.trim() + "||" + Math.abs(parseFloat(r.amount)||0).toFixed(2) + "||" + r.date;
           conceptCount[key] = (conceptCount[key]||0) + 1;
         });
         const dupKeys = Object.keys(conceptCount).filter(k => conceptCount[k] > 1);
         const dupConcepts = dupKeys.map(k => {
-          const [concept, amt] = k.split("||");
-          return `${concept} ($${fmt(parseFloat(amt))})`;
+          const [concept, amt, date] = k.split("||");
+          return `${concept} ($${fmt(parseFloat(amt))}) — ${date}`;
         });
         const groups = {};
         dupKeys.forEach(k => {
-          const [concept, amt] = k.split("||");
-          const displayKey = `${concept} ($${fmt(parseFloat(amt))})`;
+          const [concept, amt, date] = k.split("||");
+          const displayKey = `${concept} ($${fmt(parseFloat(amt))}) — ${date}`;
           groups[displayKey] = withRows.filter(r =>
             r.concept.trim() === concept &&
-            Math.abs(parseFloat(r.amount)||0).toFixed(2) === amt
+            Math.abs(parseFloat(r.amount)||0).toFixed(2) === amt &&
+            r.date === date
           );
         });
         const markedAmt = Object.entries(dedupMarked)

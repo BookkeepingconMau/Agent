@@ -1191,12 +1191,21 @@ export default function App() {
                   const bt=BUSINESS_TYPES.find(b=>b.id===c.businessType);
                   const ml=Object.keys(c.learnedMerchants||{}).length;
                   return (
-                    <div key={c.id} className="cc" style={{padding:"16px 20px",border:"1px solid #e2e8f0",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"space-between",background:"#fff",transition:"all 0.15s"}} onClick={()=>selectClient(c.id)}>
-                      <div>
+                    <div key={c.id} className="cc" style={{padding:"16px 20px",border:"1px solid #e2e8f0",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"space-between",background:"#fff",transition:"all 0.15s"}}>
+                      <div onClick={()=>selectClient(c.id)} style={{flex:1,cursor:"pointer"}}>
                         <div style={{fontWeight:600,fontSize:16}}>{c.name}</div>
                         <div style={{color:"#999",fontSize:13,marginTop:4}}>{bt?.icon} {bt?.label} · 🧠 {ml} aprendidas · 📄 {(c.history||[]).length} procesados</div>
                       </div>
-                      <button style={{...S.btn,...S.btnPrimary,fontSize:11,padding:"6px 14px"}}>Abrir →</button>
+                      <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                        <button style={{...S.btn,...S.btnPrimary,fontSize:11,padding:"6px 14px"}} onClick={()=>selectClient(c.id)}>Abrir →</button>
+                        <button style={{...S.btn,background:"#fee2e2",color:"#991b1b",border:"1px solid #fca5a5",fontSize:11,padding:"6px 10px"}}
+                          onClick={async(e)=>{
+                            e.stopPropagation();
+                            if(!window.confirm(`¿Eliminar a ${c.name}? Esta acción no se puede deshacer.`)) return;
+                            localStorage.removeItem(`client:${c.id}`);
+                            await loadList();
+                          }}>🗑️</button>
+                      </div>
                     </div>
                   );
                 })}
@@ -1219,7 +1228,7 @@ export default function App() {
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                 <div>
                   <div style={{fontSize:13,fontWeight:700,color:"#1a1a1a"}}>📄 Modo PDF Dividido</div>
-                  <div style={{fontSize:11,color:"#64748b",marginTop:2}}>Para PDFs de 20+ páginas — procesa múltiples partes y las junta automáticamente</div>
+                  <div style={{fontSize:11,color:"#64748b",marginTop:2}}>Para PDFs de 10+ páginas — procesa múltiples partes y las junta automáticamente</div>
                 </div>
                 <button onClick={()=>{
                   setSplitMode(!splitMode);

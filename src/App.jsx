@@ -571,9 +571,20 @@ AMOUNT must be negative. No headers. No markdown.`;
   return rows;
 }
 // ─── STORAGE ──────────────────────────────────────────────────────────────────
-const sc = async (id) => { try { const r=await window.storage.get(`client:${id}`); return r?JSON.parse(r.value):null; } catch { return null; } };
-const ss = async (id,d) => { try { await window.storage.set(`client:${id}`,JSON.stringify(d)); } catch {} };
-const sl = async () => { try { const r=await window.storage.list("client:"); return r?.keys||[]; } catch { return []; } };
+// ─── STORAGE — localStorage para persistencia real entre sesiones ─────────────
+const sc = async (id) => {
+  try { const v = localStorage.getItem(`client:${id}`); return v ? JSON.parse(v) : null; } catch { return null; }
+};
+const ss = async (id, d) => {
+  try { localStorage.setItem(`client:${id}`, JSON.stringify(d)); } catch {}
+};
+const sl = async () => {
+  try {
+    return Object.keys(localStorage)
+      .filter(k => k.startsWith("client:"))
+      .map(k => k); // devuelve las keys con prefijo "client:"
+  } catch { return []; }
+};
 const fmt = (n) => Number(n||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
 // ─── APP ──────────────────────────────────────────────────────────────────────
 export default function App() {

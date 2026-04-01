@@ -141,6 +141,20 @@ MSU FCU STATEMENT STRUCTURE — CRITICAL RULES:
     Dividend entries WITH an amount and date ARE transactions — include them as DEPOSITS.
 
 OUTPUT: Raw CSV — TYPE,DATE,AMOUNT,CONCEPT. No headers. No markdown. No explanation.`,
+  mercury_bank: `You are a STRICT extraction agent for MERCURY BANK statements.
+MERCURY BANK STATEMENT STRUCTURE:
+1. TRANSACTIONS section: Each transaction has Date | Description | Amount | Balance
+   - Positive amount = DEPOSIT
+   - Negative amount = WITHDRAWAL
+2. Extract ALL transactions: ACH, Wire, Card payments, Fees, Transfers.
+3. TRANSFERS:
+   "Person Pay [Name]" = WITHDRAWAL, concept "PERSON PAY [Name]"
+   "Transfer In" = DEPOSIT, concept "Transfer In"
+   "Transfer Out" = WITHDRAWAL, concept "Transfer Out"
+4. Dates format: MM/DD/YYYY or similar — keep as MM/DD/YYYY.
+5. DEPOSITS positive. WITHDRAWALS negative.
+6. Do NOT extract summary lines or balance lines — only actual transactions.
+OUTPUT: Raw CSV — TYPE,DATE,AMOUNT,CONCEPT. No headers. No markdown.`,
   default: `You are a STRICT bank statement extraction agent.
 Extract ALL transactions: deposits, withdrawals, checks, fees, transfers.
 DEPOSITS positive. WITHDRAWALS negative.
@@ -385,6 +399,7 @@ To identify bank_id use these clues:
 - "Bank of America" or "bankofamerica.com" or "BANK OF AMERICA" → "bank_of_america"
 - "Chase" or "JPMorgan Chase" or "chase.com" → "chase"
 - "MSU Federal Credit Union" or "MSUFCU" or "msufcu.org" or "MSU FCU" or "1-800-MSU-4YOU" → "msu_federal_credit_union"
+- "Mercury" or "mercury.com" or "Mercury Bank" → "mercury_bank"
 - Any other bank → "unknown"
 Respond ONLY with valid JSON. No markdown. No explanation.
 Example: {"bank_name":"Mabrey Bank","bank_id":"mabrey_bank","total_pages":16,"period_start":"02/02/2026","period_end":"03/01/2026","total_deposits":75616.02,"total_withdrawals":86217.03}`;

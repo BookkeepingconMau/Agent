@@ -1475,9 +1475,9 @@ export default function App() {
                   </span>
                 </div>
               )}
-              {bankInfo.total_pages > 15 && !splitMode && (
+              {bankInfo.total_pages > 10 && !splitMode && (
                 <div style={{marginTop:10,padding:"10px 14px",background:"#e0f2fe",borderRadius:8,border:"1px solid #7dd3fc",fontSize:12,color:"#0369a1"}}>
-                  💡 <strong>PDF de {bankInfo.total_pages} páginas detectado.</strong> Para mejor precisión en statements grandes, considera usar el <strong>Modo PDF Dividido</strong> — divide el PDF en partes de 10-15 páginas y procésalas por separado.
+                  💡 <strong>PDF de {bankInfo.total_pages} páginas detectado.</strong> Para mejor precisión, activa el <strong>Modo PDF Dividido</strong> — divide el PDF en partes de 10 páginas máximo. <strong>Importante:</strong> si tu banco incluye imágenes de cheques (como Bank of Oklahoma), elimínalas antes de subir — solo sube hasta la página del Daily Account Balance.
                 </div>
               )}
             </div>

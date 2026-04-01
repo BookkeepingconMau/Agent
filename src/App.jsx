@@ -253,6 +253,9 @@ const MERCHANT_DICT = [
   { patterns:["PARKING"], category:"Operating Expenses - Parking" },
   ...[["IRS ","IRS*"],["STATE TAX","SALES TAX"]].map(p=>({patterns:p,category:"Taxes & Licenses"})),
   { patterns:["GUITAR CENTER"], category:"ASK TO CLIENT" },
+  // ── MERCURY BANK ──────────────────────────────────────────────────────────
+  { patterns:["PERSON PAY LUIS"], category:"Owner Draw" },
+  { patterns:["POS AMAZON.COM","DEBIT CARD AMAZON"], category:"COGS - Materials" },
   // ── MABREY BANK / CONSTRUCTION (Najera) ──────────────────────────────────
   { patterns:["MAVERIK","POS DEB MAVERIK","DBT CRD MAVERIK"], category:"Vehicle - Fuel (Non-Production)" },
   { patterns:["ATWOOD","POS DEB ATWOOD"], category:"COGS - Materials" },
@@ -270,7 +273,7 @@ const MERCHANT_DICT = [
   { patterns:["IPAY BILL PAY"], category:"Bank Fees" },
 ];
 const DEPOSIT_CATEGORIES    = ["Income - Services","Other Income","Loan Proceeds","Owner Investment","Transfer In","Refund Received","ASK TO CLIENT"];
-const WITHDRAWAL_CATEGORIES = ["COGS - Materials","COGS - Labor","COGS - Fuel (Production)","COGS - Food & Beverage","Subcontractor Expense","Payroll & Wages","Advertising & Marketing","Bank Fees","Donations","Insurance","Loan Payment","Meals & Entertainment","Office Supplies","Operating Expenses - Delivery & Postage","Operating Expenses - Parking","Operating Expenses - Supplies","Personal Payment","Rent & Lease","Repairs & Maintenance","Software & Subscriptions","Taxes & Licenses","Telephone & Internet","Transfer Out","Travel & Transportation","Uniforms","Utilities","Vehicle - Fuel (Non-Production)","Vehicle - Maintenance","Owner Draw","ASK TO CLIENT"];
+const WITHDRAWAL_CATEGORIES = ["COGS - Materials","COGS - Labor","COGS - Fuel (Production)","COGS - Food & Beverage","Subcontractor Expense","Payroll & Wages","Advertising & Marketing","Bank Fees","Donations","Insurance","Loan Payment","Meals & Entertainment","Office Supplies","Operating Expenses - Delivery & Postage","Operating Expenses - Parking","Operating Expenses - Supplies","Personal Payment","Pharmacy","Rent & Lease","Repairs & Maintenance","Software & Subscriptions","Taxes & Licenses","Telephone & Internet","Transfer Out","Travel & Transportation","Uniforms","Utilities","Vehicle - Fuel (Non-Production)","Vehicle - Maintenance","Owner Draw","ASK TO CLIENT"];
 const TRANSFER_IN_KEYWORDS  = ["INTERNET XFER FROM","XFER FROM CHKG","XFER FROM SAV","TRANSFER FROM","ONLINE TRANSFER FROM","FUNDS TRANSFER IN","MOBILE XFER FROM","TRANSFER FROM SHARE","COMPUTERLINE TRANSFER FROM","DEPOSIT TRANSFER FROM"];
 const TRANSFER_OUT_KEYWORDS = ["INTERNET XFER TO","XFER TO CHKG","XFER TO SAV","TRANSFER TO","ONLINE TRANSFER TO","FUNDS TRANSFER OUT","MOBILE XFER TO","WITHDRAWAL TRANSFER TO","COMPUTERLINE TRANSFER TO","COMPUTERLINE M2M"];
 function detectTransfer(concept) {

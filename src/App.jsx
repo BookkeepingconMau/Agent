@@ -691,16 +691,18 @@ export default function App() {
     }
 
     // ── SMART MULTI-PASS ──
-    // IMPORTANTE: En modo split el Multi-Pass está desactivado.
-    // Cada parte extrae solo sus transacciones — el Multi-Pass no puede
-    // comparar contra el total del banco porque en partes intermedias
-    // siempre habrá diferencia (aún no están todas las partes cargadas).
     let allRows = rows;
-    if (bals.length > 0 && !currentSplitMode) {
+    if (bals.length > 0) {
       const bankDep  = bals.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
       const bankWith = bals.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
-      const extractedDep  = rows.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
-      const extractedWith = rows.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+
+      // En modo split, comparar contra el TOTAL acumulado de todas las partes
+      const previousParts = splitPartsRef.current.filter(Boolean);
+      const previousRows  = previousParts.flat();
+      const allRowsSoFar  = [...previousRows, ...rows];
+
+      const extractedDep  = allRowsSoFar.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+      const extractedWith = allRowsSoFar.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
       const withDiff = bankWith - extractedWith;
       const depDiff  = bankDep  - extractedDep;
 
@@ -710,7 +712,7 @@ export default function App() {
         const checkRows = await extractCheckSummary(b64, bankId);
         const newCheckRows = checkRows.filter(cr => {
           const crAmt = Math.abs(parseFloat(cr.amount)||0).toFixed(2);
-          return !rows.some(r => {
+          return !allRowsSoFar.some(r => {
             const rAmt = Math.abs(parseFloat(r.amount)||0).toFixed(2);
             return r.type === "WITHDRAWAL" && rAmt === crAmt;
           });
@@ -719,8 +721,10 @@ export default function App() {
         setP(`✅ Pasada cheques: +${newCheckRows.length} encontrados`, 60);
       }
 
-      const newExtDep  = allRows.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
-      const newExtWith = allRows.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+      // Recalcular
+      const allRowsUpdated = [...previousRows, ...allRows];
+      const newExtDep  = allRowsUpdated.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+      const newExtWith = allRowsUpdated.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
       const remDepDiff  = bankDep  - newExtDep;
       const remWithDiff = bankWith - newExtWith;
 
@@ -729,7 +733,7 @@ export default function App() {
         setP(`⚡ Agente 2B: Buscando transacciones adicionales ($${Math.max(remDepDiff,remWithDiff).toFixed(0)})...`, 63);
         const secondRows = await extractTransactionsSecondPass(b64, remDepDiff > 0 ? remDepDiff : 0, remWithDiff > 0 ? remWithDiff : 0, allRows, bankId);
         const newRows = secondRows.filter(sr =>
-          !allRows.some(r => r.date === sr.date && r.amount === sr.amount && r.type === sr.type)
+          !allRowsUpdated.some(r => r.date === sr.date && r.amount === sr.amount && r.type === sr.type)
         );
         allRows = [...allRows, ...newRows];
         setP(`✅ Pasada adicional: +${newRows.length} más encontradas`, 68);

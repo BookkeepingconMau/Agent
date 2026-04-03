@@ -914,7 +914,7 @@ export default function App() {
   }
   function downloadWave(type) {
     const rows = transactions.filter(r=>r.type===type);
-    const csv = "DATE,AMOUNT,*,CONCEPT\n" + rows.map(r=>`${r.date},${r.amount},,"${r.concept}"`).join("\n");
+    const csv = "DATE,AMOUNT,*,CONCEPT,CATEGORY\n" + rows.map(r=>`${r.date},${r.amount},,"${r.concept}","${r.category}"`).join("\n");
     triggerDownload(`wave_${type.toLowerCase()}_import.csv`, csv);
   }
   function downloadCSV() {
@@ -931,8 +931,8 @@ export default function App() {
     if (rows.length === 0) return;
     const safeName = cat.replace(/[^a-z0-9]/gi, "_").toLowerCase();
     const clientName = (clientData?.name || "client").replace(/\s/g, "_");
-    const csv = "DATE,TYPE,AMOUNT,CONCEPT,CATEGORY\n" +
-      rows.map(r => `${r.date},${r.type},${r.amount},"${r.concept}","${r.category}"`).join("\n");
+    const csv = "DATE,AMOUNT,*,CONCEPT,CATEGORY\n" +
+      rows.map(r => `${r.date},${r.amount},,"${r.concept}","${r.category}"`).join("\n");
     triggerDownload(`${clientName}_${safeName}.csv`, csv);
   }
   function downloadPnL() {

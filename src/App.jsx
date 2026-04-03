@@ -14,10 +14,11 @@ const BUSINESS_TYPES = [
   { id: "property_mgmt", label: "Property Management",       icon: "🏢" },
   { id: "barbershop",    label: "Barbería / Salón",          icon: "💇" },
   { id: "general",       label: "General Services",          icon: "⚙️" },
+  { id: "bookkeeping",   label: "Bookkeeping / Tax Prep",     icon: "📒" },
 ];
-const tradesFuel = (cat) => ({ construction:cat,hvac:cat,roofing:cat,drywall:cat,electrical:cat,plumbing:cat,landscaping:cat,cleaning:"Vehicle - Fuel (Non-Production)",food_events:"Vehicle - Fuel (Non-Production)",restaurant:"Vehicle - Fuel (Non-Production)",trucking:"COGS - Fuel (Production)",property_mgmt:"Vehicle - Fuel (Non-Production)",barbershop:"Vehicle - Fuel (Non-Production)",general:"Vehicle - Fuel (Non-Production)" });
+const tradesFuel = (cat) => ({ construction:cat,hvac:cat,roofing:cat,drywall:cat,electrical:cat,plumbing:cat,landscaping:cat,cleaning:"Vehicle - Fuel (Non-Production)",food_events:"Vehicle - Fuel (Non-Production)",restaurant:"Vehicle - Fuel (Non-Production)",trucking:"COGS - Fuel (Production)",property_mgmt:"Vehicle - Fuel (Non-Production)",barbershop:"Vehicle - Fuel (Non-Production)",general:"Vehicle - Fuel (Non-Production)",bookkeeping:"Vehicle - Fuel (Non-Production)" });
 // ── CAMBIO 1: "COGS - Materials" → "Materials" en tradesMat ──
-const tradesMat  = (fallback="ASK TO CLIENT") => ({ construction:"Materials",hvac:"Materials",roofing:"Materials",drywall:"Materials",electrical:"Materials",plumbing:"Materials",landscaping:"Materials",cleaning:"Materials",food_events:"Materials",restaurant:fallback,trucking:"Operating Expenses - Supplies",property_mgmt:"Repairs & Maintenance",barbershop:"Materials",general:fallback });
+const tradesMat  = (fallback="ASK TO CLIENT") => ({ construction:"Materials",hvac:"Materials",roofing:"Materials",drywall:"Materials",electrical:"Materials",plumbing:"Materials",landscaping:"Materials",cleaning:"Materials",food_events:"Materials",restaurant:fallback,trucking:"Operating Expenses - Supplies",property_mgmt:"Repairs & Maintenance",barbershop:"Materials",general:fallback,bookkeeping:fallback });
 // ─── BANK PROMPTS LIBRARY ─────────────────────────────────────────────────────
 const BANK_PROMPTS = {
   mabrey_bank: `You are a STRICT check extraction agent for MABREY BANK statements.
@@ -433,7 +434,15 @@ function categorize(concept, amount, isDeposit, businessType, learnedMerchants) 
       if (entry.amountRule?.under15 && amt < 15) return { category:entry.amountRule.under15, level:"HARD" };
       if (typeof entry.category === "object") {
         const cat = entry.category[businessType] || entry.category.general || "ASK TO CLIENT";
+        // Si el merchant es gasto pero el dinero entró → es ingreso
+        if (isDeposit && !["Income - Services","Other Income","Loan Proceeds","Owner Investment","Transfer In","Refund Received","ASK TO CLIENT"].includes(cat)) {
+          return { category:"Income - Services", level:"HARD" };
+        }
         return { category:cat, level:"BUSINESS" };
+      }
+      // Si el merchant es gasto pero el dinero entró → es ingreso
+      if (isDeposit && !["Income - Services","Other Income","Loan Proceeds","Owner Investment","Transfer In","Refund Received","ASK TO CLIENT"].includes(entry.category)) {
+        return { category:"Income - Services", level:"HARD" };
       }
       return { category:entry.category, level:"HARD" };
     }
@@ -923,11 +932,7 @@ export default function App() {
   }
   function downloadByCategory(cat) {
     if (!cat) return;
-    const isIncomeCat = DEPOSIT_CATEGORIES.includes(cat);
-    const rows = transactions.filter(r =>
-      r.category === cat &&
-      (isIncomeCat ? r.type === "DEPOSIT" : r.type === "WITHDRAWAL")
-    );
+    const rows = transactions.filter(r => r.category === cat);
     if (rows.length === 0) return;
     const safeName = cat.replace(/[^a-z0-9]/gi, "_").toLowerCase();
     const clientName = (clientData?.name || "client").replace(/\s/g, "_");

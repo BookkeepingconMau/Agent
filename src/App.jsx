@@ -943,8 +943,7 @@ export default function App() {
     if (rows.length === 0) return;
     const safeName = cat.replace(/[^a-z0-9]/gi, "_").toLowerCase();
     const clientName = (clientData?.name || "client").replace(/\s/g, "_");
-    const csv = "DATE,AMOUNT,*,CONCEPT,CATEGORY\n" +
-      rows.map(r => `${fmtDate(r.date)},${r.amount},,"${r.concept}","${r.category}"`).join("\n");
+    const csv = rows.map(r => `${fmtDate(r.date)},${r.amount},,"${r.concept}","${r.category}"`).join("\n");
     triggerDownload(`${clientName}_${safeName}.csv`, csv);
   }
   function downloadPnL() {

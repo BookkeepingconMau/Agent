@@ -16,7 +16,8 @@ const BUSINESS_TYPES = [
   { id: "general",       label: "General Services",          icon: "⚙️" },
 ];
 const tradesFuel = (cat) => ({ construction:cat,hvac:cat,roofing:cat,drywall:cat,electrical:cat,plumbing:cat,landscaping:cat,cleaning:"Vehicle - Fuel (Non-Production)",food_events:"Vehicle - Fuel (Non-Production)",restaurant:"Vehicle - Fuel (Non-Production)",trucking:"COGS - Fuel (Production)",property_mgmt:"Vehicle - Fuel (Non-Production)",barbershop:"Vehicle - Fuel (Non-Production)",general:"Vehicle - Fuel (Non-Production)" });
-const tradesMat  = (fallback="ASK TO CLIENT") => ({ construction:"COGS - Materials",hvac:"COGS - Materials",roofing:"COGS - Materials",drywall:"COGS - Materials",electrical:"COGS - Materials",plumbing:"COGS - Materials",landscaping:"COGS - Materials",cleaning:"COGS - Materials",food_events:"COGS - Materials",restaurant:fallback,trucking:"Operating Expenses - Supplies",property_mgmt:"Repairs & Maintenance",barbershop:"COGS - Materials",general:fallback });
+// ── CAMBIO 1: "COGS - Materials" → "Materials" en tradesMat ──
+const tradesMat  = (fallback="ASK TO CLIENT") => ({ construction:"Materials",hvac:"Materials",roofing:"Materials",drywall:"Materials",electrical:"Materials",plumbing:"Materials",landscaping:"Materials",cleaning:"Materials",food_events:"Materials",restaurant:fallback,trucking:"Operating Expenses - Supplies",property_mgmt:"Repairs & Maintenance",barbershop:"Materials",general:fallback });
 // ─── BANK PROMPTS LIBRARY ─────────────────────────────────────────────────────
 const BANK_PROMPTS = {
   mabrey_bank: `You are a STRICT check extraction agent for MABREY BANK statements.
@@ -170,29 +171,44 @@ const MERCHANT_DICT = [
   { patterns:["BANKCARD","BKCD PROCESSING"], category:{restaurant:"Income - Services",food_events:"Income - Services",construction:"ASK TO CLIENT",hvac:"ASK TO CLIENT",roofing:"ASK TO CLIENT",drywall:"ASK TO CLIENT",electrical:"ASK TO CLIENT",plumbing:"ASK TO CLIENT",landscaping:"ASK TO CLIENT",cleaning:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"ASK TO CLIENT",barbershop:"Income - Services",general:"ASK TO CLIENT"} },
   { patterns:["DOORDASH","DOOR DASH"], category:{restaurant:"Income - Services",food_events:"Income - Services",construction:"ASK TO CLIENT",hvac:"ASK TO CLIENT",roofing:"ASK TO CLIENT",drywall:"ASK TO CLIENT",electrical:"ASK TO CLIENT",plumbing:"ASK TO CLIENT",landscaping:"ASK TO CLIENT",cleaning:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"ASK TO CLIENT",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
   { patterns:["UBER USA","UBER EATS","UBEREATS"], category:{restaurant:"Income - Services",food_events:"Income - Services",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"Meals & Entertainment",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"} },
-  { patterns:["EL REY USA MEATS","EL REY MEATS"], category:"COGS - Materials" },
-  { patterns:["CAPITOL BEVERAGE","CAPITAL BEVERAGE"], category:"COGS - Materials" },
-  { patterns:["REYESCOCACOLA","REYES COCA COLA","REYES COKE"], category:"COGS - Materials" },
-  { patterns:["GFS STORE","GORDON FOOD SERVICE","GORDON FOOD"], category:{restaurant:"COGS - Materials",food_events:"COGS - Materials",construction:"Operating Expenses - Supplies",hvac:"Operating Expenses - Supplies",roofing:"Operating Expenses - Supplies",drywall:"Operating Expenses - Supplies",electrical:"Operating Expenses - Supplies",plumbing:"Operating Expenses - Supplies",landscaping:"Operating Expenses - Supplies",cleaning:"COGS - Materials",trucking:"Operating Expenses - Supplies",property_mgmt:"Operating Expenses - Supplies",barbershop:"Operating Expenses - Supplies",general:"Operating Expenses - Supplies"} },
-  { patterns:["HORROCKS","HORROCKS FARM"], category:{restaurant:"COGS - Materials",food_events:"COGS - Materials",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"Meals & Entertainment",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"} },
-  { patterns:["QUALITY DAIRY"], category:{restaurant:"COGS - Materials",food_events:"COGS - Materials",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"Meals & Entertainment",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"} },
-  { patterns:["SHEILA'S BAKERY","SHEILAS BAKERY"], category:{restaurant:"COGS - Materials",food_events:"COGS - Materials",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"Meals & Entertainment",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"} },
-  { patterns:["STATE OF MICHGWL","STATE OF MICHNWS","GENERAL WINE AND LIQ","ABC LIQUOR"], category:{restaurant:"COGS - Materials",food_events:"COGS - Materials",construction:"ASK TO CLIENT",hvac:"ASK TO CLIENT",roofing:"ASK TO CLIENT",drywall:"ASK TO CLIENT",electrical:"ASK TO CLIENT",plumbing:"ASK TO CLIENT",landscaping:"ASK TO CLIENT",cleaning:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"ASK TO CLIENT",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
+  // ── CAMBIO 2 en merchants: "COGS - Materials" → "Materials" ──
+  { patterns:["EL REY USA MEATS","EL REY MEATS"], category:"Materials" },
+  { patterns:["CAPITOL BEVERAGE","CAPITAL BEVERAGE"], category:"Materials" },
+  { patterns:["REYESCOCACOLA","REYES COCA COLA","REYES COKE"], category:"Materials" },
+  { patterns:["GFS STORE","GORDON FOOD SERVICE","GORDON FOOD"], category:{restaurant:"Materials",food_events:"Materials",construction:"Operating Expenses - Supplies",hvac:"Operating Expenses - Supplies",roofing:"Operating Expenses - Supplies",drywall:"Operating Expenses - Supplies",electrical:"Operating Expenses - Supplies",plumbing:"Operating Expenses - Supplies",landscaping:"Operating Expenses - Supplies",cleaning:"Materials",trucking:"Operating Expenses - Supplies",property_mgmt:"Operating Expenses - Supplies",barbershop:"Operating Expenses - Supplies",general:"Operating Expenses - Supplies"} },
+  { patterns:["HORROCKS","HORROCKS FARM"], category:{restaurant:"Materials",food_events:"Materials",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"Meals & Entertainment",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"} },
+  { patterns:["QUALITY DAIRY"], category:{restaurant:"Materials",food_events:"Materials",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"Meals & Entertainment",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"} },
+  { patterns:["SHEILA'S BAKERY","SHEILAS BAKERY"], category:{restaurant:"Materials",food_events:"Materials",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"Meals & Entertainment",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"} },
+  { patterns:["STATE OF MICHGWL","STATE OF MICHNWS","GENERAL WINE AND LIQ","ABC LIQUOR"], category:{restaurant:"Materials",food_events:"Materials",construction:"ASK TO CLIENT",hvac:"ASK TO CLIENT",roofing:"ASK TO CLIENT",drywall:"ASK TO CLIENT",electrical:"ASK TO CLIENT",plumbing:"ASK TO CLIENT",landscaping:"ASK TO CLIENT",cleaning:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"ASK TO CLIENT",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
   { patterns:["LQ MERCHANT","MERCHANT BANKCD","BKCD PROCESSING","MERCHANT HUB","YBSPOS"], category:{restaurant:"Bank Fees",food_events:"Bank Fees",construction:"Bank Fees",hvac:"Bank Fees",roofing:"Bank Fees",drywall:"Bank Fees",electrical:"Bank Fees",plumbing:"Bank Fees",landscaping:"Bank Fees",cleaning:"Bank Fees",trucking:"Bank Fees",property_mgmt:"Bank Fees",barbershop:"Bank Fees",general:"Bank Fees"} },
   ...[["CONSTELLATION ENERGY"],["COMED"],["PEOPLES GAS"],["ATMOS ENERGY"],["ONCOR"],["FPL ","FLORIDA POWER"],["DUKE ENERGY"],["APS "],["SRP "],["CONSUMERS ENERGY"],["LANSING BWL","BWL UTIL"],["DELTA CHARTER TW"],["GRANGERCOM"],["GRANGER"]].map(p=>({patterns:p,category:"Utilities"})),
   ...[["INTUIT 82704102","INTUIT 83982660","INTUIT 19205133","INTUIT 63733983","INTUIT 32260264"],["GUSTO"],["ADP ","ADP*"],["PAYCHEX"]].map(p=>({patterns:p,category:"Payroll & Wages"})),
   { patterns:["INTUIT *QBOOKS","QBOOKS PAYROLL","QUICKBOOKS PAYROLL"], category:"Payroll & Wages" },
+  // ── CAMBIO 3: NUEVOS MERCHANTS — Payroll Tax, Licenses & Permits, Legal & Professional Services ──
+  { patterns:["EFTPS","IRS USATAXPYMT","IRS USATAX"], category:"Payroll Tax" },
+  { patterns:["MI UIA","MICHIGAN UIA","MESC "], category:"Payroll Tax" },
+  { patterns:["TX WORKFORCE","TWC ","TEXAS WORKFORCE"], category:"Payroll Tax" },
+  { patterns:["OK TAX","OKLAHOMA TAX COMM"], category:"Payroll Tax" },
+  { patterns:["AR DFA","ARKANSAS DFA"], category:"Payroll Tax" },
+  { patterns:["CONTRACTOR LIC","CONTRACTORS LIC"], category:"Licenses & Permits" },
+  { patterns:["DEPT OF LABOR","DEPARTMENT OF LABOR"], category:"Licenses & Permits" },
+  { patterns:["OSHA "], category:"Licenses & Permits" },
+  { patterns:["SECRETARY OF STATE"], category:"Licenses & Permits" },
+  { patterns:["LAW OFFICE","LAW GROUP","ATTORNEY","ABOGADO","LEGAL SERVICES","LLP ","PLLC "], category:"Legal & Professional Services" },
+  { patterns:["CPA ","ACCOUNTANT","ACCOUNTING FIRM","TAX PREP","H&R BLOCK","JACKSON HEWITT","LIBERTY TAX"], category:"Legal & Professional Services" },
+  { patterns:["NOTARY","NOTARIO"], category:"Legal & Professional Services" },
+  { patterns:["CONSULTING","CONSULTANT"], category:"Legal & Professional Services" },
   { patterns:["STATEOF MICHIGAN","STATE OF MICHIGAN","STATE FARM RO"], category:{restaurant:"Taxes & Licenses",food_events:"Taxes & Licenses",construction:"Insurance",hvac:"Insurance",roofing:"Insurance",drywall:"Insurance",electrical:"Insurance",plumbing:"Insurance",landscaping:"Insurance",cleaning:"Insurance",trucking:"Insurance",property_mgmt:"Insurance",barbershop:"Insurance",general:"Insurance"} },
-  ...[["JOHNSTONE SUPPLY","JOHNSTONE"],["WATSCO"],["CARRIER"],["TRANE"],["LENNOX"],["YORK HVAC"],["RHEEM"],["GOODMAN"],["REFRIGERANT","R-410","FREON"]].map(p=>({patterns:p,category:"COGS - Materials"})),
-  ...[["ABC SUPPLY","ABC ROOFING"],["BEACON ROOFING"],["GULFEAGLE"],["OWENS CORNING"],["GAF ROOFING","GAF MATERIAL"]].map(p=>({patterns:p,category:"COGS - Materials"})),
-  ...[["USG ","US GYPSUM"],["NATIONAL GYPSUM"],["CERTAINTEED"],["GEORGIA PACIFIC"]].map(p=>({patterns:p,category:"COGS - Materials"})),
-  ...[["GRAYBAR"],["REXEL"],["WESCO"],["PLATT ELECTRIC"],["CITY ELECTRIC"]].map(p=>({patterns:p,category:"COGS - Materials"})),
-  ...[["HAJOCA"],["REEVES-SAIN","REEVES SAIN"],["CONSOLIDATED PIPE"],["BARNETT"]].map(p=>({patterns:p,category:"COGS - Materials"})),
-  ...[["SALLY BEAUTY","SALLYS BEAUTY"],["COSMOPROF"],["BEAUTY SUPPLY"],["SALON CENTRIC"],["PAUL MITCHELL"]].map(p=>({patterns:p,category:"COGS - Materials"})),
-  ...[["ULINE","U-LINE"],["CINTAS"],["ZORO TOOLS","ZORO "]].map(p=>({patterns:p,category:"COGS - Materials"})),
-  { patterns:["GRAINGER"], category:{construction:"COGS - Materials",hvac:"COGS - Materials",roofing:"COGS - Materials",drywall:"COGS - Materials",electrical:"COGS - Materials",plumbing:"COGS - Materials",landscaping:"COGS - Materials",cleaning:"COGS - Materials",food_events:"COGS - Materials",restaurant:"ASK TO CLIENT",trucking:"Operating Expenses - Supplies",property_mgmt:"Repairs & Maintenance",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
+  ...[["JOHNSTONE SUPPLY","JOHNSTONE"],["WATSCO"],["CARRIER"],["TRANE"],["LENNOX"],["YORK HVAC"],["RHEEM"],["GOODMAN"],["REFRIGERANT","R-410","FREON"]].map(p=>({patterns:p,category:"Materials"})),
+  ...[["ABC SUPPLY","ABC ROOFING"],["BEACON ROOFING"],["GULFEAGLE"],["OWENS CORNING"],["GAF ROOFING","GAF MATERIAL"]].map(p=>({patterns:p,category:"Materials"})),
+  ...[["USG ","US GYPSUM"],["NATIONAL GYPSUM"],["CERTAINTEED"],["GEORGIA PACIFIC"]].map(p=>({patterns:p,category:"Materials"})),
+  ...[["GRAYBAR"],["REXEL"],["WESCO"],["PLATT ELECTRIC"],["CITY ELECTRIC"]].map(p=>({patterns:p,category:"Materials"})),
+  ...[["HAJOCA"],["REEVES-SAIN","REEVES SAIN"],["CONSOLIDATED PIPE"],["BARNETT"]].map(p=>({patterns:p,category:"Materials"})),
+  ...[["SALLY BEAUTY","SALLYS BEAUTY"],["COSMOPROF"],["BEAUTY SUPPLY"],["SALON CENTRIC"],["PAUL MITCHELL"]].map(p=>({patterns:p,category:"Materials"})),
+  ...[["ULINE","U-LINE"],["CINTAS"],["ZORO TOOLS","ZORO "]].map(p=>({patterns:p,category:"Materials"})),
+  { patterns:["GRAINGER"], category:{construction:"Materials",hvac:"Materials",roofing:"Materials",drywall:"Materials",electrical:"Materials",plumbing:"Materials",landscaping:"Materials",cleaning:"Materials",food_events:"Materials",restaurant:"ASK TO CLIENT",trucking:"Operating Expenses - Supplies",property_mgmt:"Repairs & Maintenance",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
   ...[["APARTMENT LIST"],["ZILLOW"],["COSTAR"],["APARTMENTS.COM"],["BUILDIUM"],["APPFOLIO"],["RENTMANAGER","RENT MANAGER"]].map(p=>({patterns:p,category:{property_mgmt:p[0].includes("BUILDIUM")||p[0].includes("APPFOLIO")||p[0].includes("RENTMANAGER")?"Software & Subscriptions":"Advertising & Marketing",construction:"Advertising & Marketing",hvac:"Advertising & Marketing",roofing:"Advertising & Marketing",drywall:"Advertising & Marketing",electrical:"Advertising & Marketing",plumbing:"Advertising & Marketing",landscaping:"Advertising & Marketing",cleaning:"Advertising & Marketing",food_events:"Advertising & Marketing",restaurant:"Advertising & Marketing",trucking:"Advertising & Marketing",barbershop:"Advertising & Marketing",general:"Advertising & Marketing"}})),
-  ...[["FIESTA MART"],["CARDENAS"],["NORTHGATE"],["VALLARTA"],["HEB ","H-E-B"],["ALDI"],["CARNICERIA"],["PANADERIA"],["SURTIDORA"],["LUCKY SUPERMARKET"],["STATER BROS"],["BRAVO SUPER"],["SEDANOS"],["COMPARE FOODS"],["PRICE RITE"],["MEIJER"],["KROGER "]].map(p=>({patterns:p,category:{food_events:"COGS - Materials",restaurant:"COGS - Materials",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"COGS - Materials",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"}})),
+  ...[["FIESTA MART"],["CARDENAS"],["NORTHGATE"],["VALLARTA"],["HEB ","H-E-B"],["ALDI"],["CARNICERIA"],["PANADERIA"],["SURTIDORA"],["LUCKY SUPERMARKET"],["STATER BROS"],["BRAVO SUPER"],["SEDANOS"],["COMPARE FOODS"],["PRICE RITE"],["MEIJER"],["KROGER "]].map(p=>({patterns:p,category:{food_events:"Materials",restaurant:"Materials",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"Materials",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"}})),
   { patterns:["HOME DEPOT","THE HOME DEPOT"], category:tradesMat("Repairs & Maintenance") },
   { patterns:["LOWES","LOWE'S"],              category:tradesMat("Repairs & Maintenance") },
   { patterns:["MENARDS"],                     category:tradesMat("ASK TO CLIENT") },
@@ -201,15 +217,15 @@ const MERCHANT_DICT = [
   { patterns:["FASTENAL"],                    category:tradesMat("Office Supplies") },
   { patterns:["TRACTOR SUPPLY"],              category:tradesMat("ASK TO CLIENT") },
   { patterns:["HARBOR FREIGHT"],              category:tradesMat("ASK TO CLIENT") },
-  { patterns:["SHERWIN WILLIAMS","SHERWIN-WILLIAMS"], category:{construction:"COGS - Materials",hvac:"COGS - Materials",roofing:"COGS - Materials",drywall:"COGS - Materials",electrical:"ASK TO CLIENT",plumbing:"ASK TO CLIENT",landscaping:"COGS - Materials",cleaning:"COGS - Materials",food_events:"ASK TO CLIENT",restaurant:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"Repairs & Maintenance",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
-  { patterns:["FERGUSON"],                    category:{construction:"COGS - Materials",hvac:"COGS - Materials",roofing:"COGS - Materials",drywall:"COGS - Materials",electrical:"COGS - Materials",plumbing:"COGS - Materials",landscaping:"ASK TO CLIENT",cleaning:"ASK TO CLIENT",food_events:"ASK TO CLIENT",restaurant:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"Repairs & Maintenance",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
+  { patterns:["SHERWIN WILLIAMS","SHERWIN-WILLIAMS"], category:{construction:"Materials",hvac:"Materials",roofing:"Materials",drywall:"Materials",electrical:"ASK TO CLIENT",plumbing:"ASK TO CLIENT",landscaping:"Materials",cleaning:"Materials",food_events:"ASK TO CLIENT",restaurant:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"Repairs & Maintenance",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
+  { patterns:["FERGUSON"],                    category:{construction:"Materials",hvac:"Materials",roofing:"Materials",drywall:"Materials",electrical:"Materials",plumbing:"Materials",landscaping:"ASK TO CLIENT",cleaning:"ASK TO CLIENT",food_events:"ASK TO CLIENT",restaurant:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"Repairs & Maintenance",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
   { patterns:["84 LUMBER"],                   category:tradesMat("ASK TO CLIENT") },
-  { patterns:["FLOOR AND DECOR","FLOOR & DECOR"], category:{construction:"COGS - Materials",hvac:"ASK TO CLIENT",roofing:"ASK TO CLIENT",drywall:"COGS - Materials",electrical:"ASK TO CLIENT",plumbing:"ASK TO CLIENT",landscaping:"ASK TO CLIENT",cleaning:"ASK TO CLIENT",food_events:"ASK TO CLIENT",restaurant:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"Repairs & Maintenance",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
+  { patterns:["FLOOR AND DECOR","FLOOR & DECOR"], category:{construction:"Materials",hvac:"ASK TO CLIENT",roofing:"ASK TO CLIENT",drywall:"Materials",electrical:"ASK TO CLIENT",plumbing:"ASK TO CLIENT",landscaping:"ASK TO CLIENT",cleaning:"ASK TO CLIENT",food_events:"ASK TO CLIENT",restaurant:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"Repairs & Maintenance",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
   { patterns:["SUNBELT RENTAL"],              category:tradesMat("ASK TO CLIENT") },
   { patterns:["UNITED RENTALS"],              category:tradesMat("ASK TO CLIENT") },
   { patterns:["RESTAURANT EQUIPPERS"],        category:{restaurant:"Repairs & Maintenance",food_events:"Repairs & Maintenance",construction:"ASK TO CLIENT",hvac:"ASK TO CLIENT",roofing:"ASK TO CLIENT",drywall:"ASK TO CLIENT",electrical:"ASK TO CLIENT",plumbing:"ASK TO CLIENT",landscaping:"ASK TO CLIENT",cleaning:"ASK TO CLIENT",trucking:"ASK TO CLIENT",property_mgmt:"ASK TO CLIENT",barbershop:"ASK TO CLIENT",general:"ASK TO CLIENT"} },
   ...[["MCDONALD"],["STARBUCKS"],["CHICK-FIL-A","CHICKFILA"],["SUBWAY"],["CHIPOTLE"],["TACO BELL"],["WENDYS"],["BURGER KING"],["DOMINOS"],["PIZZA HUT"],["POPEYES"],["PANDA EXPRESS"],["IN-N-OUT"],["WHATABURGER"],["RAISING CANE"],["SONIC DRIVE"],["JACK IN THE BOX"],["DAIRY QUEEN"],["FIVE GUYS"],["PANERA"],["DUNKIN"],["BUFFALO WILD","BUFFALO WILD WINGS"],["OLIVE GARDEN"]].map(p=>({patterns:p,category:"Meals & Entertainment"})),
-  ...[["TAQUERIA"],["TACOS "],["CARNITAS"],["TAMALES"],["TORTAS"]].map(p=>({patterns:p,category:{food_events:"COGS - Materials",restaurant:"COGS - Materials",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"Meals & Entertainment",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"}})),
+  ...[["TAQUERIA"],["TACOS "],["CARNITAS"],["TAMALES"],["TORTAS"]].map(p=>({patterns:p,category:{food_events:"Materials",restaurant:"Materials",construction:"Meals & Entertainment",hvac:"Meals & Entertainment",roofing:"Meals & Entertainment",drywall:"Meals & Entertainment",electrical:"Meals & Entertainment",plumbing:"Meals & Entertainment",landscaping:"Meals & Entertainment",cleaning:"Meals & Entertainment",trucking:"Meals & Entertainment",property_mgmt:"Meals & Entertainment",barbershop:"Meals & Entertainment",general:"Meals & Entertainment"}})),
   { patterns:["JALISCIENCE","LA JALISCIENCE"], category:"Meals & Entertainment" },
   { patterns:["PUPUSERIA"],  category:"Meals & Entertainment" },
   { patterns:["PALETERIA"],  category:"Meals & Entertainment" },
@@ -241,16 +257,17 @@ const MERCHANT_DICT = [
   { patterns:["SQUARE ","SQUARE*","SQ *","SQ*"], category:"ASK TO CLIENT" },
   { patterns:["STRIPE"],                         category:"ASK TO CLIENT" },
   { patterns:["KOMPANIC LLC","KOMPANIC"],         category:{restaurant:"Software & Subscriptions",food_events:"Software & Subscriptions",construction:"Software & Subscriptions",hvac:"Software & Subscriptions",roofing:"Software & Subscriptions",drywall:"Software & Subscriptions",electrical:"Software & Subscriptions",plumbing:"Software & Subscriptions",landscaping:"Software & Subscriptions",cleaning:"Software & Subscriptions",trucking:"Software & Subscriptions",property_mgmt:"Software & Subscriptions",barbershop:"Software & Subscriptions",general:"Software & Subscriptions"} },
-  { patterns:["V&M BOOKKEEPING","BOOKKEEPING GROUP"], category:"Operating Expenses - Supplies" },
+  // ── CAMBIO 4: V&M BOOKKEEPING → Legal & Professional Services ──
+  { patterns:["V&M BOOKKEEPING","BOOKKEEPING GROUP"], category:"Legal & Professional Services" },
   ...[["AUTOZONE"],["OREILLY","O'REILLY"],["ADVANCE AUTO"],["NAPA AUTO"],["PEP BOYS"],["JIFFY LUBE"],["FIRESTONE"],["GOODYEAR"],["MAVIS TIRE"],["DISCOUNT TIRE"],["CAR WASH","CARWASH"]].map(p=>({patterns:p,category:"Vehicle - Maintenance"})),
   { patterns:["UBER ","UBER*"],         category:"Travel & Transportation" },
   { patterns:["LYFT"],                  category:"Travel & Transportation" },
   ...[["IPASS"],["SUNPASS"],["TXTAG"],["EZPASS"],["TOLL "]].map(p=>({patterns:p,category:{trucking:"COGS - Fuel (Production)",construction:"Travel & Transportation",hvac:"Travel & Transportation",roofing:"Travel & Transportation",drywall:"Travel & Transportation",electrical:"Travel & Transportation",plumbing:"Travel & Transportation",landscaping:"Travel & Transportation",cleaning:"Travel & Transportation",food_events:"Travel & Transportation",restaurant:"Travel & Transportation",property_mgmt:"Travel & Transportation",barbershop:"Travel & Transportation",general:"Travel & Transportation"}})),
   ...[["SPIRIT AIRLINES"],["FRONTIER AIRLINES"],["AMERICAN AIRLINES"],["SOUTHWEST AIRLINES"]].map(p=>({patterns:p,category:"Travel & Transportation"})),
-  { patterns:["WALMART","WAL-MART","WM SUPERCENTER"], category:{construction:"COGS - Materials",hvac:"COGS - Materials",roofing:"COGS - Materials",drywall:"COGS - Materials",electrical:"COGS - Materials",plumbing:"COGS - Materials",landscaping:"COGS - Materials",cleaning:"COGS - Materials",food_events:"COGS - Materials",restaurant:"COGS - Materials",trucking:"Operating Expenses - Supplies",property_mgmt:"Operating Expenses - Supplies",barbershop:"COGS - Materials",general:"Office Supplies"} },
-  { patterns:["SAMS CLUB","SAM'S CLUB","SAMSCLUB"], category:{construction:"COGS - Materials",hvac:"COGS - Materials",roofing:"COGS - Materials",drywall:"COGS - Materials",electrical:"COGS - Materials",plumbing:"COGS - Materials",landscaping:"COGS - Materials",cleaning:"COGS - Materials",food_events:"COGS - Materials",restaurant:"COGS - Materials",trucking:"Operating Expenses - Supplies",property_mgmt:"Operating Expenses - Supplies",barbershop:"COGS - Materials",general:"Office Supplies"} },
-  { patterns:["COSTCO"], category:{construction:"COGS - Materials",hvac:"COGS - Materials",roofing:"COGS - Materials",drywall:"COGS - Materials",electrical:"COGS - Materials",plumbing:"COGS - Materials",landscaping:"COGS - Materials",cleaning:"COGS - Materials",food_events:"COGS - Materials",restaurant:"COGS - Materials",trucking:"Operating Expenses - Supplies",property_mgmt:"Operating Expenses - Supplies",barbershop:"COGS - Materials",general:"Office Supplies"} },
-  { patterns:["AMAZON"], category:{construction:"COGS - Materials",hvac:"COGS - Materials",roofing:"COGS - Materials",drywall:"COGS - Materials",electrical:"COGS - Materials",plumbing:"COGS - Materials",landscaping:"COGS - Materials",cleaning:"COGS - Materials",food_events:"COGS - Materials",restaurant:"ASK TO CLIENT",trucking:"Operating Expenses - Supplies",property_mgmt:"Repairs & Maintenance",barbershop:"COGS - Materials",general:"Office Supplies"} },
+  { patterns:["WALMART","WAL-MART","WM SUPERCENTER"], category:{construction:"Materials",hvac:"Materials",roofing:"Materials",drywall:"Materials",electrical:"Materials",plumbing:"Materials",landscaping:"Materials",cleaning:"Materials",food_events:"Materials",restaurant:"Materials",trucking:"Operating Expenses - Supplies",property_mgmt:"Operating Expenses - Supplies",barbershop:"Materials",general:"Office Supplies"} },
+  { patterns:["SAMS CLUB","SAM'S CLUB","SAMSCLUB"], category:{construction:"Materials",hvac:"Materials",roofing:"Materials",drywall:"Materials",electrical:"Materials",plumbing:"Materials",landscaping:"Materials",cleaning:"Materials",food_events:"Materials",restaurant:"Materials",trucking:"Operating Expenses - Supplies",property_mgmt:"Operating Expenses - Supplies",barbershop:"Materials",general:"Office Supplies"} },
+  { patterns:["COSTCO"], category:{construction:"Materials",hvac:"Materials",roofing:"Materials",drywall:"Materials",electrical:"Materials",plumbing:"Materials",landscaping:"Materials",cleaning:"Materials",food_events:"Materials",restaurant:"Materials",trucking:"Operating Expenses - Supplies",property_mgmt:"Operating Expenses - Supplies",barbershop:"Materials",general:"Office Supplies"} },
+  { patterns:["AMAZON"], category:{construction:"Materials",hvac:"Materials",roofing:"Materials",drywall:"Materials",electrical:"Materials",plumbing:"Materials",landscaping:"Materials",cleaning:"Materials",food_events:"Materials",restaurant:"ASK TO CLIENT",trucking:"Operating Expenses - Supplies",property_mgmt:"Repairs & Maintenance",barbershop:"Materials",general:"Office Supplies"} },
   { patterns:["MICHAELS STORES","MICHAELS STORE"], category:{restaurant:"Operating Expenses - Supplies",food_events:"Operating Expenses - Supplies",construction:"Operating Expenses - Supplies",hvac:"Operating Expenses - Supplies",roofing:"Operating Expenses - Supplies",drywall:"Operating Expenses - Supplies",electrical:"Operating Expenses - Supplies",plumbing:"Operating Expenses - Supplies",landscaping:"Operating Expenses - Supplies",cleaning:"Operating Expenses - Supplies",trucking:"Operating Expenses - Supplies",property_mgmt:"Operating Expenses - Supplies",barbershop:"Operating Expenses - Supplies",general:"Office Supplies"} },
   { patterns:["HOBBY LOBBY","HOBBYLOBBY"], category:"Operating Expenses - Supplies" },
   { patterns:["VOLUNTEERS OF AMERICA"], category:"Meals & Entertainment" },
@@ -269,10 +286,38 @@ const MERCHANT_DICT = [
   { patterns:["GUITAR CENTER"], category:"ASK TO CLIENT" },
   // ── MERCURY BANK ──────────────────────────────────────────────────────────
   { patterns:["PERSON PAY LUIS"], category:"Owner Draw" },
-  { patterns:["POS AMAZON.COM","DEBIT CARD AMAZON"], category:"COGS - Materials" },
+  { patterns:["POS AMAZON.COM","DEBIT CARD AMAZON"], category:"Materials" },
+  // ── REGLAS APRENDIDAS — vm · general · 3/4/2026 ──────────────────────────
+  { patterns:["INTL. TRANSACTION FEE"], category:"Bank Fees" },
+  { patterns:["MERCURY CREDIT ACCOUNT"], category:"Bank Fees" },
+  { patterns:["MERCURY IO CASHBACK"], category:"Other Income" },
+  { patterns:["VM IBKR ACH"], category:"Transfer Out" },
+  { patterns:["MAU HIGLOBE ACH"], category:"Owner Draw" },
+  { patterns:["MERPAGO*ELCAMARONLOCO"], category:"Meals & Entertainment" },
+  { patterns:["CALENDLY"], category:"Software & Subscriptions" },
+  { patterns:["ABA SANTA CLARA"], category:"Meals & Entertainment" },
+  { patterns:["REST EL CONEJO"], category:"Meals & Entertainment" },
+  { patterns:["MAISON KAYSER"], category:"Meals & Entertainment" },
+  { patterns:["ANTHROPIC"], category:"Software & Subscriptions" },
+  { patterns:["DHL "], category:"Operating Expenses - Delivery & Postage" },
+  { patterns:["OXXO "], category:"Meals & Entertainment" },
+  { patterns:["MERPAGO*OUTLET"], category:"Uniforms" },
+  { patterns:["HOTEL MAR DE"], category:"Travel & Transportation" },
+  { patterns:["FECEGO ","FECEGO MARINA"], category:"Advertising & Marketing" },
+  { patterns:["COM RAP NUNYS"], category:"Meals & Entertainment" },
+  { patterns:["REST LA GALERA"], category:"Meals & Entertainment" },
+  { patterns:["COPPEL ZAMORA","COPPEL "], category:"Uniforms" },
+  { patterns:["GAS SERV PEMEX"], category:"Vehicle - Fuel (Non-Production)" },
+  { patterns:["REST NATURAL"], category:"Meals & Entertainment" },
+  { patterns:["ZORRO HEROES IXTAPALUC"], category:"Office Supplies" },
+  { patterns:["SERV SAN PABLO","FARM SAN PABLO"], category:"Pharmacy" },
+  { patterns:["SERVICIO SANTA BARBARA"], category:"Vehicle - Fuel (Non-Production)" },
+  { patterns:["FERRLINPIO"], category:"Office Supplies" },
+  { patterns:["CINEMEX"], category:"Meals & Entertainment" },
+  { patterns:["SBB IXTAPALUCA","SBB IXTAPALUC"], category:"Vehicle - Fuel (Non-Production)" },
   // ── MABREY BANK / CONSTRUCTION (Najera) ──────────────────────────────────
   { patterns:["MAVERIK","POS DEB MAVERIK","DBT CRD MAVERIK"], category:"Vehicle - Fuel (Non-Production)" },
-  { patterns:["ATWOOD","POS DEB ATWOOD"], category:"COGS - Materials" },
+  { patterns:["ATWOOD","POS DEB ATWOOD"], category:"Materials" },
   { patterns:["CHARLIES","DBT CRD CHARLIES"], category:"Meals & Entertainment" },
   { patterns:["MAZZIOS","MAZZIO"], category:"Meals & Entertainment" },
   { patterns:["STEWART FUEL","DBT CRD STEWART"], category:"Vehicle - Fuel (Non-Production)" },
@@ -287,7 +332,41 @@ const MERCHANT_DICT = [
   { patterns:["IPAY BILL PAY"], category:"Bank Fees" },
 ];
 const DEPOSIT_CATEGORIES    = ["Income - Services","Other Income","Loan Proceeds","Owner Investment","Transfer In","Refund Received","ASK TO CLIENT"];
-const WITHDRAWAL_CATEGORIES = ["COGS - Materials","COGS - Labor","COGS - Fuel (Production)","COGS - Food & Beverage","Subcontractor Expense","Payroll & Wages","Advertising & Marketing","Bank Fees","Donations","Insurance","Loan Payment","Meals & Entertainment","Office Supplies","Operating Expenses - Delivery & Postage","Operating Expenses - Parking","Operating Expenses - Supplies","Personal Payment","Pharmacy","Rent & Lease","Repairs & Maintenance","Software & Subscriptions","Taxes & Licenses","Telephone & Internet","Transfer Out","Travel & Transportation","Uniforms","Utilities","Vehicle - Fuel (Non-Production)","Vehicle - Maintenance","Owner Draw","ASK TO CLIENT"];
+// ── CAMBIO 5: WITHDRAWAL_CATEGORIES — nueva lista limpia ──
+const WITHDRAWAL_CATEGORIES = [
+  "Materials",
+  "Subcontractor Expense",
+  "COGS - Fuel (Production)",
+  "Payroll & Wages",
+  "Payroll Tax",
+  "Legal & Professional Services",
+  "Licenses & Permits",
+  "Advertising & Marketing",
+  "Bank Fees",
+  "Donations",
+  "Insurance",
+  "Loan Payment",
+  "Meals & Entertainment",
+  "Office Supplies",
+  "Operating Expenses - Delivery & Postage",
+  "Operating Expenses - Parking",
+  "Operating Expenses - Supplies",
+  "Personal Payment",
+  "Pharmacy",
+  "Rent & Lease",
+  "Repairs & Maintenance",
+  "Software & Subscriptions",
+  "Taxes & Licenses",
+  "Telephone & Internet",
+  "Transfer Out",
+  "Travel & Transportation",
+  "Uniforms",
+  "Utilities",
+  "Vehicle - Fuel (Non-Production)",
+  "Vehicle - Maintenance",
+  "Owner Draw",
+  "ASK TO CLIENT",
+];
 const TRANSFER_IN_KEYWORDS  = ["INTERNET XFER FROM","XFER FROM CHKG","XFER FROM SAV","TRANSFER FROM","ONLINE TRANSFER FROM","FUNDS TRANSFER IN","MOBILE XFER FROM","TRANSFER FROM SHARE","COMPUTERLINE TRANSFER FROM","DEPOSIT TRANSFER FROM"];
 const TRANSFER_OUT_KEYWORDS = ["INTERNET XFER TO","XFER TO CHKG","XFER TO SAV","TRANSFER TO","ONLINE TRANSFER TO","FUNDS TRANSFER OUT","MOBILE XFER TO","WITHDRAWAL TRANSFER TO","COMPUTERLINE TRANSFER TO","COMPUTERLINE M2M"];
 function detectTransfer(concept) {
@@ -464,7 +543,6 @@ UNIVERSAL CRITICAL RULES:
 }
 
 // ─── AGENT 2: EXTRACT BALANCES ────────────────────────────────────────────────
-// FIX #2: Prompt actualizado para Bank of America — suma Withdrawals + Checks
 async function extractBalances(b64) {
   const system = `You are a bank statement balance extraction agent.
 Extract ALL account/subaccount balances from the statement.
@@ -589,7 +667,6 @@ AMOUNT must be negative. No headers. No markdown.`;
   return rows;
 }
 // ─── STORAGE ──────────────────────────────────────────────────────────────────
-// ─── STORAGE — localStorage para persistencia real entre sesiones ─────────────
 const sc = async (id) => {
   try { const v = localStorage.getItem(`client:${id}`); return v ? JSON.parse(v) : null; } catch { return null; }
 };
@@ -600,7 +677,7 @@ const sl = async () => {
   try {
     return Object.keys(localStorage)
       .filter(k => k.startsWith("client:"))
-      .map(k => k); // devuelve las keys con prefijo "client:"
+      .map(k => k);
   } catch { return []; }
 };
 const fmt = (n) => Number(n||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -628,16 +705,11 @@ export default function App() {
   const [copied, setCopied]             = useState(false);
   const [dedupMarked, setDedupMarked]   = useState({});
   const fileRef = useRef();
-  // ── REFS sincronizados — solución definitiva al problema de closure stale ──
-  // El estado de React dentro de funciones async lee el valor del render en que
-  // se creó la función (closure), no el valor actual. Los refs siempre apuntan
-  // al valor más reciente, sin importar cuántos re-renders hayan ocurrido.
   const splitPartNumRef = useRef(1);
   const splitModeRef    = useRef(false);
   const bankInfoRef     = useRef(null);
   const balancesRef     = useRef([]);
   const splitPartsRef   = useRef([]);
-  // Mantener refs sincronizados con el estado en cada render
   splitPartNumRef.current = splitPartNum;
   splitModeRef.current    = splitMode;
   bankInfoRef.current     = bankInfo;
@@ -649,7 +721,6 @@ export default function App() {
   };
   useEffect(() => {
     loadList();
-    // Limpiar cache del split al montar — evita datos stale entre recargas del browser
     clearSplitCache();
   }, []);
   async function loadList() {
@@ -680,7 +751,6 @@ export default function App() {
     setP("Agente 0: Leyendo PDF...", 3);
     const b64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(",")[1]); r.onerror=rej; r.readAsDataURL(file); });
 
-    // Leer SIEMPRE de refs — nunca del estado (closure stale)
     const currentPartNum  = splitPartNumRef.current;
     const currentSplitMode = splitModeRef.current;
 
@@ -690,12 +760,20 @@ export default function App() {
       setP("Agente 0: Identificando banco...", 5);
       detectedBank = await detectBank(b64);
       setBankInfo(detectedBank);
-      bankInfoRef.current = detectedBank; // ← actualizar ref inmediatamente
+      bankInfoRef.current = detectedBank;
     } else {
-      // Partes 2+ — leer del ref (siempre tiene el valor más reciente)
       detectedBank = bankInfoRef.current || { bank_name:"Desconocido", bank_id:"unknown", total_pages:0, period_start:"", period_end:"", total_deposits:0, total_withdrawals:0 };
       setP(`Agente 0: Banco ya identificado — ${detectedBank.bank_name}`, 5);
     }
+
+    // ── 🚨 BLOQUEO: PDF mayor a 9 páginas sin Split Mode activo ──
+    if ((detectedBank.total_pages || 0) > 9 && !currentSplitMode) {
+      setBankInfo(detectedBank);
+      setP(`❌ PDF de ${detectedBank.total_pages} páginas — activa Modo Split`, 100);
+      setTimeout(() => { setScreen("upload"); }, 800);
+      return;
+    }
+
     const bankId = detectedBank.bank_id || "unknown";
     const totalPages = detectedBank.total_pages || 0;
     setP(`✅ Banco: ${detectedBank.bank_name} · ${totalPages} páginas`, 8);
@@ -711,10 +789,9 @@ export default function App() {
       setP("Agente 2: Extrayendo saldos...", 40);
       bals = await extractBalances(b64);
       setBalances(bals);
-      balancesRef.current = bals; // ← actualizar ref inmediatamente
+      balancesRef.current = bals;
       setP(`✅ ${bals.length} cuenta(s) detectada(s)`, 48);
     } else {
-      // Partes 2+ — leer del ref (siempre tiene el valor más reciente)
       bals = balancesRef.current.length > 0 ? balancesRef.current : [];
       setP(`✅ Saldos de Parte 1 conservados — ${bals.length} cuenta(s) · Banco: ${detectedBank.bank_name}`, 48);
     }
@@ -724,18 +801,13 @@ export default function App() {
     if (bals.length > 0) {
       const bankDep  = bals.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);
       const bankWith = bals.reduce((s,b)=>s+(parseFloat(b.total_withdrawals)||0),0);
-
-      // En modo split, comparar contra el TOTAL acumulado de todas las partes
       const previousParts = splitPartsRef.current.filter(Boolean);
       const previousRows  = previousParts.flat();
       const allRowsSoFar  = [...previousRows, ...rows];
-
       const extractedDep  = allRowsSoFar.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
       const extractedWith = allRowsSoFar.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
       const withDiff = bankWith - extractedWith;
       const depDiff  = bankDep  - extractedDep;
-
-      // Agente 2A: cheques faltantes
       if (withDiff > 50) {
         setP(`⚡ Agente 2A: Buscando cheques faltantes ($${withDiff.toFixed(0)})...`, 52);
         const checkRows = await extractCheckSummary(b64, bankId);
@@ -749,15 +821,11 @@ export default function App() {
         allRows = [...rows, ...newCheckRows];
         setP(`✅ Pasada cheques: +${newCheckRows.length} encontrados`, 60);
       }
-
-      // Recalcular
       const allRowsUpdated = [...previousRows, ...allRows];
       const newExtDep  = allRowsUpdated.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
       const newExtWith = allRowsUpdated.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
       const remDepDiff  = bankDep  - newExtDep;
       const remWithDiff = bankWith - newExtWith;
-
-      // Agente 2B: transacciones adicionales
       if (remDepDiff > 50 || remWithDiff > 50) {
         setP(`⚡ Agente 2B: Buscando transacciones adicionales ($${Math.max(remDepDiff,remWithDiff).toFixed(0)})...`, 63);
         const secondRows = await extractTransactionsSecondPass(b64, remDepDiff > 0 ? remDepDiff : 0, remWithDiff > 0 ? remWithDiff : 0, allRows, bankId);
@@ -779,8 +847,6 @@ export default function App() {
     setP("✅ Categorización completada", 85);
     let finalTransactions = categorized;
     if (currentSplitMode) {
-      // Construir transacciones combinando todas las partes ya cargadas
-      // Si es recarga de una parte existente, reemplazar esa parte
       const currentParts = [...splitPartsRef.current];
       currentParts[currentPartNum - 1] = categorized;
       finalTransactions = currentParts.filter(Boolean).flat();
@@ -791,10 +857,9 @@ export default function App() {
     setP("✅ Procesamiento completado", 100);
     setTimeout(() => {
       if (currentSplitMode) {
-        // Reemplazar parte si ya existe (recarga), o agregar nueva
         setSplitParts(prev => {
           const updated = [...prev];
-          updated[currentPartNum - 1] = categorized; // índice base 0
+          updated[currentPartNum - 1] = categorized;
           return updated;
         });
         setSplitPartNum(prev => Math.max(prev, currentPartNum + 1));
@@ -870,8 +935,9 @@ export default function App() {
     const clientName = (clientData?.name || "client").replace(/\s/g, "_");
     const fmt2 = (n) => Number(n||0).toFixed(2);
     const INCOME_CATS        = ["Income - Services", "Other Income"];
-    const COGS_CATS          = ["COGS - Materials","COGS - Labor","COGS - Fuel (Production)","COGS - Food & Beverage","Subcontractor Expense"];
-    const OPEX_CATS          = ["Payroll & Wages","Advertising & Marketing","Bank Fees","Insurance","Rent & Lease","Repairs & Maintenance","Software & Subscriptions","Taxes & Licenses","Telephone & Internet","Travel & Transportation","Uniforms","Utilities","Vehicle - Fuel (Non-Production)","Vehicle - Maintenance","Operating Expenses - Supplies","Operating Expenses - Delivery & Postage","Operating Expenses - Parking","Office Supplies","Meals & Entertainment"];
+    // ── CAMBIO 6: COGS_CATS y OPEX_CATS actualizados ──
+    const COGS_CATS          = ["Materials","COGS - Fuel (Production)","Subcontractor Expense"];
+    const OPEX_CATS          = ["Payroll & Wages","Payroll Tax","Legal & Professional Services","Licenses & Permits","Advertising & Marketing","Bank Fees","Insurance","Rent & Lease","Repairs & Maintenance","Software & Subscriptions","Taxes & Licenses","Telephone & Internet","Travel & Transportation","Uniforms","Utilities","Vehicle - Fuel (Non-Production)","Vehicle - Maintenance","Operating Expenses - Supplies","Operating Expenses - Delivery & Postage","Operating Expenses - Parking","Office Supplies","Meals & Entertainment"];
     const OTHER_INCOME_CATS  = ["Refund Received"];
     const OTHER_EXPENSE_CATS = ["Donations"];
     const PERSONAL_CATS      = ["Owner Draw","Personal Payment","Loan Payment","Transfer Out","Transfer In"];
@@ -955,7 +1021,6 @@ export default function App() {
       return s + rows.slice(1).reduce((ss,r)=>ss+Math.abs(parseFloat(r.amount)||0),0);
     }, 0);
     const totalDupCount = Object.values(groups).reduce((s,rows)=>s+rows.length-1,0);
-
     const rowsHtml = dupGroups.map(displayKey => {
       const rows   = groups[displayKey];
       const dupAmt = rows.slice(1).reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
@@ -980,7 +1045,6 @@ export default function App() {
           </table>
         </div>`;
     }).join("");
-
     const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1036,14 +1100,11 @@ export default function App() {
   <div class="footer">Reporte generado por el Agente de Mau Bautista · V&M Bookkeeping Group LLC</div>
 </body>
 </html>`;
-
-    // Abrir en nueva ventana para imprimir/guardar como PDF
     const win = window.open("", "_blank");
     win.document.write(html);
     win.document.close();
   }
   const [runningFinalPass, setRunningFinalPass] = useState(false);
-
   async function runFinalMultiPass() {
     if (!balances.length) {
       setSplitMode(false);
@@ -1058,9 +1119,7 @@ export default function App() {
     const extWith  = allTxs.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
     const withDiff = bankWith - extWith;
     const depDiff  = bankDep  - extDep;
-    // Solo correr si hay diferencia real
     if (withDiff > 50 || depDiff > 50) {
-      // No podemos rellamar la API aquí sin el b64 — simplemente ir a dedup
       setSplitMode(false);
       setRunningFinalPass(false);
       const hasDiff = Math.abs(bankWith-extWith)>50 || Math.abs(bankDep-extDep)>50;
@@ -1234,7 +1293,7 @@ export default function App() {
                   setSplitMode(!splitMode);
                   setSplitParts([]);
                   setSplitPartNum(1);
-                  clearSplitCache(); // ← limpiar sessionStorage al reiniciar
+                  clearSplitCache();
                 }}
                   style={{padding:"6px 16px",borderRadius:20,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,
                     background:splitMode?"#1a56db":"#e2e8f0",color:splitMode?"#fff":"#64748b",transition:"all 0.2s"}}>
@@ -1297,6 +1356,22 @@ export default function App() {
                    :(<><div style={{fontWeight:500,color:"#1a1a1a"}}>Arrastra el bank statement aquí</div><div style={{color:"#64748b",fontSize:12,marginTop:3}}>o click · Solo PDF bancario digital</div></>)}
               <input ref={fileRef} type="file" accept=".pdf" style={{display:"none"}} onChange={e=>{const f=e.target.files[0];if(f)setFile(f)}} />
             </div>
+            {/* ── 🚨 BANNER: PDF bloqueado — aparece después de detección ── */}
+            {bankInfo && bankInfo.total_pages > 9 && !splitMode && (
+              <div style={{marginTop:12,padding:"14px 16px",background:"#fee2e2",borderRadius:10,border:"2px solid #ef4444"}}>
+                <div style={{fontWeight:700,color:"#991b1b",fontSize:14,marginBottom:4}}>
+                  🚨 PDF bloqueado — {bankInfo.total_pages} páginas detectadas
+                </div>
+                <div style={{fontSize:12,color:"#7f1d1d",marginBottom:10}}>
+                  Este statement tiene demasiadas páginas. Activa el <strong>Modo Split</strong> y divide el PDF en partes de máximo 9 páginas.
+                </div>
+                <button
+                  onClick={() => { setSplitMode(true); setSplitParts([]); setSplitPartNum(1); }}
+                  style={{padding:"8px 20px",background:"#ef4444",color:"#fff",border:"none",borderRadius:8,fontWeight:700,fontSize:13,cursor:"pointer"}}>
+                  ✅ Activar Modo Split
+                </button>
+              </div>
+            )}
             {file&&(
               <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:14}}>
                 <button style={{...S.btn,...S.btnGold}} onClick={runExtraction}>
@@ -1632,9 +1707,6 @@ export default function App() {
         const withRows = transactions
           .map((r,i) => ({...r, _idx:i}))
           .filter(r => r.type==="WITHDRAWAL");
-        // FIX: duplicado = mismo concepto + mismo monto + misma fecha
-        // Transacciones con misma fecha son sospechosas de ser realmente duplicadas
-        // Transacciones con fechas diferentes son transacciones legítimas repetidas
         const conceptCount = {};
         withRows.forEach(r => {
           const key = r.concept.trim() + "||" + Math.abs(parseFloat(r.amount)||0).toFixed(2) + "||" + r.date;
@@ -1827,7 +1899,7 @@ export default function App() {
                 <div style={{marginBottom:16}}>
                   <span style={S.label}>ZELLE A: <strong style={{color:"#1a1a1a"}}>{zelleName}</strong></span>
                   <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
-                    {[{l:"👷 Subcontractor",c:"Subcontractor Expense"},{l:"💼 Payroll",c:"Payroll & Wages"},{l:"🏠 Owner Draw",c:"Owner Draw"},{l:"👤 Personal Payment",c:"Personal Payment"},{l:"🙏 Donations",c:"Donations"},{l:"📦 COGS Materials",c:"COGS - Materials"},{l:"🔄 Transfer Out",c:"Transfer Out"},{l:"🍽️ Meals",c:"Meals & Entertainment"}].map(o=>(
+                    {[{l:"👷 Subcontractor",c:"Subcontractor Expense"},{l:"💼 Payroll",c:"Payroll & Wages"},{l:"🏠 Owner Draw",c:"Owner Draw"},{l:"👤 Personal Payment",c:"Personal Payment"},{l:"🙏 Donations",c:"Donations"},{l:"📦 Materials",c:"Materials"},{l:"🔄 Transfer Out",c:"Transfer Out"},{l:"🍽️ Meals",c:"Meals & Entertainment"}].map(o=>(
                       <button key={o.c} className="ropt" onClick={()=>resolveAsk(o.c,true,zelleName)}>{o.l}</button>
                     ))}
                   </div>
@@ -1848,7 +1920,7 @@ export default function App() {
                 <div style={{marginBottom:16}}>
                   <span style={S.label}>ATM WITHDRAWAL</span>
                   <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
-                    {["Owner Draw","Personal Payment","Donations","COGS - Materials","Meals & Entertainment","Payroll & Wages","Operating Expenses - Supplies"].map(c=>(
+                    {["Owner Draw","Personal Payment","Donations","Materials","Meals & Entertainment","Payroll & Wages","Operating Expenses - Supplies"].map(c=>(
                       <button key={c} className="ropt" onClick={()=>resolveAsk(c,false,"")}>{c}</button>
                     ))}
                   </div>

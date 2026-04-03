@@ -1023,7 +1023,7 @@ export default function App() {
       return `
         <tr class="section-sub"><td class="cat" style="font-weight:700">${cat}</td><td></td></tr>
         ${txRows}
-        <tr class="subtotal-row"><td class="cat">Subtotal ${cat}</td><td class="amt">$${fmt2(catTotal)}</td></tr>`;
+        <tr class="subtotal-row"><td class="cat"><span class="subtotal-lbl" data-cat="${cat}">Subtotal ${cat}</span></td><td class="amt">$${fmt2(catTotal)}</td></tr>`;
     }).join("");
 
     const today2 = new Date().toLocaleDateString("es-MX", {day:"2-digit",month:"long",year:"numeric"});
@@ -1084,9 +1084,109 @@ export default function App() {
 </head>
 <body>
 <div class="no-print">
-  <span>💡 Para guardar como PDF: <strong>Archivo → Imprimir → Guardar como PDF</strong></span>
-  <button onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+  <span class="print-tip">💡 Para guardar como PDF: Archivo → Imprimir → Guardar como PDF</span>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button id="btn-es" onclick="setLang('es')" style="background:#fff;color:#1a56db;border:none;border-radius:6px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:12px">🇲🇽 ES</button>
+    <button id="btn-en" onclick="setLang('en')" style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.4);border-radius:6px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:12px">🇺🇸 EN</button>
+    <button onclick="window.print()" style="background:#22c55e;color:#fff;border:none;border-radius:6px;padding:6px 18px;font-weight:700;cursor:pointer;font-size:12px">🖨️ PDF</button>
+  </div>
 </div>
+<script>
+const T = {
+  es: {
+    title: "Estado de Resultados",
+    client: "Cliente", bank: "Banco", generated: "Generado el",
+    income: "💰 Ingresos", cogs: "🏗️ Costo de Ventas (COGS)", opex: "📋 Gastos Operativos",
+    totalIncome: "TOTAL INGRESOS", totalCogs: "TOTAL COGS", totalOpex: "TOTAL GASTOS OPERATIVOS",
+    grossProfit: "UTILIDAD BRUTA", netProfit: "UTILIDAD NETA",
+    personal: "⚠️ Movimientos Personales y No Empresariales", totalPersonal: "TOTAL MOVIMIENTOS PERSONALES",
+    subtotal: "Subtotal", printTip: "💡 Para guardar como PDF: Archivo → Imprimir → Guardar como PDF",
+    opinions: {
+      noIncome: "⚠️ No se registraron ingresos en este período. Verifica que las transacciones estén correctamente categorizadas.",
+      excellent: (m,o) => \`✅ Excelente mes. Margen neto del \${m}% — el negocio está muy saludable. Los gastos operativos están bien controlados (\${o}% de los ingresos).\`,
+      good: (m,o) => \`👍 Buen mes. Margen neto del \${m}%. Hay oportunidad de mejorar reduciendo gastos operativos que representan el \${o}% de los ingresos.\`,
+      low: (m,o) => \`⚠️ Margen neto bajo (\${m}%). El negocio es rentable pero ajustado. Revisar gastos operativos (\${o}% de ingresos) para mejorar la utilidad.\`,
+      loss: (v) => \`🚨 Mes con pérdida neta de $\${v}. Los gastos superaron los ingresos. Requiere atención inmediata en control de gastos.\`,
+    },
+    kpis: ["Ingresos Totales","Utilidad Bruta","Gastos Operativos","Utilidad Neta"],
+  },
+  en: {
+    title: "Profit & Loss Statement",
+    client: "Client", bank: "Bank", generated: "Generated on",
+    income: "💰 Income", cogs: "🏗️ Cost of Goods Sold (COGS)", opex: "📋 Operating Expenses",
+    totalIncome: "TOTAL INCOME", totalCogs: "TOTAL COGS", totalOpex: "TOTAL OPERATING EXPENSES",
+    grossProfit: "GROSS PROFIT", netProfit: "NET PROFIT",
+    personal: "⚠️ Personal & Non-Business Movements", totalPersonal: "TOTAL PERSONAL MOVEMENTS",
+    subtotal: "Subtotal", printTip: "💡 To save as PDF: File → Print → Save as PDF",
+    opinions: {
+      noIncome: "⚠️ No income recorded in this period. Please verify transactions are correctly categorized.",
+      excellent: (m,o) => \`✅ Excellent month. Net margin of \${m}% — the business is very healthy. Operating expenses are well controlled (\${o}% of revenue).\`,
+      good: (m,o) => \`👍 Good month. Net margin of \${m}%. There's room to improve by reducing operating expenses, which represent \${o}% of revenue.\`,
+      low: (m,o) => \`⚠️ Low net margin (\${m}%). The business is profitable but tight. Review operating expenses (\${o}% of revenue) to improve profitability.\`,
+      loss: (v) => \`🚨 Net loss of $\${v} this month. Expenses exceeded revenue. Immediate attention to cost control is required.\`,
+    },
+    kpis: ["Total Revenue","Gross Profit","Operating Expenses","Net Profit"],
+  }
+};
+
+// Datos embebidos
+const DATA = {
+  totalIncome: ${totalIncome},
+  grossProfit: ${grossProfit},
+  totalOpex: ${totalOpex},
+  netProfit: ${netProfit},
+  totalPersonal: ${totalPersonal},
+  marginPct: ${marginPct},
+  grossPct: ${grossPct},
+  opexPct: ${opexPct},
+  fmt2: (n) => Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}),
+};
+
+function getOpinion(lang) {
+  const t = T[lang];
+  const { totalIncome, netProfit, marginPct, opexPct } = DATA;
+  if (totalIncome === 0) return t.opinions.noIncome;
+  if (marginPct >= 40) return t.opinions.excellent(marginPct, opexPct);
+  if (marginPct >= 20) return t.opinions.good(marginPct, opexPct);
+  if (marginPct >= 0)  return t.opinions.low(marginPct, opexPct);
+  return t.opinions.loss(DATA.fmt2(Math.abs(netProfit)));
+}
+
+function setLang(lang) {
+  const t = T[lang];
+  // Título y header
+  document.querySelector('h1').textContent = "📊 " + t.title;
+  document.querySelector('.print-tip').textContent = t.printTip;
+  // Opinión
+  document.querySelector('.opinion').innerHTML = getOpinion(lang);
+  // KPIs
+  const kpis = document.querySelectorAll('.kpi .lbl');
+  t.kpis.forEach((lbl,i) => { if(kpis[i]) kpis[i].textContent = lbl; });
+  // Secciones
+  const map = {
+    'sec-income': t.income, 'sec-cogs': t.cogs, 'sec-opex': t.opex,
+    'sec-personal': t.personal,
+    'tot-income': t.totalIncome, 'tot-cogs': t.totalCogs, 'tot-opex': t.totalOpex,
+    'tot-personal': t.totalPersonal,
+    'lbl-gross': t.grossProfit, 'lbl-net': t.netProfit,
+  };
+  Object.entries(map).forEach(([id, txt]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = txt;
+  });
+  // Subtotales personales
+  document.querySelectorAll('.subtotal-lbl').forEach(el => {
+    el.textContent = t.subtotal + ' ' + el.dataset.cat;
+  });
+  // Botones activos
+  document.getElementById('btn-es').style.background = lang === 'es' ? '#fff' : 'rgba(255,255,255,0.2)';
+  document.getElementById('btn-es').style.color = lang === 'es' ? '#1a56db' : '#fff';
+  document.getElementById('btn-en').style.background = lang === 'en' ? '#fff' : 'rgba(255,255,255,0.2)';
+  document.getElementById('btn-en').style.color = lang === 'en' ? '#1a56db' : '#fff';
+  document.getElementById('btn-en').style.border = lang === 'en' ? 'none' : '1px solid rgba(255,255,255,0.4)';
+  document.getElementById('btn-es').style.border = lang === 'es' ? 'none' : '1px solid rgba(255,255,255,0.4)';
+}
+</script>
 <div class="wrapper">
   <div class="header">
     <h1>📊 Profit & Loss Statement</h1>
@@ -1106,31 +1206,31 @@ export default function App() {
       <div class="kpi"><div class="lbl">Utilidad Neta</div><div class="val ${netProfit >= 0 ? 'green' : 'red'}">$${fmt2(netProfit)}</div></div>
     </div>
     <table>
-      <tr class="section-header"><td colspan="2">💰 Ingresos</td></tr>
+      <tr class="section-header"><td colspan="2" id="sec-income">💰 Ingresos</td></tr>
       ${incomeRows}
       ${otherIncRows ? `${otherIncRows}` : ""}
-      <tr class="total-row"><td class="cat">TOTAL INGRESOS</td><td class="amt">$${fmt2(totalIncome + totalOtherInc)}</td></tr>
+      <tr class="total-row"><td class="cat" id="tot-income">TOTAL INGRESOS</td><td class="amt">$${fmt2(totalIncome + totalOtherInc)}</td></tr>
       ${totalCOGS > 0 ? `
       <tr class="spacer"><td colspan="2"></td></tr>
-      <tr class="section-header"><td colspan="2">🏗️ Costo de Ventas (COGS)</td></tr>
+      <tr class="section-header"><td colspan="2" id="sec-cogs">🏗️ Costo de Ventas (COGS)</td></tr>
       ${cogsRows}
-      <tr class="total-row"><td class="cat">TOTAL COGS</td><td class="amt">$${fmt2(totalCOGS)}</td></tr>` : ""}
+      <tr class="total-row"><td class="cat" id="tot-cogs">TOTAL COGS</td><td class="amt">$${fmt2(totalCOGS)}</td></tr>` : ""}
       <tr class="spacer"><td colspan="2"></td></tr>
-      <tr class="highlight-row"><td class="cat">UTILIDAD BRUTA</td><td class="amt ${grossProfit < 0 ? 'loss' : ''}">$${fmt2(grossProfit)} <span style="font-size:12px;opacity:0.7">(${grossPct}%)</span></td></tr>
+      <tr class="highlight-row"><td class="cat"><span id="lbl-gross">UTILIDAD BRUTA</span></td><td class="amt ${grossProfit < 0 ? 'loss' : ''}">$${fmt2(grossProfit)} <span style="font-size:12px;opacity:0.7">(${grossPct}%)</span></td></tr>
       <tr class="spacer"><td colspan="2"></td></tr>
-      <tr class="section-header"><td colspan="2">📋 Gastos Operativos</td></tr>
+      <tr class="section-header"><td colspan="2" id="sec-opex">📋 Gastos Operativos</td></tr>
       ${opexRows}
       ${otherExpRows ? `${otherExpRows}` : ""}
-      <tr class="total-row"><td class="cat">TOTAL GASTOS OPERATIVOS</td><td class="amt">$${fmt2(totalOpex + totalOtherExp)}</td></tr>
+      <tr class="total-row"><td class="cat" id="tot-opex">TOTAL GASTOS OPERATIVOS</td><td class="amt">$${fmt2(totalOpex + totalOtherExp)}</td></tr>
       <tr class="spacer"><td colspan="2"></td></tr>
-      <tr class="highlight-row"><td class="cat">UTILIDAD NETA</td><td class="amt ${netProfit < 0 ? 'loss' : ''}">$${fmt2(netProfit)} <span style="font-size:12px;opacity:0.7">(${marginPct}%)</span></td></tr>
+      <tr class="highlight-row"><td class="cat"><span id="lbl-net">UTILIDAD NETA</span></td><td class="amt ${netProfit < 0 ? 'loss' : ''}">$${fmt2(netProfit)} <span style="font-size:12px;opacity:0.7">(${marginPct}%)</span></td></tr>
     </table>
     ${totalPersonal > 0 ? `
     <div style="height:16px;background:#f0f4f8"></div>
     <table>
-      <tr class="personal-header"><td colspan="2">⚠️ Movimientos Personales y No Empresariales</td></tr>
+      <tr class="personal-header"><td colspan="2" id="sec-personal">⚠️ Movimientos Personales y No Empresariales</td></tr>
       ${personalRows}
-      <tr class="total-row"><td class="cat">TOTAL MOVIMIENTOS PERSONALES</td><td class="amt" style="color:#92400e">$${fmt2(totalPersonal)}</td></tr>
+      <tr class="total-row"><td class="cat" id="tot-personal">TOTAL MOVIMIENTOS PERSONALES</td><td class="amt" style="color:#92400e">$${fmt2(totalPersonal)}</td></tr>
     </table>` : ""}
   </div>
   <div class="footer">Generado por el Agente de Mau Bautista · V&amp;M Bookkeeping Group LLC</div>
@@ -1212,7 +1312,7 @@ export default function App() {
 </head>
 <body>
   <div class="no-print" style="background:#1a56db;color:#fff;padding:10px 16px;border-radius:8px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
-    <span>💡 Para guardar como PDF: <strong>Archivo → Imprimir → Guardar como PDF</strong></span>
+    <span class="print-tip">💡 Para guardar como PDF: Archivo → Imprimir → Guardar como PDF</span>
     <button onclick="window.print()" style="background:#fff;color:#1a56db;border:none;border-radius:6px;padding:6px 16px;font-weight:700;cursor:pointer;font-size:12px">🖨️ Imprimir / Guardar PDF</button>
   </div>
   <div class="header">

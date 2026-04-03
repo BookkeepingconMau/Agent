@@ -912,6 +912,13 @@ export default function App() {
     const nd = { ...clientData, history:[...(clientData.history||[]),entry] };
     setClientData(nd); await ss(clientId,nd); setScreen("done");
   }
+  function fmtDate(d) {
+    // Convierte MM/DD/YYYY → DD-MM-YYYY
+    if (!d) return d;
+    const parts = d.split("/");
+    if (parts.length === 3) return `${parts[1]}-${parts[0]}-${parts[2]}`;
+    return d;
+  }
   function triggerDownload(filename, csvContent) {
     const encoded = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
     const a = document.createElement("a");
@@ -923,11 +930,11 @@ export default function App() {
   }
   function downloadWave(type) {
     const rows = transactions.filter(r=>r.type===type);
-    const csv = "DATE,AMOUNT,*,CONCEPT,CATEGORY\n" + rows.map(r=>`${r.date},${r.amount},,"${r.concept}","${r.category}"`).join("\n");
+    const csv = "DATE,AMOUNT,*,CONCEPT,CATEGORY\n" + rows.map(r=>`${fmtDate(r.date)},${r.amount},,"${r.concept}","${r.category}"`).join("\n");
     triggerDownload(`wave_${type.toLowerCase()}_import.csv`, csv);
   }
   function downloadCSV() {
-    const csv = "DATE,AMOUNT,*,CONCEPT,CATEGORY\n" + transactions.map(r=>`${r.date},${r.amount},,"${r.concept}","${r.category}"`).join("\n");
+    const csv = "DATE,AMOUNT,*,CONCEPT,CATEGORY\n" + transactions.map(r=>`${fmtDate(r.date)},${r.amount},,"${r.concept}","${r.category}"`).join("\n");
     triggerDownload(`wave_completo_${(clientData?.name||"client").replace(/\s/g,"_")}.csv`, csv);
   }
   function downloadByCategory(cat) {
@@ -937,7 +944,7 @@ export default function App() {
     const safeName = cat.replace(/[^a-z0-9]/gi, "_").toLowerCase();
     const clientName = (clientData?.name || "client").replace(/\s/g, "_");
     const csv = "DATE,AMOUNT,*,CONCEPT,CATEGORY\n" +
-      rows.map(r => `${r.date},${r.amount},,"${r.concept}","${r.category}"`).join("\n");
+      rows.map(r => `${fmtDate(r.date)},${r.amount},,"${r.concept}","${r.category}"`).join("\n");
     triggerDownload(`${clientName}_${safeName}.csv`, csv);
   }
   function downloadPnL() {
@@ -1014,7 +1021,7 @@ export default function App() {
       if (txs.length === 0) return;
       rows.push(``);
       rows.push(`${cat},,`);
-      txs.forEach(r => rows.push(`,${r.date} - ${r.concept},$${fmt2(Math.abs(parseFloat(r.amount)||0))}`));
+      txs.forEach(r => rows.push(`,${fmtDate(r.date)} - ${r.concept},$${fmt2(Math.abs(parseFloat(r.amount)||0))}`));
       const catTotal = txs.reduce((s,r) => s + Math.abs(parseFloat(r.amount)||0), 0);
       rows.push(`,SUBTOTAL ${cat},$${fmt2(catTotal)}`);
     });

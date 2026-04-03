@@ -929,9 +929,227 @@ export default function App() {
     document.body.removeChild(a);
   }
   function downloadWave(type) {
-    const rows = transactions.filter(r=>r.type===type);
-    const csv = "DATE,AMOUNT,*,CONCEPT,CATEGORY\n" + rows.map(r=>`${fmtDate(r.date)},${r.amount},,"${r.concept}","${r.category}"`).join("\n");
-    triggerDownload(`wave_${type.toLowerCase()}_import.csv`, csv);
+    const rows = transactions.filter(r => r.type === type);
+    if (rows.length === 0) return;
+    const isDeposit = type === "DEPOSIT";
+    const total = rows.reduce((s,r) => s + Math.abs(parseFloat(r.amount)||0), 0);
+    const fmt2 = (n) => Number(n||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+    const today2 = new Date().toLocaleDateString("es-MX",{day:"2-digit",month:"long",year:"numeric"});
+    const periodStart = balances[0]?.period_start || "";
+    const periodEnd   = balances[0]?.period_end || "";
+
+    // ── Por categoría ──
+    const byCat = {};
+    rows.forEach(r => {
+      const cat = r.category || "Sin categoría";
+      if (!byCat[cat]) byCat[cat] = { total: 0, count: 0 };
+      byCat[cat].total += Math.abs(parseFloat(r.amount)||0);
+      byCat[cat].count++;
+    });
+    const catSorted = Object.entries(byCat).sort((a,b) => b[1].total - a[1].total);
+
+    // ── Top 5 merchants ──
+    const byMerchant = {};
+    rows.forEach(r => {
+      const key = r.concept.split(" ").slice(0,3).join(" ");
+      if (!byMerchant[key]) byMerchant[key] = { total: 0, count: 0 };
+      byMerchant[key].total += Math.abs(parseFloat(r.amount)||0);
+      byMerchant[key].count++;
+    });
+    const top5 = Object.entries(byMerchant).sort((a,b) => b[1].total - a[1].total).slice(0,5);
+
+    // ── Análisis automático ──
+    const topCat = catSorted[0];
+    const topCatPct = total > 0 ? Math.round((topCat[1].total / total) * 100) : 0;
+    const avgTx = rows.length > 0 ? total / rows.length : 0;
+
+    const accentColor = isDeposit ? "#166534" : "#991b1b";
+    const accentLight = isDeposit ? "#dcfce7" : "#fee2e2";
+    const accentMid   = isDeposit ? "#22c55e" : "#ef4444";
+
+    // ── Filas de transacciones ──
+    const txRows = rows.map(r => `
+      <tr class="tx-row">
+        <td style="color:#64748b;font-size:12px;padding:7px 14px;border-bottom:0.5px solid #f1f5f9;white-space:nowrap">${fmtDate(r.date)}</td>
+        <td style="font-weight:600;font-size:13px;padding:7px 14px;border-bottom:0.5px solid #f1f5f9;text-align:right;color:${isDeposit?"#166534":"#dc2626"};white-space:nowrap">${isDeposit?"+":"-"}$${fmt2(Math.abs(parseFloat(r.amount)||0))}</td>
+        <td style="font-size:12px;padding:7px 14px;border-bottom:0.5px solid #f1f5f9;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.concept}</td>
+        <td style="padding:7px 14px;border-bottom:0.5px solid #f1f5f9"><span style="background:${accentLight};color:${accentColor};border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600;white-space:nowrap">${r.category}</span></td>
+      </tr>`).join("");
+
+    // ── Barras por categoría ──
+    const catBars = catSorted.map(([cat, data]) => {
+      const pct = total > 0 ? Math.round((data.total / total) * 100) : 0;
+      return `<div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+          <span style="font-size:12px;color:#1a1a1a;font-weight:500">${cat}</span>
+          <span style="font-size:12px;color:#64748b">$${fmt2(data.total)} <span style="color:#94a3b8">(${pct}%)</span></span>
+        </div>
+        <div style="background:#f1f5f9;border-radius:4px;height:6px">
+          <div style="background:${accentMid};border-radius:4px;height:6px;width:${pct}%"></div>
+        </div>
+      </div>`;
+    }).join("");
+
+    // ── Top merchants ──
+    const merchantRows = top5.map(([name, data], i) => `
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid #f1f5f9">
+        <div style="min-width:22px;height:22px;border-radius:50%;background:${accentLight};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:${accentColor}">${i+1}</div>
+        <div style="flex:1;font-size:12px;font-weight:500;color:#1a1a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</div>
+        <div style="font-size:12px;font-weight:600;color:${accentColor};white-space:nowrap">$${fmt2(data.total)}</div>
+        <div style="font-size:11px;color:#94a3b8;white-space:nowrap">${data.count}x</div>
+      </div>`).join("");
+
+    const T = {
+      es: {
+        title: isDeposit ? "Reporte de Depósitos" : "Reporte de Retiros",
+        subtitle: isDeposit ? "Ingresos del período" : "Gastos del período",
+        total: isDeposit ? "Total depositado" : "Total retirado",
+        transactions: "Transacciones",
+        average: "Promedio por transacción",
+        byCat: "Distribución por categoría",
+        topMerchants: isDeposit ? "Top fuentes de ingreso" : "Top merchants",
+        detail: "Detalle de transacciones",
+        date: "Fecha", amount: "Monto", concept: "Concepto", category: "Categoría",
+        analysis: isDeposit
+          ? `Tu categoría principal de ingreso es <strong>${topCat[0]}</strong> con el ${topCatPct}% del total. Promedio por depósito: $${fmt2(avgTx)}.`
+          : `Tu mayor gasto es <strong>${topCat[0]}</strong> con el ${topCatPct}% del total. Promedio por transacción: $${fmt2(avgTx)}.`,
+        printTip: "Archivo → Imprimir → Guardar como PDF",
+      },
+      en: {
+        title: isDeposit ? "Deposits Report" : "Withdrawals Report",
+        subtitle: isDeposit ? "Income for the period" : "Expenses for the period",
+        total: isDeposit ? "Total deposited" : "Total withdrawn",
+        transactions: "Transactions",
+        average: "Average per transaction",
+        byCat: "Breakdown by category",
+        topMerchants: isDeposit ? "Top income sources" : "Top merchants",
+        detail: "Transaction detail",
+        date: "Date", amount: "Amount", concept: "Concept", category: "Category",
+        analysis: isDeposit
+          ? `Your main income category is <strong>${topCat[0]}</strong> at ${topCatPct}% of total. Average deposit: $${fmt2(avgTx)}.`
+          : `Your largest expense is <strong>${topCat[0]}</strong> at ${topCatPct}% of total. Average transaction: $${fmt2(avgTx)}.`,
+        printTip: "File → Print → Save as PDF",
+      }
+    };
+
+    const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<title>${isDeposit?"Deposits":"Withdrawals"} — ${clientData?.name||""}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',system-ui,sans-serif;background:#f0f4f8;color:#1a1a1a;padding:32px;font-size:13px}
+  .no-print{background:${accentColor};color:#fff;padding:10px 18px;border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
+  .wrapper{max-width:860px;margin:0 auto}
+  .header{background:linear-gradient(135deg,#0f1f4b 0%,${accentColor} 100%);color:#fff;padding:28px 32px;border-radius:16px 16px 0 0}
+  .header h1{font-size:22px;font-weight:700;margin-bottom:4px}
+  .header .meta{font-size:12px;opacity:0.75;display:flex;gap:24px;flex-wrap:wrap;margin-top:8px}
+  .body{background:#fff;border-radius:0 0 16px 16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid #e2e8f0}
+  .kpi{padding:18px 20px;border-right:1px solid #e2e8f0}
+  .kpi:last-child{border-right:none}
+  .kpi .lbl{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+  .kpi .val{font-size:20px;font-weight:700;color:${accentColor}}
+  .analysis{background:${accentLight};border-left:3px solid ${accentColor};padding:12px 18px;font-size:13px;color:${accentColor};line-height:1.5}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid #e2e8f0}
+  .panel{padding:20px}
+  .panel:first-child{border-right:1px solid #e2e8f0}
+  .panel-title{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px}
+  .section-bar{background:#0f1f4b;color:#fff;padding:8px 16px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+  .tx-row:hover td{background:#f8faff}
+  .footer{text-align:center;font-size:10px;color:#94a3b8;margin-top:16px}
+  @media print{body{background:#fff;padding:16px}.no-print{display:none}.body{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="no-print">
+  <span class="print-tip">💡 ${T.es.printTip}</span>
+  <div style="display:flex;gap:8px">
+    <button id="btn-es" onclick="setLang('es')" style="background:#fff;color:${accentColor};border:none;border-radius:6px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:12px">🇲🇽 ES</button>
+    <button id="btn-en" onclick="setLang('en')" style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.4);border-radius:6px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:12px">🇺🇸 EN</button>
+    <button onclick="window.print()" style="background:#fff;color:${accentColor};border:none;border-radius:6px;padding:6px 18px;font-weight:700;cursor:pointer;font-size:12px">🖨️ PDF</button>
+  </div>
+</div>
+<div class="wrapper">
+  <div class="header">
+    <h1 id="rep-title">📊 ${T.es.title}</h1>
+    <div class="meta">
+      <span>👤 ${clientData?.name||""}</span>
+      <span>🏦 ${bankInfo?.bank_name||""}</span>
+      <span>📅 ${periodStart} — ${periodEnd}</span>
+      <span>🗓️ ${today2}</span>
+    </div>
+  </div>
+  <div class="analysis" id="rep-analysis">${T.es.analysis}</div>
+  <div class="body">
+    <div class="kpis">
+      <div class="kpi"><div class="lbl" id="lbl-total">${T.es.total}</div><div class="val">$${fmt2(total)}</div></div>
+      <div class="kpi"><div class="lbl" id="lbl-txs">${T.es.transactions}</div><div class="val">${rows.length}</div></div>
+      <div class="kpi"><div class="lbl" id="lbl-avg">${T.es.average}</div><div class="val">$${fmt2(avgTx)}</div></div>
+    </div>
+    <div class="grid2">
+      <div class="panel">
+        <div class="panel-title" id="lbl-bycat">${T.es.byCat}</div>
+        ${catBars}
+      </div>
+      <div class="panel">
+        <div class="panel-title" id="lbl-top">${T.es.topMerchants}</div>
+        ${merchantRows}
+      </div>
+    </div>
+    <div class="section-bar" id="lbl-detail">${T.es.detail}</div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:#f7f8fb">
+            <th id="th-date" style="text-align:left;padding:8px 14px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px">${T.es.date}</th>
+            <th id="th-amount" style="text-align:right;padding:8px 14px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px">${T.es.amount}</th>
+            <th id="th-concept" style="text-align:left;padding:8px 14px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px">${T.es.concept}</th>
+            <th id="th-category" style="text-align:left;padding:8px 14px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px">${T.es.category}</th>
+          </tr>
+        </thead>
+        <tbody>${txRows}</tbody>
+      </table>
+    </div>
+  </div>
+  <div class="footer">Generado por el Agente de Mau Bautista · V&amp;M Bookkeeping Group LLC</div>
+</div>
+<script>
+const LANG = {
+  es: ${JSON.stringify(T.es)},
+  en: ${JSON.stringify(T.en)}
+};
+function setLang(lang) {
+  const t = LANG[lang];
+  document.getElementById('rep-title').textContent = "📊 " + t.title;
+  document.getElementById('rep-analysis').innerHTML = t.analysis;
+  document.getElementById('lbl-total').textContent = t.total;
+  document.getElementById('lbl-txs').textContent = t.transactions;
+  document.getElementById('lbl-avg').textContent = t.average;
+  document.getElementById('lbl-bycat').textContent = t.byCat;
+  document.getElementById('lbl-top').textContent = t.topMerchants;
+  document.getElementById('lbl-detail').textContent = t.detail;
+  document.getElementById('th-date').textContent = t.date;
+  document.getElementById('th-amount').textContent = t.amount;
+  document.getElementById('th-concept').textContent = t.concept;
+  document.getElementById('th-category').textContent = t.category;
+  document.querySelector('.print-tip').textContent = "💡 " + t.printTip;
+  document.getElementById('btn-es').style.background = lang==='es'?'#fff':'rgba(255,255,255,0.2)';
+  document.getElementById('btn-es').style.color = lang==='es'?'${accentColor}':'#fff';
+  document.getElementById('btn-es').style.border = lang==='es'?'none':'1px solid rgba(255,255,255,0.4)';
+  document.getElementById('btn-en').style.background = lang==='en'?'#fff':'rgba(255,255,255,0.2)';
+  document.getElementById('btn-en').style.color = lang==='en'?'${accentColor}':'#fff';
+  document.getElementById('btn-en').style.border = lang==='en'?'none':'1px solid rgba(255,255,255,0.4)';
+}
+</script>
+</body>
+</html>`;
+
+    const win = window.open("", "_blank");
+    win.document.write(html);
+    win.document.close();
   }
   function downloadCSV() {
     const csv = "DATE,AMOUNT,*,CONCEPT,CATEGORY\n" + transactions.map(r=>`${fmtDate(r.date)},${r.amount},,"${r.concept}","${r.category}"`).join("\n");

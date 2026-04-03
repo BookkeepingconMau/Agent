@@ -923,7 +923,11 @@ export default function App() {
   }
   function downloadByCategory(cat) {
     if (!cat) return;
-    const rows = transactions.filter(r => r.category === cat);
+    const isIncomeCat = DEPOSIT_CATEGORIES.includes(cat);
+    const rows = transactions.filter(r =>
+      r.category === cat &&
+      (isIncomeCat ? r.type === "DEPOSIT" : r.type === "WITHDRAWAL")
+    );
     if (rows.length === 0) return;
     const safeName = cat.replace(/[^a-z0-9]/gi, "_").toLowerCase();
     const clientName = (clientData?.name || "client").replace(/\s/g, "_");

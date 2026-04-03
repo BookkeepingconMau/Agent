@@ -978,55 +978,169 @@ export default function App() {
     const totalOtherExp  = Object.values(otherExpDetail).reduce((a,b)=>a+b,0);
     const netProfit      = grossProfit - totalOpex + totalOtherInc - totalOtherExp;
     const totalPersonal  = Object.values(personalDetail).reduce((a,b)=>a+b,0);
-    const rows = [];
-    rows.push(`PROFIT & LOSS STATEMENT`);
-    rows.push(`Client:,${clientData?.name || ""}`);
-    rows.push(`Period:,${balances[0]?.period_start || ""} to ${balances[0]?.period_end || ""}`);
-    rows.push(`Bank:,${bankInfo?.bank_name || ""}`);
-    rows.push(``);
-    rows.push(`INCOME,,`);
-    Object.entries(incomeDetail).forEach(([cat,amt]) => rows.push(`,${cat},$${fmt2(amt)}`));
-    rows.push(`TOTAL INCOME,,$${fmt2(totalIncome)}`);
-    rows.push(``);
-    rows.push(`COST OF GOODS SOLD,,`);
-    Object.entries(cogsDetail).forEach(([cat,amt]) => rows.push(`,${cat},$${fmt2(amt)}`));
-    rows.push(`TOTAL COGS,,$${fmt2(totalCOGS)}`);
-    rows.push(``);
-    rows.push(`GROSS PROFIT,,$${fmt2(grossProfit)}`);
-    rows.push(``);
-    rows.push(`OPERATING EXPENSES,,`);
-    Object.entries(opexDetail).forEach(([cat,amt]) => rows.push(`,${cat},$${fmt2(amt)}`));
-    rows.push(`TOTAL OPERATING EXPENSES,,$${fmt2(totalOpex)}`);
-    rows.push(``);
-    if (totalOtherInc > 0) {
-      rows.push(`OTHER INCOME,,`);
-      Object.entries(otherIncDetail).forEach(([cat,amt]) => rows.push(`,${cat},$${fmt2(amt)}`));
-      rows.push(`TOTAL OTHER INCOME,,$${fmt2(totalOtherInc)}`);
-      rows.push(``);
+    // ── Generar opinión automática basada en números ──
+    const marginPct = totalIncome > 0 ? Math.round((netProfit / totalIncome) * 100) : 0;
+    const grossPct  = totalIncome > 0 ? Math.round((grossProfit / totalIncome) * 100) : 0;
+    const opexPct   = totalIncome > 0 ? Math.round((totalOpex / totalIncome) * 100) : 0;
+    let opinion = "";
+    let opinionColor = "#166534";
+    if (totalIncome === 0) {
+      opinion = "⚠️ No se registraron ingresos en este período. Verifica que las transacciones estén correctamente categorizadas.";
+      opinionColor = "#991b1b";
+    } else if (marginPct >= 40) {
+      opinion = `✅ Excelente mes. Margen neto del ${marginPct}% — el negocio está muy saludable. Los gastos operativos están bien controlados (${opexPct}% de los ingresos).`;
+      opinionColor = "#166534";
+    } else if (marginPct >= 20) {
+      opinion = `👍 Buen mes. Margen neto del ${marginPct}%. Hay oportunidad de mejorar reduciendo gastos operativos que representan el ${opexPct}% de los ingresos.`;
+      opinionColor = "#1a56db";
+    } else if (marginPct >= 0) {
+      opinion = `⚠️ Margen neto bajo (${marginPct}%). El negocio es rentable pero ajustado. Revisar gastos operativos (${opexPct}% de ingresos) para mejorar la utilidad.`;
+      opinionColor = "#92400e";
+    } else {
+      opinion = `🚨 Mes con pérdida neta de $${fmt2(Math.abs(netProfit))}. Los gastos superaron los ingresos. Requiere atención inmediata en control de gastos.`;
+      opinionColor = "#991b1b";
     }
-    if (totalOtherExp > 0) {
-      rows.push(`OTHER EXPENSES,,`);
-      Object.entries(otherExpDetail).forEach(([cat,amt]) => rows.push(`,${cat},$${fmt2(amt)}`));
-      rows.push(`TOTAL OTHER EXPENSES,,$${fmt2(totalOtherExp)}`);
-      rows.push(``);
-    }
-    rows.push(`NET PROFIT,,$${fmt2(netProfit)}`);
-    rows.push(``);
-    rows.push(``);
-    rows.push(`PERSONAL & NON-BUSINESS MOVEMENTS,,`);
-    rows.push(`Category,Description,Amount`);
-    PERSONAL_CATS.forEach(cat => {
+
+    // ── Construir secciones HTML ──
+    const incomeRows = Object.entries(incomeDetail).map(([cat,amt]) =>
+      `<tr><td class="cat">${cat}</td><td class="amt green">$${fmt2(amt)}</td></tr>`).join("");
+    const cogsRows = Object.entries(cogsDetail).map(([cat,amt]) =>
+      `<tr><td class="cat">${cat}</td><td class="amt red">$${fmt2(amt)}</td></tr>`).join("");
+    const opexRows = Object.entries(opexDetail).map(([cat,amt]) =>
+      `<tr><td class="cat">${cat}</td><td class="amt red">$${fmt2(amt)}</td></tr>`).join("");
+    const otherIncRows = Object.entries(otherIncDetail).map(([cat,amt]) =>
+      `<tr><td class="cat">${cat}</td><td class="amt green">$${fmt2(amt)}</td></tr>`).join("");
+    const otherExpRows = Object.entries(otherExpDetail).map(([cat,amt]) =>
+      `<tr><td class="cat">${cat}</td><td class="amt red">$${fmt2(amt)}</td></tr>`).join("");
+
+    const personalRows = PERSONAL_CATS.map(cat => {
       const txs = transactions.filter(r => r.category === cat);
-      if (txs.length === 0) return;
-      rows.push(``);
-      rows.push(`${cat},,`);
-      txs.forEach(r => rows.push(`,${fmtDate(r.date)} - ${r.concept},$${fmt2(Math.abs(parseFloat(r.amount)||0))}`));
+      if (txs.length === 0) return "";
       const catTotal = txs.reduce((s,r) => s + Math.abs(parseFloat(r.amount)||0), 0);
-      rows.push(`,SUBTOTAL ${cat},$${fmt2(catTotal)}`);
-    });
-    rows.push(``);
-    rows.push(`TOTAL PERSONAL MOVEMENTS,,$${fmt2(totalPersonal)}`);
-    triggerDownload(`PnL_${clientName}.csv`, rows.join("\n"));
+      const txRows = txs.map(r =>
+        `<tr><td class="cat" style="padding-left:28px;color:#64748b">${fmtDate(r.date)} — ${r.concept}</td><td class="amt" style="color:#64748b">$${fmt2(Math.abs(parseFloat(r.amount)||0))}</td></tr>`
+      ).join("");
+      return `
+        <tr class="section-sub"><td class="cat" style="font-weight:700">${cat}</td><td></td></tr>
+        ${txRows}
+        <tr class="subtotal-row"><td class="cat">Subtotal ${cat}</td><td class="amt">$${fmt2(catTotal)}</td></tr>`;
+    }).join("");
+
+    const today2 = new Date().toLocaleDateString("es-MX", {day:"2-digit",month:"long",year:"numeric"});
+    const periodStart = balances[0]?.period_start || "";
+    const periodEnd   = balances[0]?.period_end || "";
+
+    const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<title>P&L — ${clientData?.name || ""}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',system-ui,sans-serif;background:#f0f4f8;color:#1a1a1a;padding:32px;font-size:13px}
+  .no-print{background:#1a56db;color:#fff;padding:10px 18px;border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
+  .no-print button{background:#fff;color:#1a56db;border:none;border-radius:6px;padding:6px 18px;font-weight:700;cursor:pointer;font-size:12px}
+  .wrapper{max-width:780px;margin:0 auto}
+  .header{background:linear-gradient(135deg,#0f1f4b 0%,#1a56db 100%);color:#fff;padding:28px 32px;border-radius:16px 16px 0 0}
+  .header h1{font-size:22px;font-weight:700;letter-spacing:-0.5px;margin-bottom:4px}
+  .header .meta{font-size:12px;opacity:0.75;display:flex;gap:24px;flex-wrap:wrap;margin-top:8px}
+  .header .meta span{display:flex;align-items:center;gap:4px}
+  .opinion{background:#fff;border-left:4px solid ${opinionColor};padding:14px 18px;margin:0;font-size:13px;color:${opinionColor};font-weight:500;line-height:1.5}
+  .body{background:#fff;border-radius:0 0 16px 16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #e2e8f0}
+  .kpi{padding:18px 20px;border-right:1px solid #e2e8f0}
+  .kpi:last-child{border-right:none}
+  .kpi .lbl{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+  .kpi .val{font-size:20px;font-weight:700}
+  .kpi .val.green{color:#166534}
+  .kpi .val.red{color:#991b1b}
+  .kpi .val.blue{color:#1a56db}
+  .kpi .val.neutral{color:#1a1a1a}
+  table{width:100%;border-collapse:collapse}
+  .section-header td{background:#0f1f4b;color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 20px}
+  .section-sub td{background:#f7f8fb;font-size:11px;color:#64748b;padding:6px 20px;text-transform:uppercase;letter-spacing:0.5px}
+  tr.detail td{padding:8px 20px;border-bottom:1px solid #f1f5f9}
+  tr.detail:hover td{background:#f8faff}
+  .cat{text-align:left}
+  .amt{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+  .amt.green{color:#166534}
+  .amt.red{color:#dc2626}
+  .total-row td{padding:10px 20px;font-weight:700;font-size:13px;background:#f0f4ff;border-top:2px solid #1a56db}
+  .total-row .amt{color:#1a56db}
+  .subtotal-row td{padding:8px 20px;font-weight:600;background:#fafafa;border-top:1px solid #e2e8f0;color:#64748b}
+  .highlight-row td{padding:14px 20px;font-size:15px;font-weight:700;background:#0f1f4b;color:#fff}
+  .highlight-row .amt{color:#22c55e}
+  .highlight-row .amt.loss{color:#f87171}
+  .spacer{height:8px;background:#f0f4f8}
+  .personal-header td{background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 20px}
+  .footer{text-align:center;font-size:10px;color:#94a3b8;margin-top:16px;padding-bottom:8px}
+  @media print{
+    body{background:#fff;padding:16px}
+    .no-print{display:none}
+    .body{box-shadow:none}
+  }
+</style>
+</head>
+<body>
+<div class="no-print">
+  <span>💡 Para guardar como PDF: <strong>Archivo → Imprimir → Guardar como PDF</strong></span>
+  <button onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+</div>
+<div class="wrapper">
+  <div class="header">
+    <h1>📊 Profit & Loss Statement</h1>
+    <div class="meta">
+      <span>👤 ${clientData?.name || ""}</span>
+      <span>🏦 ${bankInfo?.bank_name || ""}</span>
+      <span>📅 ${periodStart} — ${periodEnd}</span>
+      <span>🗓️ Generado el ${today2}</span>
+    </div>
+  </div>
+  <div class="opinion">${opinion}</div>
+  <div class="body">
+    <div class="kpis">
+      <div class="kpi"><div class="lbl">Ingresos Totales</div><div class="val green">$${fmt2(totalIncome)}</div></div>
+      <div class="kpi"><div class="lbl">Utilidad Bruta</div><div class="val blue">$${fmt2(grossProfit)}</div></div>
+      <div class="kpi"><div class="lbl">Gastos Operativos</div><div class="val red">$${fmt2(totalOpex)}</div></div>
+      <div class="kpi"><div class="lbl">Utilidad Neta</div><div class="val ${netProfit >= 0 ? 'green' : 'red'}">$${fmt2(netProfit)}</div></div>
+    </div>
+    <table>
+      <tr class="section-header"><td colspan="2">💰 Ingresos</td></tr>
+      ${incomeRows}
+      ${otherIncRows ? `${otherIncRows}` : ""}
+      <tr class="total-row"><td class="cat">TOTAL INGRESOS</td><td class="amt">$${fmt2(totalIncome + totalOtherInc)}</td></tr>
+      ${totalCOGS > 0 ? `
+      <tr class="spacer"><td colspan="2"></td></tr>
+      <tr class="section-header"><td colspan="2">🏗️ Costo de Ventas (COGS)</td></tr>
+      ${cogsRows}
+      <tr class="total-row"><td class="cat">TOTAL COGS</td><td class="amt">$${fmt2(totalCOGS)}</td></tr>` : ""}
+      <tr class="spacer"><td colspan="2"></td></tr>
+      <tr class="highlight-row"><td class="cat">UTILIDAD BRUTA</td><td class="amt ${grossProfit < 0 ? 'loss' : ''}">$${fmt2(grossProfit)} <span style="font-size:12px;opacity:0.7">(${grossPct}%)</span></td></tr>
+      <tr class="spacer"><td colspan="2"></td></tr>
+      <tr class="section-header"><td colspan="2">📋 Gastos Operativos</td></tr>
+      ${opexRows}
+      ${otherExpRows ? `${otherExpRows}` : ""}
+      <tr class="total-row"><td class="cat">TOTAL GASTOS OPERATIVOS</td><td class="amt">$${fmt2(totalOpex + totalOtherExp)}</td></tr>
+      <tr class="spacer"><td colspan="2"></td></tr>
+      <tr class="highlight-row"><td class="cat">UTILIDAD NETA</td><td class="amt ${netProfit < 0 ? 'loss' : ''}">$${fmt2(netProfit)} <span style="font-size:12px;opacity:0.7">(${marginPct}%)</span></td></tr>
+    </table>
+    ${totalPersonal > 0 ? `
+    <div style="height:16px;background:#f0f4f8"></div>
+    <table>
+      <tr class="personal-header"><td colspan="2">⚠️ Movimientos Personales y No Empresariales</td></tr>
+      ${personalRows}
+      <tr class="total-row"><td class="cat">TOTAL MOVIMIENTOS PERSONALES</td><td class="amt" style="color:#92400e">$${fmt2(totalPersonal)}</td></tr>
+    </table>` : ""}
+  </div>
+  <div class="footer">Generado por el Agente de Mau Bautista · V&amp;M Bookkeeping Group LLC</div>
+</div>
+</body>
+</html>`;
+
+    const win = window.open("", "_blank");
+    win.document.write(html);
+    win.document.close();
   }
   function downloadDupReport(dupGroups, groups) {
     const clientName  = clientData?.name || "Cliente";

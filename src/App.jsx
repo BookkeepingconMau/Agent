@@ -839,6 +839,17 @@ export default function App() {
       }
     }
     const rows = await extractTransactions(b64, bankId, continuationHint);
+    if (isMSUFCU && currentSplitMode && currentPartNum > 1 && continuationHint) {
+      const defaultPrefix = lastPrefix || "[CHECKING]";
+      rows.forEach(row => {
+        const hasPrefix = row.concept.startsWith("[CHECKING]") ||
+                          row.concept.startsWith("[SAVER]") ||
+                          row.concept.startsWith("[IMMA]");
+        if (!hasPrefix) {
+          row.concept = `${defaultPrefix} ${row.concept}`;
+        }
+      });
+    }
     setP(`✅ ${rows.length} transacciones encontradas`, 35);
 
     // ── AGENT 2: Extract balances ──

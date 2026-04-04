@@ -595,15 +595,21 @@ CHASE format (page 1 RESUMEN DE CUENTA / ACCOUNT SUMMARY):
 - "Retiros Electrónicos" or "Electronic Withdrawals" = total_withdrawals
 MSU FEDERAL CREDIT UNION format (last summary pages):
 - This statement has 3 sub-accounts: SPARTAN SAVER, IMMA, and SMALL BUSINESS CHECKING.
-- Extract ALL 3 as separate objects in the array.
-- For each sub-account find: Balance Forward = beginning_balance, Ending Balance = ending_balance.
-- For SMALL BUSINESS CHECKING specifically:
-  * Find "XX Deposits and Other Credits for $XX,XXX.XX" = total_deposits
-  * Find "XX Withdrawals and Other Charges for $XX,XXX.XX" = electronic_withdrawals
-  * Find "XX Cleared Checks for $XX,XXX.XX" = checks_total
-  * CRITICAL: total_withdrawals = electronic_withdrawals + checks_total (sum both numbers)
-  * Example: "119 Withdrawals for $82,905.73" + "45 Cleared Checks for $50,888.35" = total_withdrawals: 133794.08
-- For SPARTAN SAVER and IMMA, sum the individual deposit and withdrawal lines within each section.
+- Return ONLY ONE consolidated object for the entire statement. Do NOT return 3 separate objects.
+- account_name: "MSU FCU - Consolidated"
+- account_number: the primary account number shown on page 1
+- period_start and period_end: from the statement period shown on page 1
+- beginning_balance: sum of the 3 "Balance Forward" values (one per sub-account)
+- ending_balance: sum of the 3 "Ending Balance" values (one per sub-account)
+- total_deposits: sum of all deposits across the 3 sub-accounts:
+  * SMALL BUSINESS CHECKING: "XX Deposits and Other Credits for $XX,XXX.XX"
+  * SPARTAN SAVER: sum individual deposit lines within that section (including dividends)
+  * IMMA: sum individual deposit lines within that section (including dividends)
+- total_withdrawals: sum of all withdrawals across the 3 sub-accounts:
+  * SMALL BUSINESS CHECKING: electronic_withdrawals + cleared_checks (sum both)
+    Example: "119 Withdrawals for $82,905.73" + "45 Cleared Checks for $50,888.35" = 133794.08
+  * SPARTAN SAVER: sum individual withdrawal lines within that section
+  * IMMA: sum individual withdrawal lines within that section
 DEFAULT: Look for Beginning Balance, Total Deposits, Total Withdrawals, Ending Balance in any summary table.
 If beginning_balance or ending_balance are not shown, use 0.
 Respond ONLY with valid JSON array. No markdown. No explanation.
@@ -929,227 +935,9 @@ export default function App() {
     document.body.removeChild(a);
   }
   function downloadWave(type) {
-    const rows = transactions.filter(r => r.type === type);
-    if (rows.length === 0) return;
-    const isDeposit = type === "DEPOSIT";
-    const total = rows.reduce((s,r) => s + Math.abs(parseFloat(r.amount)||0), 0);
-    const fmt2 = (n) => Number(n||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
-    const today2 = new Date().toLocaleDateString("es-MX",{day:"2-digit",month:"long",year:"numeric"});
-    const periodStart = balances[0]?.period_start || "";
-    const periodEnd   = balances[0]?.period_end || "";
-
-    // ── Por categoría ──
-    const byCat = {};
-    rows.forEach(r => {
-      const cat = r.category || "Sin categoría";
-      if (!byCat[cat]) byCat[cat] = { total: 0, count: 0 };
-      byCat[cat].total += Math.abs(parseFloat(r.amount)||0);
-      byCat[cat].count++;
-    });
-    const catSorted = Object.entries(byCat).sort((a,b) => b[1].total - a[1].total);
-
-    // ── Top 5 merchants ──
-    const byMerchant = {};
-    rows.forEach(r => {
-      const key = r.concept.split(" ").slice(0,3).join(" ");
-      if (!byMerchant[key]) byMerchant[key] = { total: 0, count: 0 };
-      byMerchant[key].total += Math.abs(parseFloat(r.amount)||0);
-      byMerchant[key].count++;
-    });
-    const top5 = Object.entries(byMerchant).sort((a,b) => b[1].total - a[1].total).slice(0,5);
-
-    // ── Análisis automático ──
-    const topCat = catSorted[0];
-    const topCatPct = total > 0 ? Math.round((topCat[1].total / total) * 100) : 0;
-    const avgTx = rows.length > 0 ? total / rows.length : 0;
-
-    const accentColor = isDeposit ? "#166534" : "#991b1b";
-    const accentLight = isDeposit ? "#dcfce7" : "#fee2e2";
-    const accentMid   = isDeposit ? "#22c55e" : "#ef4444";
-
-    // ── Filas de transacciones ──
-    const txRows = rows.map(r => `
-      <tr class="tx-row">
-        <td style="color:#64748b;font-size:12px;padding:7px 14px;border-bottom:0.5px solid #f1f5f9;white-space:nowrap">${fmtDate(r.date)}</td>
-        <td style="font-weight:600;font-size:13px;padding:7px 14px;border-bottom:0.5px solid #f1f5f9;text-align:right;color:${isDeposit?"#166534":"#dc2626"};white-space:nowrap">${isDeposit?"+":"-"}$${fmt2(Math.abs(parseFloat(r.amount)||0))}</td>
-        <td style="font-size:12px;padding:7px 14px;border-bottom:0.5px solid #f1f5f9;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.concept}</td>
-        <td style="padding:7px 14px;border-bottom:0.5px solid #f1f5f9"><span style="background:${accentLight};color:${accentColor};border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600;white-space:nowrap">${r.category}</span></td>
-      </tr>`).join("");
-
-    // ── Barras por categoría ──
-    const catBars = catSorted.map(([cat, data]) => {
-      const pct = total > 0 ? Math.round((data.total / total) * 100) : 0;
-      return `<div style="margin-bottom:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-          <span style="font-size:12px;color:#1a1a1a;font-weight:500">${cat}</span>
-          <span style="font-size:12px;color:#64748b">$${fmt2(data.total)} <span style="color:#94a3b8">(${pct}%)</span></span>
-        </div>
-        <div style="background:#f1f5f9;border-radius:4px;height:6px">
-          <div style="background:${accentMid};border-radius:4px;height:6px;width:${pct}%"></div>
-        </div>
-      </div>`;
-    }).join("");
-
-    // ── Top merchants ──
-    const merchantRows = top5.map(([name, data], i) => `
-      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid #f1f5f9">
-        <div style="min-width:22px;height:22px;border-radius:50%;background:${accentLight};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:${accentColor}">${i+1}</div>
-        <div style="flex:1;font-size:12px;font-weight:500;color:#1a1a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</div>
-        <div style="font-size:12px;font-weight:600;color:${accentColor};white-space:nowrap">$${fmt2(data.total)}</div>
-        <div style="font-size:11px;color:#94a3b8;white-space:nowrap">${data.count}x</div>
-      </div>`).join("");
-
-    const T = {
-      es: {
-        title: isDeposit ? "Reporte de Depósitos" : "Reporte de Retiros",
-        subtitle: isDeposit ? "Ingresos del período" : "Gastos del período",
-        total: isDeposit ? "Total depositado" : "Total retirado",
-        transactions: "Transacciones",
-        average: "Promedio por transacción",
-        byCat: "Distribución por categoría",
-        topMerchants: isDeposit ? "Top fuentes de ingreso" : "Top merchants",
-        detail: "Detalle de transacciones",
-        date: "Fecha", amount: "Monto", concept: "Concepto", category: "Categoría",
-        analysis: isDeposit
-          ? `Tu categoría principal de ingreso es <strong>${topCat[0]}</strong> con el ${topCatPct}% del total. Promedio por depósito: $${fmt2(avgTx)}.`
-          : `Tu mayor gasto es <strong>${topCat[0]}</strong> con el ${topCatPct}% del total. Promedio por transacción: $${fmt2(avgTx)}.`,
-        printTip: "Archivo → Imprimir → Guardar como PDF",
-      },
-      en: {
-        title: isDeposit ? "Deposits Report" : "Withdrawals Report",
-        subtitle: isDeposit ? "Income for the period" : "Expenses for the period",
-        total: isDeposit ? "Total deposited" : "Total withdrawn",
-        transactions: "Transactions",
-        average: "Average per transaction",
-        byCat: "Breakdown by category",
-        topMerchants: isDeposit ? "Top income sources" : "Top merchants",
-        detail: "Transaction detail",
-        date: "Date", amount: "Amount", concept: "Concept", category: "Category",
-        analysis: isDeposit
-          ? `Your main income category is <strong>${topCat[0]}</strong> at ${topCatPct}% of total. Average deposit: $${fmt2(avgTx)}.`
-          : `Your largest expense is <strong>${topCat[0]}</strong> at ${topCatPct}% of total. Average transaction: $${fmt2(avgTx)}.`,
-        printTip: "File → Print → Save as PDF",
-      }
-    };
-
-    const html = `<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8"/>
-<title>${isDeposit?"Deposits":"Withdrawals"} — ${clientData?.name||""}</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'DM Sans',system-ui,sans-serif;background:#f0f4f8;color:#1a1a1a;padding:32px;font-size:13px}
-  .no-print{background:${accentColor};color:#fff;padding:10px 18px;border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
-  .wrapper{max-width:860px;margin:0 auto}
-  .header{background:linear-gradient(135deg,#0f1f4b 0%,${accentColor} 100%);color:#fff;padding:28px 32px;border-radius:16px 16px 0 0}
-  .header h1{font-size:22px;font-weight:700;margin-bottom:4px}
-  .header .meta{font-size:12px;opacity:0.75;display:flex;gap:24px;flex-wrap:wrap;margin-top:8px}
-  .body{background:#fff;border-radius:0 0 16px 16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)}
-  .kpis{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid #e2e8f0}
-  .kpi{padding:18px 20px;border-right:1px solid #e2e8f0}
-  .kpi:last-child{border-right:none}
-  .kpi .lbl{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
-  .kpi .val{font-size:20px;font-weight:700;color:${accentColor}}
-  .analysis{background:${accentLight};border-left:3px solid ${accentColor};padding:12px 18px;font-size:13px;color:${accentColor};line-height:1.5}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid #e2e8f0}
-  .panel{padding:20px}
-  .panel:first-child{border-right:1px solid #e2e8f0}
-  .panel-title{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px}
-  .section-bar{background:#0f1f4b;color:#fff;padding:8px 16px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
-  .tx-row:hover td{background:#f8faff}
-  .footer{text-align:center;font-size:10px;color:#94a3b8;margin-top:16px}
-  @media print{body{background:#fff;padding:16px}.no-print{display:none}.body{box-shadow:none}}
-</style>
-</head>
-<body>
-<div class="no-print">
-  <span class="print-tip">💡 ${T.es.printTip}</span>
-  <div style="display:flex;gap:8px">
-    <button id="btn-es" onclick="setLang('es')" style="background:#fff;color:${accentColor};border:none;border-radius:6px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:12px">🇲🇽 ES</button>
-    <button id="btn-en" onclick="setLang('en')" style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.4);border-radius:6px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:12px">🇺🇸 EN</button>
-    <button onclick="window.print()" style="background:#fff;color:${accentColor};border:none;border-radius:6px;padding:6px 18px;font-weight:700;cursor:pointer;font-size:12px">🖨️ PDF</button>
-  </div>
-</div>
-<div class="wrapper">
-  <div class="header">
-    <h1 id="rep-title">📊 ${T.es.title}</h1>
-    <div class="meta">
-      <span>👤 ${clientData?.name||""}</span>
-      <span>🏦 ${bankInfo?.bank_name||""}</span>
-      <span>📅 ${periodStart} — ${periodEnd}</span>
-      <span>🗓️ ${today2}</span>
-    </div>
-  </div>
-  <div class="analysis" id="rep-analysis">${T.es.analysis}</div>
-  <div class="body">
-    <div class="kpis">
-      <div class="kpi"><div class="lbl" id="lbl-total">${T.es.total}</div><div class="val">$${fmt2(total)}</div></div>
-      <div class="kpi"><div class="lbl" id="lbl-txs">${T.es.transactions}</div><div class="val">${rows.length}</div></div>
-      <div class="kpi"><div class="lbl" id="lbl-avg">${T.es.average}</div><div class="val">$${fmt2(avgTx)}</div></div>
-    </div>
-    <div class="grid2">
-      <div class="panel">
-        <div class="panel-title" id="lbl-bycat">${T.es.byCat}</div>
-        ${catBars}
-      </div>
-      <div class="panel">
-        <div class="panel-title" id="lbl-top">${T.es.topMerchants}</div>
-        ${merchantRows}
-      </div>
-    </div>
-    <div class="section-bar" id="lbl-detail">${T.es.detail}</div>
-    <div style="overflow-x:auto">
-      <table style="width:100%;border-collapse:collapse">
-        <thead>
-          <tr style="background:#f7f8fb">
-            <th id="th-date" style="text-align:left;padding:8px 14px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px">${T.es.date}</th>
-            <th id="th-amount" style="text-align:right;padding:8px 14px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px">${T.es.amount}</th>
-            <th id="th-concept" style="text-align:left;padding:8px 14px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px">${T.es.concept}</th>
-            <th id="th-category" style="text-align:left;padding:8px 14px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px">${T.es.category}</th>
-          </tr>
-        </thead>
-        <tbody>${txRows}</tbody>
-      </table>
-    </div>
-  </div>
-  <div class="footer">Generado por el Agente de Mau Bautista · V&amp;M Bookkeeping Group LLC</div>
-</div>
-<script>
-const LANG = {
-  es: ${JSON.stringify(T.es)},
-  en: ${JSON.stringify(T.en)}
-};
-function setLang(lang) {
-  const t = LANG[lang];
-  document.getElementById('rep-title').textContent = "📊 " + t.title;
-  document.getElementById('rep-analysis').innerHTML = t.analysis;
-  document.getElementById('lbl-total').textContent = t.total;
-  document.getElementById('lbl-txs').textContent = t.transactions;
-  document.getElementById('lbl-avg').textContent = t.average;
-  document.getElementById('lbl-bycat').textContent = t.byCat;
-  document.getElementById('lbl-top').textContent = t.topMerchants;
-  document.getElementById('lbl-detail').textContent = t.detail;
-  document.getElementById('th-date').textContent = t.date;
-  document.getElementById('th-amount').textContent = t.amount;
-  document.getElementById('th-concept').textContent = t.concept;
-  document.getElementById('th-category').textContent = t.category;
-  document.querySelector('.print-tip').textContent = "💡 " + t.printTip;
-  document.getElementById('btn-es').style.background = lang==='es'?'#fff':'rgba(255,255,255,0.2)';
-  document.getElementById('btn-es').style.color = lang==='es'?'${accentColor}':'#fff';
-  document.getElementById('btn-es').style.border = lang==='es'?'none':'1px solid rgba(255,255,255,0.4)';
-  document.getElementById('btn-en').style.background = lang==='en'?'#fff':'rgba(255,255,255,0.2)';
-  document.getElementById('btn-en').style.color = lang==='en'?'${accentColor}':'#fff';
-  document.getElementById('btn-en').style.border = lang==='en'?'none':'1px solid rgba(255,255,255,0.4)';
-}
-</script>
-</body>
-</html>`;
-
-    const win = window.open("", "_blank");
-    win.document.write(html);
-    win.document.close();
+    const rows = transactions.filter(r=>r.type===type);
+    const csv = "DATE,AMOUNT,*,CONCEPT,CATEGORY\n" + rows.map(r=>`${fmtDate(r.date)},${r.amount},,"${r.concept}","${r.category}"`).join("\n");
+    triggerDownload(`wave_${type.toLowerCase()}_import.csv`, csv);
   }
   function downloadCSV() {
     const csv = "DATE,AMOUNT,*,CONCEPT,CATEGORY\n" + transactions.map(r=>`${fmtDate(r.date)},${r.amount},,"${r.concept}","${r.category}"`).join("\n");
@@ -1247,12 +1035,6 @@ function setLang(lang) {
     const today2 = new Date().toLocaleDateString("es-MX", {day:"2-digit",month:"long",year:"numeric"});
     const periodStart = balances[0]?.period_start || "";
     const periodEnd   = balances[0]?.period_end || "";
-
-    // ── Datos para gráfica 3D ──
-    const chartIncome = Object.entries({...incomeDetail,...otherIncDetail}).map(([cat,amt]) => ({ cat, amt, type:"income" }));
-    const chartExpense = Object.entries({...cogsDetail,...opexDetail,...otherExpDetail}).map(([cat,amt]) => ({ cat, amt, type:"expense" }));
-    const chartData = [...chartIncome, ...chartExpense];
-    const chartDataJSON = JSON.stringify(chartData);
 
     const html = `<!DOCTYPE html>
 <html lang="es">
@@ -1457,180 +1239,8 @@ function setLang(lang) {
       <tr class="total-row"><td class="cat" id="tot-personal">TOTAL MOVIMIENTOS PERSONALES</td><td class="amt" style="color:#92400e">$${fmt2(totalPersonal)}</td></tr>
     </table>` : ""}
   </div>
-  <div style="height:16px;background:#f0f4f8"></div>
-  <div class="wrapper">
-    <div style="background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);padding:24px;margin-bottom:16px">
-      <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px" id="chart-title">Distribución visual — ingresos vs gastos</div>
-      <canvas id="chart3d" width="800" height="380" style="width:100%;height:380px;cursor:grab"></canvas>
-      <div id="chart-legend" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px"></div>
-    </div>
-  </div>
   <div class="footer">Generado por el Agente de Mau Bautista · V&amp;M Bookkeeping Group LLC</div>
 </div>
-<script>
-(function(){
-  const RAW = ${chartDataJSON};
-  const canvas = document.getElementById('chart3d');
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-  const CX = W/2, CY = H/2 - 20;
-  const RX = 220, RY = 80; // radios de la elipse
-  const DEPTH = 55;
-
-  const INCOME_COLORS = ['#22c55e','#16a34a','#15803d','#4ade80','#86efac','#bbf7d0'];
-  const EXPENSE_COLORS = ['#ef4444','#dc2626','#b91c1c','#f87171','#fca5a5','#fb923c','#f97316','#ea580c','#c2410c','#9a3412','#fbbf24','#f59e0b','#d97706','#92400e'];
-
-  const total = RAW.reduce((s,d) => s + d.amt, 0);
-  let slices = [];
-  let angle = -Math.PI/2;
-  let incI = 0, expI = 0;
-  RAW.forEach(d => {
-    const sweep = (d.amt / total) * Math.PI * 2;
-    const color = d.type === 'income' ? INCOME_COLORS[incI++ % INCOME_COLORS.length] : EXPENSE_COLORS[expI++ % EXPENSE_COLORS.length];
-    slices.push({ ...d, start: angle, end: angle + sweep, color, pct: Math.round((d.amt/total)*100) });
-    angle += sweep;
-  });
-
-  let rotX = 0.38, rotY = 0, dragging = false, lastX = 0, lastY = 0;
-
-  function project(ax, ay, az) {
-    const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
-    const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
-    const x1 = ax * cosY - az * sinY;
-    const z1 = ax * sinY + az * cosY;
-    const y1 = ay * cosX - z1 * sinX;
-    const z2 = ay * sinX + z1 * cosX;
-    const scale = 600 / (600 + z2);
-    return { x: CX + x1 * scale, y: CY + y1 * scale, z: z2 };
-  }
-
-  function ellipsePoint(a, rx, ry, rz) {
-    return project(Math.cos(a)*rx, rz, Math.sin(a)*ry);
-  }
-
-  function draw() {
-    ctx.clearRect(0,0,W,H);
-
-    // Sombra suave
-    ctx.save();
-    ctx.globalAlpha = 0.07;
-    ctx.fillStyle = '#000';
-    ctx.beginPath();
-    ctx.ellipse(CX, CY + DEPTH + 30, RX * 0.9, RY * 0.3, 0, 0, Math.PI*2);
-    ctx.fill();
-    ctx.restore();
-
-    // Ordenar slices por profundidad (mid-angle Z)
-    const sorted = [...slices].sort((a,b) => {
-      const midA = (a.start+a.end)/2;
-      const midB = (b.start+b.end)/2;
-      const pA = project(Math.cos(midA)*RX, 0, Math.sin(midA)*RY);
-      const pB = project(Math.cos(midB)*RX, 0, Math.sin(midB)*RY);
-      return pB.z - pA.z;
-    });
-
-    sorted.forEach(s => {
-      const steps = Math.max(4, Math.round((s.end - s.start) / 0.08));
-      const angles = Array.from({length: steps+1}, (_,i) => s.start + (s.end - s.start) * i / steps);
-
-      // Cara lateral (3D depth)
-      const midAngle = (s.start + s.end) / 2;
-      const pMid = project(Math.cos(midAngle)*RX, 0, Math.sin(midAngle)*RY);
-      if (pMid.z > 0) {
-        ctx.beginPath();
-        angles.forEach((a,i) => {
-          const pt = ellipsePoint(a, RX, RY, 0);
-          i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
-        });
-        angles.slice().reverse().forEach(a => {
-          const pt = ellipsePoint(a, RX, RY, DEPTH);
-          ctx.lineTo(pt.x, pt.y);
-        });
-        ctx.closePath();
-        ctx.fillStyle = shadeColor(s.color, -25);
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-        ctx.lineWidth = 0.5;
-        ctx.stroke();
-      }
-
-      // Cara superior
-      ctx.beginPath();
-      const center0 = project(0, 0, 0);
-      ctx.moveTo(center0.x, center0.y);
-      angles.forEach(a => {
-        const pt = ellipsePoint(a, RX, RY, 0);
-        ctx.lineTo(pt.x, pt.y);
-      });
-      ctx.closePath();
-      ctx.fillStyle = s.color;
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      // Etiqueta si el slice es grande
-      if (s.pct >= 6) {
-        const midA = (s.start + s.end) / 2;
-        const lx = CX + Math.cos(midA) * RX * 0.62;
-        const ly = CY + Math.sin(midA) * RY * 0.62;
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 11px DM Sans, system-ui';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(s.pct + '%', lx, ly);
-      }
-    });
-  }
-
-  function shadeColor(hex, amt) {
-    const num = parseInt(hex.replace('#',''),16);
-    const r = Math.max(0,Math.min(255,(num>>16)+amt));
-    const g = Math.max(0,Math.min(255,((num>>8)&0xff)+amt));
-    const b = Math.max(0,Math.min(255,(num&0xff)+amt));
-    return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
-  }
-
-  // Leyenda
-  const legend = document.getElementById('chart-legend');
-  slices.forEach(s => {
-    if (s.pct < 1) return;
-    const el = document.createElement('div');
-    el.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:11px;color:#444;background:#f8faff;padding:3px 8px;border-radius:4px;border:0.5px solid #e2e8f0';
-    el.innerHTML = '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+s.color+'"></span>' + s.cat.split(' ').slice(0,3).join(' ') + ' <strong>'+s.pct+'%</strong>';
-    legend.appendChild(el);
-  });
-
-  // Mouse drag
-  canvas.addEventListener('mousedown', e => { dragging=true; lastX=e.clientX; lastY=e.clientY; canvas.style.cursor='grabbing'; });
-  window.addEventListener('mouseup', () => { dragging=false; canvas.style.cursor='grab'; });
-  window.addEventListener('mousemove', e => {
-    if (!dragging) return;
-    rotY += (e.clientX - lastX) * 0.01;
-    rotX += (e.clientY - lastY) * 0.008;
-    rotX = Math.max(0.1, Math.min(1.2, rotX));
-    lastX = e.clientX; lastY = e.clientY;
-    draw();
-  });
-
-  // Touch
-  canvas.addEventListener('touchstart', e => { lastX=e.touches[0].clientX; lastY=e.touches[0].clientY; });
-  canvas.addEventListener('touchmove', e => {
-    e.preventDefault();
-    rotY += (e.touches[0].clientX - lastX) * 0.01;
-    rotX += (e.touches[0].clientY - lastY) * 0.008;
-    rotX = Math.max(0.1, Math.min(1.2, rotX));
-    lastX=e.touches[0].clientX; lastY=e.touches[0].clientY;
-    draw();
-  }, {passive:false});
-
-  // Auto-rotate
-  let autoRot = requestAnimationFrame(function spin(){
-    if (!dragging) { rotY += 0.005; draw(); }
-    requestAnimationFrame(spin);
-  });
-})();
-</script>
 </body>
 </html>`;
 

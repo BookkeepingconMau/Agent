@@ -530,13 +530,14 @@ Example: {"bank_name":"Mabrey Bank","bank_id":"mabrey_bank","total_pages":16,"pe
   }
 }
 // ─── AGENT 1: EXTRACT TRANSACTIONS ───────────────────────────────────────────
-async function extractTransactions(b64, bankId = "default") {
+async function extractTransactions(b64, bankId = "default", continuationHint = "") {
   const bankSpecificInstructions = BANK_PROMPTS[bankId] || BANK_PROMPTS.default;
   const skipCheckSummaryRule = bankId === "msu_federal_credit_union"
     ? "DO NOT extract from the Cleared Check Summary table or any summary/totals pages — those transactions are already in the main ledger as Draft lines and would create duplicates."
     : 'Also extract ALL checks from any "Cleared Check Summary", "Checks Paid", "Draft Summary", or similar table.';
+  const continuationBlock = continuationHint ? `\n⚠️ CONTINUATION CONTEXT: ${continuationHint}\n` : "";
   const system = `You are a STRICT bank statement extraction agent. Your job is to extract EVERY single transaction with ZERO omissions.
-${bankSpecificInstructions}
+${bankSpecificInstructions}${continuationBlock}
 UNIVERSAL CRITICAL RULES:
 1. Extract ALL transactions from the main ledger (line by line transactions).
 2. ${skipCheckSummaryRule}
@@ -821,12 +822,27 @@ export default function App() {
 
     // ── AGENT 1: Extract transactions ──
     setP("Agente 1: Extrayendo transacciones...", 12);
-    const rows = await extractTransactions(b64, bankId);
+    const isMSUFCU = (bankId === "msu_federal_credit_union");
+    let continuationHint = "";
+    if (isMSUFCU && currentSplitMode && currentPartNum > 1) {
+      const prevPart = splitPartsRef.current[currentPartNum - 2] || [];
+      const lastFive = prevPart.slice(-5);
+      const lastPrefix = lastFive.reduceRight((found, row) => {
+        if (found) return found;
+        if (row.concept?.startsWith("[CHECKING]")) return "[CHECKING]";
+        if (row.concept?.startsWith("[SAVER]")) return "[SAVER]";
+        if (row.concept?.startsWith("[IMMA]")) return "[IMMA]";
+        return null;
+      }, null);
+      if (lastPrefix) {
+        continuationHint = `This PDF is a continuation. The last active sub-account from the previous part was ${lastPrefix}. Start with that prefix for ALL transactions until a new sub-account header appears in this PDF.`;
+      }
+    }
+    const rows = await extractTransactions(b64, bankId, continuationHint);
     setP(`✅ ${rows.length} transacciones encontradas`, 35);
 
     // ── AGENT 2: Extract balances ──
     let bals;
-    const isMSUFCU = (bankId === "msu_federal_credit_union");
     if (!currentSplitMode || currentPartNum === 1 || isMSUFCU) {
       setP("Agente 2: Extrayendo saldos...", 40);
       const newBals = await extractBalances(b64);

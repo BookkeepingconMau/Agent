@@ -564,21 +564,29 @@ UNIVERSAL CRITICAL RULES:
   text.trim().split("\n").forEach(line => {
     const parts = line.split(",");
     if (bankId === "msu_federal_credit_union") {
-      if (parts.length < 5) return;
-      const type    = parts[0].trim().toUpperCase();
-      const date    = parts[1].trim();
-      const amount  = parts[2].trim();
-      const account = parts[3].trim().toUpperCase();
-      const concept = parts.slice(4).join(",").trim().replace(/^"|"$/g,"");
+      if (parts.length < 4) return;
+      const type   = parts[0].trim().toUpperCase();
+      const date   = parts[1].trim();
+      const amount = parts[2].trim();
+
+      let account = "CHECKING";
+      let concept = "";
+
+      const col4 = parts[3].trim().toUpperCase();
+      if (col4 === "CHECKING" || col4 === "SAVER" || col4 === "IMMA") {
+        account = col4;
+        concept = parts.slice(4).join(",").trim().replace(/^"|"$/g,"");
+      } else {
+        concept = parts.slice(3).join(",").trim().replace(/^"|"$/g,"");
+        if (concept.startsWith("[CHECKING]"))      { account = "CHECKING"; concept = concept.slice(10).trim(); }
+        else if (concept.startsWith("[SAVER]"))    { account = "SAVER";    concept = concept.slice(7).trim(); }
+        else if (concept.startsWith("[IMMA]"))     { account = "IMMA";     concept = concept.slice(6).trim(); }
+      }
+
       if ((type==="DEPOSIT"||type==="WITHDRAWAL") && date && amount && concept) {
         const prefixMap = { CHECKING:"[CHECKING]", SAVER:"[SAVER]", IMMA:"[IMMA]" };
         const prefix = prefixMap[account] || "[CHECKING]";
-        const conceptWithPrefix = concept.startsWith("[CHECKING]") ||
-                                  concept.startsWith("[SAVER]") ||
-                                  concept.startsWith("[IMMA]")
-                                  ? concept
-                                  : `${prefix} ${concept}`;
-        rows.push({ type, date, amount, concept: conceptWithPrefix, category:"", level:"" });
+        rows.push({ type, date, amount, concept: `${prefix} ${concept}`, category:"", level:"" });
       }
       return;
     }

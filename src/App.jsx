@@ -593,23 +593,23 @@ BANK OF AMERICA format (page 1 Account summary):
 CHASE format (page 1 RESUMEN DE CUENTA / ACCOUNT SUMMARY):
 - "Depósitos y Adiciones" or "Deposits and Additions" = total_deposits
 - "Retiros Electrónicos" or "Electronic Withdrawals" = total_withdrawals
-MSU FEDERAL CREDIT UNION format (last summary pages):
+MSU FEDERAL CREDIT UNION format — extract from each sub-account's OWN LEDGER (do NOT use the page 1 summary):
 - This statement has 3 sub-accounts: SPARTAN SAVER, IMMA, and SMALL BUSINESS CHECKING.
-- Return ONLY ONE consolidated object for the entire statement. Do NOT return 3 separate objects.
+- The page 1 summary is NOT reliable — it only reflects SMALL BUSINESS CHECKING. IGNORE it.
+- Instead, locate each sub-account section in the body of the statement and extract directly from its ledger:
+  FOR EACH of the 3 sub-accounts (SPARTAN SAVER, IMMA, SMALL BUSINESS CHECKING):
+  * beginning_balance: the "Balance Forward" line at the top of that sub-account's ledger
+  * ending_balance: the "Ending Balance" line at the bottom of that sub-account's ledger
+  * total_deposits: sum of ALL positive transaction amounts in that sub-account's ledger (deposits, dividends, credits)
+  * total_withdrawals: sum of ALL negative transaction amounts in that sub-account's ledger (withdrawals, fees, debits) — use absolute value
+- Return ONLY ONE consolidated object. Do NOT return 3 separate objects.
 - account_name: "MSU FCU - Consolidated"
 - account_number: the primary account number shown on page 1
 - period_start and period_end: from the statement period shown on page 1
-- beginning_balance: sum of the 3 "Balance Forward" values (one per sub-account)
-- ending_balance: sum of the 3 "Ending Balance" values (one per sub-account)
-- total_deposits: sum of all deposits across the 3 sub-accounts:
-  * SMALL BUSINESS CHECKING: "XX Deposits and Other Credits for $XX,XXX.XX"
-  * SPARTAN SAVER: sum individual deposit lines within that section (including dividends)
-  * IMMA: sum individual deposit lines within that section (including dividends)
-- total_withdrawals: sum of all withdrawals across the 3 sub-accounts:
-  * SMALL BUSINESS CHECKING: electronic_withdrawals + cleared_checks (sum both)
-    Example: "119 Withdrawals for $82,905.73" + "45 Cleared Checks for $50,888.35" = 133794.08
-  * SPARTAN SAVER: sum individual withdrawal lines within that section
-  * IMMA: sum individual withdrawal lines within that section
+- beginning_balance: sum of the 3 individual "Balance Forward" values
+- ending_balance: sum of the 3 individual "Ending Balance" values
+- total_deposits: sum of all deposits from the 3 ledgers
+- total_withdrawals: sum of all withdrawals from the 3 ledgers
 DEFAULT: Look for Beginning Balance, Total Deposits, Total Withdrawals, Ending Balance in any summary table.
 If beginning_balance or ending_balance are not shown, use 0.
 Respond ONLY with valid JSON array. No markdown. No explanation.

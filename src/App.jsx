@@ -169,7 +169,8 @@ MSU FCU STATEMENT STRUCTURE — CRITICAL RULES:
 12. "Dividends Earned YTD" lines are NOT transactions — skip them.
     Dividend entries WITH an amount and date ARE transactions — include them as DEPOSITS with prefix.
 
-OUTPUT: Raw CSV — TYPE,DATE,AMOUNT,CONCEPT. No headers. No markdown. No explanation.`,
+OUTPUT: Raw CSV — TYPE,DATE,AMOUNT,ACCOUNT,CONCEPT. No headers. No markdown. No explanation.
+ACCOUNT must be exactly one of: CHECKING, SAVER, IMMA (matching the active sub-account for that transaction).`,
   mercury_bank: `You are a STRICT extraction agent for MERCURY BANK statements.
 MERCURY BANK STATEMENT STRUCTURE:
 1. TRANSACTIONS section: Each transaction has Date | Description | Amount | Balance
@@ -556,6 +557,25 @@ UNIVERSAL CRITICAL RULES:
   const rows = [];
   text.trim().split("\n").forEach(line => {
     const parts = line.split(",");
+    if (bankId === "msu_federal_credit_union") {
+      if (parts.length < 5) return;
+      const type    = parts[0].trim().toUpperCase();
+      const date    = parts[1].trim();
+      const amount  = parts[2].trim();
+      const account = parts[3].trim().toUpperCase();
+      const concept = parts.slice(4).join(",").trim().replace(/^"|"$/g,"");
+      if ((type==="DEPOSIT"||type==="WITHDRAWAL") && date && amount && concept) {
+        const prefixMap = { CHECKING:"[CHECKING]", SAVER:"[SAVER]", IMMA:"[IMMA]" };
+        const prefix = prefixMap[account] || "[CHECKING]";
+        const conceptWithPrefix = concept.startsWith("[CHECKING]") ||
+                                  concept.startsWith("[SAVER]") ||
+                                  concept.startsWith("[IMMA]")
+                                  ? concept
+                                  : `${prefix} ${concept}`;
+        rows.push({ type, date, amount, concept: conceptWithPrefix, category:"", level:"" });
+      }
+      return;
+    }
     if (parts.length < 4) return;
     const type    = parts[0].trim().toUpperCase();
     const date    = parts[1].trim();

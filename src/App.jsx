@@ -554,6 +554,12 @@ UNIVERSAL CRITICAL RULES:
     { type:"document", source:{ type:"base64", media_type:"application/pdf", data:b64 } },
     { type:"text", text:"Extract ALL transactions. Raw CSV: TYPE,DATE,AMOUNT,CONCEPT" }
   ]}], system);
+  if (bankId === "msu_federal_credit_union") {
+    const rawLines = text.trim().split("\n").slice(0, 15);
+    console.log("=== MSU RAW CSV ===");
+    rawLines.forEach((line, i) => console.log(`L${i+1}: ${line}`));
+    console.log("=== FIN RAW CSV ===");
+  }
   const rows = [];
   text.trim().split("\n").forEach(line => {
     const parts = line.split(",");

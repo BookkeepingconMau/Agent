@@ -840,7 +840,7 @@ export default function App() {
       }
     }
     const rows = await extractTransactions(b64, bankId, continuationHint);
-    if (isMSUFCU && currentSplitMode && currentPartNum > 1 && continuationHint) {
+    if (isMSUFCU && currentSplitMode && currentPartNum > 1) {
       const defaultPrefix = lastPrefix || "[CHECKING]";
       rows.forEach(row => {
         const hasPrefix = row.concept.startsWith("[CHECKING]") ||

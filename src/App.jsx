@@ -824,10 +824,11 @@ export default function App() {
     setP("Agente 1: Extrayendo transacciones...", 12);
     const isMSUFCU = (bankId === "msu_federal_credit_union");
     let continuationHint = "";
+    let lastPrefix = null;
     if (isMSUFCU && currentSplitMode && currentPartNum > 1) {
       const prevPart = splitPartsRef.current[currentPartNum - 2] || [];
       const lastFive = prevPart.slice(-5);
-      const lastPrefix = lastFive.reduceRight((found, row) => {
+      lastPrefix = lastFive.reduceRight((found, row) => {
         if (found) return found;
         if (row.concept?.startsWith("[CHECKING]")) return "[CHECKING]";
         if (row.concept?.startsWith("[SAVER]")) return "[SAVER]";

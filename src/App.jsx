@@ -114,7 +114,11 @@ MSU FCU STATEMENT STRUCTURE — CRITICAL RULES:
    - "BUSINESS IMMA" or "IMMA" → active sub-account = IMMA → prefix = [IMMA]
    - "SMALL BUSINESS CHECKING" → active sub-account = CHECKING → prefix = [CHECKING]
    Once a header is seen, ALL subsequent transactions belong to that sub-account UNTIL the next header appears.
-   If this PDF starts mid-statement without a visible header, assume [CHECKING] as the default and continue.
+   DEFAULT RULE — CRITICAL: If this PDF starts mid-statement without a visible sub-account header,
+   OR if the first line is "SMALL BUSINESS CHECKING - 83 (Continued)" or any variant of "SMALL BUSINESS CHECKING ... (Continued)",
+   OR if there is no sub-account header before the first transaction line,
+   IMMEDIATELY set the active sub-account to CHECKING and apply prefix [CHECKING] to every transaction until a new header is found.
+   Do NOT wait for a header to assign [CHECKING] — it is the default from line 1 if no other header appears first.
 
 3. CONCEPT PREFIX: Every transaction MUST start with the prefix of its active sub-account:
    - [CHECKING] ACH Bankcard Funding...

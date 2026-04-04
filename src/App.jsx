@@ -807,9 +807,31 @@ export default function App() {
 
     // ── AGENT 2: Extract balances ──
     let bals;
-    if (!currentSplitMode || currentPartNum === 1) {
+    const isMSUFCU = (bankId === "msu_federal_credit_union");
+    if (!currentSplitMode || currentPartNum === 1 || isMSUFCU) {
       setP("Agente 2: Extrayendo saldos...", 40);
-      bals = await extractBalances(b64);
+      const newBals = await extractBalances(b64);
+      if (isMSUFCU && currentSplitMode && currentPartNum > 1) {
+        // Merge: replace existing balance values only when new value > 0
+        const prev = balancesRef.current.length > 0 ? balancesRef.current : [];
+        const merged = newBals.map(newB => {
+          const existing = prev.find(p => p.account_name === newB.account_name);
+          if (!existing) return newB;
+          return {
+            ...existing,
+            beginning_balance:  (parseFloat(newB.beginning_balance)  > 0 ? newB.beginning_balance  : existing.beginning_balance),
+            ending_balance:     (parseFloat(newB.ending_balance)     > 0 ? newB.ending_balance     : existing.ending_balance),
+            total_deposits:     (parseFloat(newB.total_deposits)     > 0 ? newB.total_deposits     : existing.total_deposits),
+            total_withdrawals:  (parseFloat(newB.total_withdrawals)  > 0 ? newB.total_withdrawals  : existing.total_withdrawals),
+          };
+        });
+        // Also keep any accounts from prev that weren't in newBals
+        const mergedNames = merged.map(b => b.account_name);
+        const kept = prev.filter(p => !mergedNames.includes(p.account_name));
+        bals = [...kept, ...merged];
+      } else {
+        bals = newBals;
+      }
       setBalances(bals);
       balancesRef.current = bals;
       setP(`✅ ${bals.length} cuenta(s) detectada(s)`, 48);

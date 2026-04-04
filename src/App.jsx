@@ -105,42 +105,50 @@ OUTPUT: Raw CSV — TYPE,DATE,AMOUNT,CONCEPT. No headers. No markdown.`,
   msu_federal_credit_union: `You are a STRICT extraction agent for MSU FEDERAL CREDIT UNION statements.
 MSU FCU STATEMENT STRUCTURE — CRITICAL RULES:
 
-1. MULTIPLE ACCOUNTS: This statement contains multiple sub-accounts (SPARTAN SAVER, IMMA, SMALL BUSINESS CHECKING).
-   Extract ONLY transactions from the account labeled "SMALL BUSINESS CHECKING" — ignore SPARTAN SAVER and IMMA entirely.
+1. MULTIPLE ACCOUNTS: This statement contains up to 3 sub-accounts: SPARTAN SAVER, IMMA (BUSINESS IMMA), and SMALL BUSINESS CHECKING.
+   Extract transactions from ALL sub-accounts that appear in this PDF.
 
-2. MAIN LEDGER (all pages of the SMALL BUSINESS CHECKING section):
+2. SUB-ACCOUNT TRACKING — CRITICAL:
+   As you read the PDF top-to-bottom, track the ACTIVE sub-account by watching for these header lines:
+   - "BUSINESS SPARTAN SAVER" or "SPARTAN SAVER" → active sub-account = CHECKING→ prefix = [SAVER]
+   - "BUSINESS IMMA" or "IMMA" → active sub-account = IMMA → prefix = [IMMA]
+   - "SMALL BUSINESS CHECKING" → active sub-account = CHECKING → prefix = [CHECKING]
+   Once a header is seen, ALL subsequent transactions belong to that sub-account UNTIL the next header appears.
+   If this PDF starts mid-statement without a visible header, assume [CHECKING] as the default and continue.
+
+3. CONCEPT PREFIX: Every transaction MUST start with the prefix of its active sub-account:
+   - [CHECKING] ACH Bankcard Funding...
+   - [SAVER] Withdrawal Transfer...
+   - [IMMA] ComputerLine Transfer...
+
+4. MAIN LEDGER for each sub-account:
    Each transaction line has: Post Date | Trans Date (optional) | Amount | Balance | Description
    - Positive amount = DEPOSIT
    - Negative amount = WITHDRAWAL
-   Extract ALL transactions: ACH, POS, Debit Card, ComputerLine Transfers, Drafts, ATM deposits, Fees.
+   Extract ALL transactions: ACH, POS, Debit Card, ComputerLine Transfers, Drafts, ATM deposits, Fees, Dividends.
 
-3. DRAFTS: Lines like "Draft 5472" or "Draft 5481" are WITHDRAWALS.
-   Use concept "CHECK #5472", "CHECK #5481", etc.
+5. DRAFTS: Lines like "Draft 5472" are WITHDRAWALS. Use concept "[CHECKING] CHECK #5472".
 
-4. CLEARED CHECK SUMMARY table (near end of SMALL BUSINESS CHECKING section):
-   These checks ARE ALREADY included in the ledger as Draft lines — DO NOT extract from this table.
-   It is for reference only. Extracting it would create duplicates.
+6. CLEARED CHECK SUMMARY table: DO NOT extract — already captured as Draft lines above.
 
-5. SUMMARY PAGES ("Withdrawals and Other Charges" / "Deposits and Other Credits"):
-   These are summaries of transactions already in the ledger — DO NOT extract from them.
-   They will create duplicates.
+7. SUMMARY PAGES ("Withdrawals and Other Charges" / "Deposits and Other Credits"):
+   DO NOT extract from these — they are summaries and will create duplicates.
 
-6. TRANSFERS:
-   "ComputerLine Transfer To Share XX" = WITHDRAWAL, concept "Transfer Out (Share XX)"
-   "ComputerLine Transfer From Share XX" = DEPOSIT, concept "Transfer In (Share XX)"
-   "ComputerLine Transfer To CASILLAS MAGALLO" = WITHDRAWAL, concept "Loan Payment - Casillas Magallo"
-   "ComputerLine M2M Outgoing Transaction" = WITHDRAWAL, concept "Transfer Out"
-   "ComputerLine M2M Incoming Transaction" = DEPOSIT, concept "Transfer In"
-   "ComputerLine PERSON PAY [Name]" = WITHDRAWAL, concept "PERSON PAY [Name]"
-   Include ALL of these.
+8. TRANSFERS:
+   "ComputerLine Transfer To Share XX" = WITHDRAWAL, concept "[PREFIX] Transfer Out (Share XX)"
+   "ComputerLine Transfer From Share XX" = DEPOSIT, concept "[PREFIX] Transfer In (Share XX)"
+   "ComputerLine Transfer To CASILLAS MAGALLO" = WITHDRAWAL, concept "[PREFIX] Loan Payment - Casillas Magallo"
+   "ComputerLine M2M Outgoing Transaction" = WITHDRAWAL, concept "[PREFIX] Transfer Out"
+   "ComputerLine M2M Incoming Transaction" = DEPOSIT, concept "[PREFIX] Transfer In"
+   "ComputerLine PERSON PAY [Name]" = WITHDRAWAL, concept "[PREFIX] PERSON PAY [Name]"
 
-7. Dates format: MM-DD → convert to MM/DD/YYYY using the statement year shown on page 1.
+9. Dates format: MM-DD → convert to MM/DD/YYYY using the statement year shown on page 1.
    If Trans Date differs from Post Date, use Post Date.
 
-8. DEPOSITS positive. WITHDRAWALS negative.
-9. "Balance Forward" and "Ending Balance" lines are NOT transactions — skip them.
-10. "Dividends Earned YTD" lines are NOT transactions — skip them.
-    Dividend entries WITH an amount and date ARE transactions — include them as DEPOSITS.
+10. DEPOSITS positive. WITHDRAWALS negative.
+11. "Balance Forward" and "Ending Balance" lines are NOT transactions — skip them.
+12. "Dividends Earned YTD" lines are NOT transactions — skip them.
+    Dividend entries WITH an amount and date ARE transactions — include them as DEPOSITS with prefix.
 
 OUTPUT: Raw CSV — TYPE,DATE,AMOUNT,CONCEPT. No headers. No markdown. No explanation.`,
   mercury_bank: `You are a STRICT extraction agent for MERCURY BANK statements.
@@ -594,22 +602,21 @@ CHASE format (page 1 RESUMEN DE CUENTA / ACCOUNT SUMMARY):
 - "Depósitos y Adiciones" or "Deposits and Additions" = total_deposits
 - "Retiros Electrónicos" or "Electronic Withdrawals" = total_withdrawals
 MSU FEDERAL CREDIT UNION format — extract from each sub-account's OWN LEDGER (do NOT use the page 1 summary):
-- This statement has 3 sub-accounts: SPARTAN SAVER, IMMA, and SMALL BUSINESS CHECKING.
-- The page 1 summary is NOT reliable — it only reflects SMALL BUSINESS CHECKING. IGNORE it.
-- Instead, locate each sub-account section in the body of the statement and extract directly from its ledger:
-  FOR EACH of the 3 sub-accounts (SPARTAN SAVER, IMMA, SMALL BUSINESS CHECKING):
+- This statement has 3 sub-accounts. The page 1 summary is NOT reliable — IGNORE it.
+- Locate each sub-account section in the body of the statement and extract directly from its transaction ledger.
+- Return EXACTLY 3 separate objects, one per sub-account, with these exact account_name values:
+  * "SPARTAN SAVER"
+  * "BUSINESS IMMA"
+  * "SMALL BUSINESS CHECKING"
+- FOR EACH sub-account:
+  * account_name: exactly as listed above
+  * account_number: the account number shown in that sub-account's header (last 4 digits or full)
   * beginning_balance: the "Balance Forward" line at the top of that sub-account's ledger
   * ending_balance: the "Ending Balance" line at the bottom of that sub-account's ledger
   * total_deposits: sum of ALL positive transaction amounts in that sub-account's ledger (deposits, dividends, credits)
-  * total_withdrawals: sum of ALL negative transaction amounts in that sub-account's ledger (withdrawals, fees, debits) — use absolute value
-- Return ONLY ONE consolidated object. Do NOT return 3 separate objects.
-- account_name: "MSU FCU - Consolidated"
-- account_number: the primary account number shown on page 1
-- period_start and period_end: from the statement period shown on page 1
-- beginning_balance: sum of the 3 individual "Balance Forward" values
-- ending_balance: sum of the 3 individual "Ending Balance" values
-- total_deposits: sum of all deposits from the 3 ledgers
-- total_withdrawals: sum of all withdrawals from the 3 ledgers
+  * total_withdrawals: sum of ALL negative transaction amounts — use absolute value (positive number)
+  * period_start and period_end: from the statement period shown on page 1
+- If a sub-account section is not present in this PDF portion, still include the object with 0 values.
 DEFAULT: Look for Beginning Balance, Total Deposits, Total Withdrawals, Ending Balance in any summary table.
 If beginning_balance or ending_balance are not shown, use 0.
 Respond ONLY with valid JSON array. No markdown. No explanation.
@@ -1871,6 +1878,68 @@ function setLang(lang) {
             <div style={{...S.card,marginTop:14}}>
               <div style={{fontSize:12,fontWeight:700,color:"#64748b",marginBottom:12,letterSpacing:1}}>🔎 BANCO vs EXTRAÍDO</div>
               {(()=>{
+                const isMSU = (bankInfo?.bank_id === "msu_federal_credit_union");
+                if (isMSU) {
+                  // Comparación por subcuenta usando prefijos [CHECKING], [SAVER], [IMMA]
+                  const subAccounts = [
+                    { prefix:"[CHECKING]", balName:"SMALL BUSINESS CHECKING" },
+                    { prefix:"[SAVER]",    balName:"SPARTAN SAVER" },
+                    { prefix:"[IMMA]",     balName:"BUSINESS IMMA" },
+                  ];
+                  const allGoodMSU = subAccounts.every(({ prefix, balName }) => {
+                    const bal = balances.find(b => (b.account_name||"").toUpperCase() === balName.toUpperCase());
+                    if (!bal) return true;
+                    const txDep  = transactions.filter(r=>r.type==="DEPOSIT"    && r.concept.startsWith(prefix)).reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+                    const txWith = transactions.filter(r=>r.type==="WITHDRAWAL" && r.concept.startsWith(prefix)).reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+                    return Math.abs((parseFloat(bal.total_deposits)||0) - txDep) < 1 && Math.abs((parseFloat(bal.total_withdrawals)||0) - txWith) < 1;
+                  });
+                  return (
+                    <>
+                      <div style={{fontSize:11,color:"#64748b",marginBottom:10,padding:"6px 10px",background:"#f0f9ff",borderRadius:6,border:"1px solid #bae6fd"}}>
+                        ℹ️ MSU FCU — comparando cada subcuenta por prefijo de transacción
+                      </div>
+                      {subAccounts.map(({ prefix, balName }) => {
+                        const bal = balances.find(b => (b.account_name||"").toUpperCase() === balName.toUpperCase());
+                        const bankDep  = parseFloat(bal?.total_deposits)||0;
+                        const bankWith = parseFloat(bal?.total_withdrawals)||0;
+                        const txDep    = transactions.filter(r=>r.type==="DEPOSIT"    && r.concept.startsWith(prefix)).reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+                        const txWith   = transactions.filter(r=>r.type==="WITHDRAWAL" && r.concept.startsWith(prefix)).reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+                        const depDiff  = Math.abs(bankDep - txDep);
+                        const withDiff = Math.abs(bankWith - txWith);
+                        const ok = depDiff < 1 && withDiff < 1;
+                        return (
+                          <div key={prefix} style={{marginBottom:10,border:"1px solid #e2e8f0",borderRadius:8,overflow:"hidden"}}>
+                            <div style={{background:"#f4f6f9",padding:"6px 12px",fontSize:11,fontWeight:700,color:"#1a1a1a",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                              <span>{prefix} {balName}</span>
+                              {ok ? <span style={{background:"#dcfce7",color:"#166534",borderRadius:4,padding:"2px 8px",fontSize:10}}>✅ OK</span>
+                                  : <span style={{background:"#fee2e2",color:"#991b1b",borderRadius:4,padding:"2px 8px",fontSize:10}}>⚠️ DIF</span>}
+                            </div>
+                            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:8,padding:"10px 12px"}}>
+                              {[
+                                {l:"Dep. Banco",   v:`$${fmt(bankDep)}`,  c:"#22c55e"},
+                                {l:"Dep. Extraídos",v:`$${fmt(txDep)}`,   c:"#22c55e"},
+                                {l:"Ret. Banco",   v:`$${fmt(bankWith)}`, c:"#ef4444"},
+                                {l:"Ret. Extraídos",v:`$${fmt(txWith)}`,  c:"#ef4444"},
+                              ].map(s=>(
+                                <div key={s.l} style={{background:"#f7f6f2",borderRadius:6,padding:"8px 10px"}}>
+                                  <div style={{fontSize:9,fontWeight:700,color:"#94a3b8",letterSpacing:0.5,marginBottom:3}}>{s.l}</div>
+                                  <div style={{fontSize:13,fontWeight:700,color:s.c}}>{s.v}</div>
+                                </div>
+                              ))}
+                            </div>
+                            {!ok && <div style={{padding:"5px 12px",fontSize:11,color:"#92400e",background:"#fef3c7"}}>⚠️ Dep. diff: ${fmt(depDiff)} · Ret. diff: ${fmt(withDiff)}</div>}
+                          </div>
+                        );
+                      })}
+                      <div style={{marginTop:4,padding:"10px 14px",borderRadius:8,background:allGoodMSU?"#dcfce7":"#fef3c7",border:`1px solid ${allGoodMSU?"#86efac":"#fde68a"}`}}>
+                        {allGoodMSU
+                          ? <span style={{color:"#166534",fontWeight:600,fontSize:13}}>✅ Todo cuadra — Las 3 subcuentas coinciden con los totales del banco</span>
+                          : <span style={{color:"#92400e",fontWeight:600,fontSize:13}}>⚠️ Hay diferencias en una o más subcuentas — revisa arriba</span>}
+                      </div>
+                    </>
+                  );
+                }
+                // Lógica estándar para otros bancos
                 const checkingBals = balances.filter(b=>(b.account_name||"").toUpperCase().includes("CHECKING"));
                 const compareBals  = checkingBals.length > 0 ? checkingBals : balances;
                 const bankDep  = compareBals.reduce((s,b)=>s+(parseFloat(b.total_deposits)||0),0);

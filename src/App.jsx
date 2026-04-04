@@ -581,6 +581,9 @@ UNIVERSAL CRITICAL RULES:
         if (concept.startsWith("[CHECKING]"))      { account = "CHECKING"; concept = concept.slice(10).trim(); }
         else if (concept.startsWith("[SAVER]"))    { account = "SAVER";    concept = concept.slice(7).trim(); }
         else if (concept.startsWith("[IMMA]"))     { account = "IMMA";     concept = concept.slice(6).trim(); }
+        else if (concept.startsWith("CHECKING "))  { account = "CHECKING"; concept = concept.slice(9).trim(); }
+        else if (concept.startsWith("SAVER "))     { account = "SAVER";    concept = concept.slice(6).trim(); }
+        else if (concept.startsWith("IMMA "))      { account = "IMMA";     concept = concept.slice(5).trim(); }
       }
 
       if ((type==="DEPOSIT"||type==="WITHDRAWAL") && date && amount && concept) {

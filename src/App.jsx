@@ -1248,6 +1248,12 @@ function setLang(lang) {
     const periodStart = balances[0]?.period_start || "";
     const periodEnd   = balances[0]?.period_end || "";
 
+    // ── Datos para gráfica 3D ──
+    const chartIncome = Object.entries({...incomeDetail,...otherIncDetail}).map(([cat,amt]) => ({ cat, amt, type:"income" }));
+    const chartExpense = Object.entries({...cogsDetail,...opexDetail,...otherExpDetail}).map(([cat,amt]) => ({ cat, amt, type:"expense" }));
+    const chartData = [...chartIncome, ...chartExpense];
+    const chartDataJSON = JSON.stringify(chartData);
+
     const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1451,8 +1457,180 @@ function setLang(lang) {
       <tr class="total-row"><td class="cat" id="tot-personal">TOTAL MOVIMIENTOS PERSONALES</td><td class="amt" style="color:#92400e">$${fmt2(totalPersonal)}</td></tr>
     </table>` : ""}
   </div>
+  <div style="height:16px;background:#f0f4f8"></div>
+  <div class="wrapper">
+    <div style="background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);padding:24px;margin-bottom:16px">
+      <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px" id="chart-title">Distribución visual — ingresos vs gastos</div>
+      <canvas id="chart3d" width="800" height="380" style="width:100%;height:380px;cursor:grab"></canvas>
+      <div id="chart-legend" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px"></div>
+    </div>
+  </div>
   <div class="footer">Generado por el Agente de Mau Bautista · V&amp;M Bookkeeping Group LLC</div>
 </div>
+<script>
+(function(){
+  const RAW = ${chartDataJSON};
+  const canvas = document.getElementById('chart3d');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const CX = W/2, CY = H/2 - 20;
+  const RX = 220, RY = 80; // radios de la elipse
+  const DEPTH = 55;
+
+  const INCOME_COLORS = ['#22c55e','#16a34a','#15803d','#4ade80','#86efac','#bbf7d0'];
+  const EXPENSE_COLORS = ['#ef4444','#dc2626','#b91c1c','#f87171','#fca5a5','#fb923c','#f97316','#ea580c','#c2410c','#9a3412','#fbbf24','#f59e0b','#d97706','#92400e'];
+
+  const total = RAW.reduce((s,d) => s + d.amt, 0);
+  let slices = [];
+  let angle = -Math.PI/2;
+  let incI = 0, expI = 0;
+  RAW.forEach(d => {
+    const sweep = (d.amt / total) * Math.PI * 2;
+    const color = d.type === 'income' ? INCOME_COLORS[incI++ % INCOME_COLORS.length] : EXPENSE_COLORS[expI++ % EXPENSE_COLORS.length];
+    slices.push({ ...d, start: angle, end: angle + sweep, color, pct: Math.round((d.amt/total)*100) });
+    angle += sweep;
+  });
+
+  let rotX = 0.38, rotY = 0, dragging = false, lastX = 0, lastY = 0;
+
+  function project(ax, ay, az) {
+    const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+    const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+    const x1 = ax * cosY - az * sinY;
+    const z1 = ax * sinY + az * cosY;
+    const y1 = ay * cosX - z1 * sinX;
+    const z2 = ay * sinX + z1 * cosX;
+    const scale = 600 / (600 + z2);
+    return { x: CX + x1 * scale, y: CY + y1 * scale, z: z2 };
+  }
+
+  function ellipsePoint(a, rx, ry, rz) {
+    return project(Math.cos(a)*rx, rz, Math.sin(a)*ry);
+  }
+
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+
+    // Sombra suave
+    ctx.save();
+    ctx.globalAlpha = 0.07;
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.ellipse(CX, CY + DEPTH + 30, RX * 0.9, RY * 0.3, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+
+    // Ordenar slices por profundidad (mid-angle Z)
+    const sorted = [...slices].sort((a,b) => {
+      const midA = (a.start+a.end)/2;
+      const midB = (b.start+b.end)/2;
+      const pA = project(Math.cos(midA)*RX, 0, Math.sin(midA)*RY);
+      const pB = project(Math.cos(midB)*RX, 0, Math.sin(midB)*RY);
+      return pB.z - pA.z;
+    });
+
+    sorted.forEach(s => {
+      const steps = Math.max(4, Math.round((s.end - s.start) / 0.08));
+      const angles = Array.from({length: steps+1}, (_,i) => s.start + (s.end - s.start) * i / steps);
+
+      // Cara lateral (3D depth)
+      const midAngle = (s.start + s.end) / 2;
+      const pMid = project(Math.cos(midAngle)*RX, 0, Math.sin(midAngle)*RY);
+      if (pMid.z > 0) {
+        ctx.beginPath();
+        angles.forEach((a,i) => {
+          const pt = ellipsePoint(a, RX, RY, 0);
+          i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
+        });
+        angles.slice().reverse().forEach(a => {
+          const pt = ellipsePoint(a, RX, RY, DEPTH);
+          ctx.lineTo(pt.x, pt.y);
+        });
+        ctx.closePath();
+        ctx.fillStyle = shadeColor(s.color, -25);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+
+      // Cara superior
+      ctx.beginPath();
+      const center0 = project(0, 0, 0);
+      ctx.moveTo(center0.x, center0.y);
+      angles.forEach(a => {
+        const pt = ellipsePoint(a, RX, RY, 0);
+        ctx.lineTo(pt.x, pt.y);
+      });
+      ctx.closePath();
+      ctx.fillStyle = s.color;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Etiqueta si el slice es grande
+      if (s.pct >= 6) {
+        const midA = (s.start + s.end) / 2;
+        const lx = CX + Math.cos(midA) * RX * 0.62;
+        const ly = CY + Math.sin(midA) * RY * 0.62;
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 11px DM Sans, system-ui';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(s.pct + '%', lx, ly);
+      }
+    });
+  }
+
+  function shadeColor(hex, amt) {
+    const num = parseInt(hex.replace('#',''),16);
+    const r = Math.max(0,Math.min(255,(num>>16)+amt));
+    const g = Math.max(0,Math.min(255,((num>>8)&0xff)+amt));
+    const b = Math.max(0,Math.min(255,(num&0xff)+amt));
+    return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+  }
+
+  // Leyenda
+  const legend = document.getElementById('chart-legend');
+  slices.forEach(s => {
+    if (s.pct < 1) return;
+    const el = document.createElement('div');
+    el.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:11px;color:#444;background:#f8faff;padding:3px 8px;border-radius:4px;border:0.5px solid #e2e8f0';
+    el.innerHTML = '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+s.color+'"></span>' + s.cat.split(' ').slice(0,3).join(' ') + ' <strong>'+s.pct+'%</strong>';
+    legend.appendChild(el);
+  });
+
+  // Mouse drag
+  canvas.addEventListener('mousedown', e => { dragging=true; lastX=e.clientX; lastY=e.clientY; canvas.style.cursor='grabbing'; });
+  window.addEventListener('mouseup', () => { dragging=false; canvas.style.cursor='grab'; });
+  window.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    rotY += (e.clientX - lastX) * 0.01;
+    rotX += (e.clientY - lastY) * 0.008;
+    rotX = Math.max(0.1, Math.min(1.2, rotX));
+    lastX = e.clientX; lastY = e.clientY;
+    draw();
+  });
+
+  // Touch
+  canvas.addEventListener('touchstart', e => { lastX=e.touches[0].clientX; lastY=e.touches[0].clientY; });
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    rotY += (e.touches[0].clientX - lastX) * 0.01;
+    rotX += (e.touches[0].clientY - lastY) * 0.008;
+    rotX = Math.max(0.1, Math.min(1.2, rotX));
+    lastX=e.touches[0].clientX; lastY=e.touches[0].clientY;
+    draw();
+  }, {passive:false});
+
+  // Auto-rotate
+  let autoRot = requestAnimationFrame(function spin(){
+    if (!dragging) { rotY += 0.005; draw(); }
+    requestAnimationFrame(spin);
+  });
+})();
+</script>
 </body>
 </html>`;
 

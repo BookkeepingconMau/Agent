@@ -103,6 +103,25 @@ Each transaction may span multiple lines — use first line description as conce
 SALDO FINAL DIARIO section — NOT transactions, skip entirely.
 OUTPUT: Raw CSV — TYPE,DATE,AMOUNT,CONCEPT. No headers. No markdown.`,
   msu_federal_credit_union: `You are a STRICT extraction agent for MSU FEDERAL CREDIT UNION statements.
+
+⚠️ FIRST — READ THIS BEFORE ANYTHING ELSE:
+SCAN THE VERY FIRST LINE OF THIS PDF.
+If you see any text containing the word "(Continued)" — for example:
+  "SMALL BUSINESS CHECKING - 83 (Continued)"
+  "SPARTAN SAVER (Continued)"
+  "BUSINESS IMMA (Continued)"
+→ IMMEDIATELY identify the sub-account named before "(Continued)" and set it as the ACTIVE sub-account.
+→ Apply its prefix ([CHECKING], [SAVER], or [IMMA]) to EVERY transaction in this PDF from the very first line.
+→ Do NOT wait for a full header. The "(Continued)" line IS the header for this PDF portion.
+
+Sub-account → prefix mapping for (Continued) detection:
+  "SMALL BUSINESS CHECKING" → [CHECKING]
+  "SPARTAN SAVER" or "BUSINESS SPARTAN SAVER" → [SAVER]
+  "BUSINESS IMMA" or "IMMA" → [IMMA]
+
+If the first line does NOT contain "(Continued)" and there is NO sub-account header before the first transaction,
+default to [CHECKING] immediately — do not leave any transaction without a prefix.
+
 MSU FCU STATEMENT STRUCTURE — CRITICAL RULES:
 
 1. MULTIPLE ACCOUNTS: This statement contains up to 3 sub-accounts: SPARTAN SAVER, IMMA (BUSINESS IMMA), and SMALL BUSINESS CHECKING.
@@ -110,15 +129,11 @@ MSU FCU STATEMENT STRUCTURE — CRITICAL RULES:
 
 2. SUB-ACCOUNT TRACKING — CRITICAL:
    As you read the PDF top-to-bottom, track the ACTIVE sub-account by watching for these header lines:
-   - "BUSINESS SPARTAN SAVER" or "SPARTAN SAVER" → active sub-account = CHECKING→ prefix = [SAVER]
+   - "BUSINESS SPARTAN SAVER" or "SPARTAN SAVER" → active sub-account = SAVER → prefix = [SAVER]
    - "BUSINESS IMMA" or "IMMA" → active sub-account = IMMA → prefix = [IMMA]
    - "SMALL BUSINESS CHECKING" → active sub-account = CHECKING → prefix = [CHECKING]
    Once a header is seen, ALL subsequent transactions belong to that sub-account UNTIL the next header appears.
-   DEFAULT RULE — CRITICAL: If this PDF starts mid-statement without a visible sub-account header,
-   OR if the first line is "SMALL BUSINESS CHECKING - 83 (Continued)" or any variant of "SMALL BUSINESS CHECKING ... (Continued)",
-   OR if there is no sub-account header before the first transaction line,
-   IMMEDIATELY set the active sub-account to CHECKING and apply prefix [CHECKING] to every transaction until a new header is found.
-   Do NOT wait for a header to assign [CHECKING] — it is the default from line 1 if no other header appears first.
+   DEFAULT: If no header appears before the first transaction, apply [CHECKING] from line 1.
 
 3. CONCEPT PREFIX: Every transaction MUST start with the prefix of its active sub-account:
    - [CHECKING] ACH Bankcard Funding...

@@ -869,8 +869,8 @@ export default function App() {
       setP(`Agente 0: Banco ya identificado — ${detectedBank.bank_name}`, 5);
     }
 
-    // ── 🚨 BLOQUEO: PDF mayor a 9 páginas sin Split Mode activo ──
-    if ((detectedBank.total_pages || 0) > 9 && !currentSplitMode) {
+    // ── 🚨 BLOQUEO: PDF mayor a 6 páginas sin Split Mode activo ──
+    if ((detectedBank.total_pages || 0) > 6 && !currentSplitMode) {
       setBankInfo(detectedBank);
       setP(`❌ PDF de ${detectedBank.total_pages} páginas — activa Modo Split`, 100);
       setTimeout(() => { setScreen("upload"); }, 800);
@@ -1762,7 +1762,7 @@ function openDetail(cat) {
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                 <div>
                   <div style={{fontSize:13,fontWeight:700,color:"#1a1a1a"}}>📄 Modo PDF Dividido</div>
-                  <div style={{fontSize:11,color:"#64748b",marginTop:2}}>Para PDFs de 10+ páginas — procesa múltiples partes y las junta automáticamente</div>
+                  <div style={{fontSize:11,color:"#64748b",marginTop:2}}>Para PDFs de 7+ páginas — procesa múltiples partes y las junta automáticamente</div>
                 </div>
                 <button onClick={()=>{
                   setSplitMode(!splitMode);
@@ -1837,14 +1837,20 @@ function openDetail(cat) {
                    :(<><div style={{fontWeight:500,color:"#1a1a1a"}}>Arrastra el bank statement aquí</div><div style={{color:"#64748b",fontSize:12,marginTop:3}}>o click · Solo PDF bancario digital</div></>)}
               <input ref={fileRef} type="file" accept=".pdf" style={{display:"none"}} onChange={e=>{const f=e.target.files[0];if(f)setFile(f)}} />
             </div>
+            <div style={{marginTop:12,padding:"10px 14px",background:"#fef3c7",borderRadius:8,border:"1px solid #fde68a",fontSize:12,color:"#92400e"}}>
+              <div style={{fontWeight:700,marginBottom:4}}>📋 Antes de subir tu PDF:</div>
+              <div>1. Elimina las páginas de <strong>imágenes de cheques</strong> — ya están capturados en la tabla de Checks</div>
+              <div>2. Elimina las páginas en blanco ("This page intentionally left blank")</div>
+              <div>3. Para PDFs de 7+ páginas, activa el <strong>Modo Split</strong> y divide en partes de máximo 6 páginas</div>
+            </div>
             {/* ── 🚨 BANNER: PDF bloqueado — aparece después de detección ── */}
-            {bankInfo && bankInfo.total_pages > 9 && !splitMode && (
+            {bankInfo && bankInfo.total_pages > 6 && !splitMode && (
               <div style={{marginTop:12,padding:"14px 16px",background:"#fee2e2",borderRadius:10,border:"2px solid #ef4444"}}>
                 <div style={{fontWeight:700,color:"#991b1b",fontSize:14,marginBottom:4}}>
                   🚨 PDF bloqueado — {bankInfo.total_pages} páginas detectadas
                 </div>
                 <div style={{fontSize:12,color:"#7f1d1d",marginBottom:10}}>
-                  Este statement tiene demasiadas páginas. Activa el <strong>Modo Split</strong> y divide el PDF en partes de máximo 9 páginas.
+                  Este statement tiene demasiadas páginas. Activa el <strong>Modo Split</strong> y divide el PDF en partes de máximo 6 páginas.
                 </div>
                 <button
                   onClick={() => { setSplitMode(true); setSplitParts([]); setSplitPartNum(1); }}
@@ -2040,9 +2046,9 @@ function openDetail(cat) {
                   </span>
                 </div>
               )}
-              {bankInfo.total_pages > 10 && !splitMode && (
+              {bankInfo.total_pages > 6 && !splitMode && (
                 <div style={{marginTop:10,padding:"10px 14px",background:"#e0f2fe",borderRadius:8,border:"1px solid #7dd3fc",fontSize:12,color:"#0369a1"}}>
-                  💡 <strong>PDF de {bankInfo.total_pages} páginas detectado.</strong> Para mejor precisión, activa el <strong>Modo PDF Dividido</strong> — divide el PDF en partes de 10 páginas máximo. <strong>Importante:</strong> si tu banco incluye imágenes de cheques (como Bank of Oklahoma), elimínalas antes de subir — solo sube hasta la página del Daily Account Balance.
+                  💡 <strong>PDF de {bankInfo.total_pages} páginas detectado.</strong> Para mejor precisión, activa el <strong>Modo PDF Dividido</strong> — divide el PDF en partes de 6 páginas máximo. <strong>Importante:</strong> si tu banco incluye imágenes de cheques (como Bank of Oklahoma), elimínalas antes de subir — solo sube hasta la página del Daily Account Balance.
                 </div>
               )}
             </div>

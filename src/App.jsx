@@ -1810,14 +1810,20 @@ function openDetail(cat) {
                     </div>
                   )}
                   {splitParts.filter(Boolean).length>0&&(
-                    <button onClick={()=>{
-                      setSplitParts([]);
-                      setSplitPartNum(1);
-                      setTransactions([]);
-                      clearSplitCache();
-                    }} style={{marginLeft:"auto",fontSize:10,color:"#fff",background:"#ef4444",border:"none",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontWeight:600}}>
-                      Reiniciar
-                    </button>
+                    <div style={{marginLeft:"auto",display:"flex",gap:6}}>
+                      <button onClick={()=>setScreen("reconcile")}
+                        style={{fontSize:10,color:"#fff",background:"#22c55e",border:"none",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontWeight:600}}>
+                        ✅ Ya son todas las partes
+                      </button>
+                      <button onClick={()=>{
+                        setSplitParts([]);
+                        setSplitPartNum(1);
+                        setTransactions([]);
+                        clearSplitCache();
+                      }} style={{fontSize:10,color:"#fff",background:"#ef4444",border:"none",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontWeight:600}}>
+                        Reiniciar
+                      </button>
+                    </div>
                   )}
                 </div>
               )}

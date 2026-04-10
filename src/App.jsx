@@ -364,6 +364,20 @@ const MERCHANT_DICT = [
   { patterns:["VICENTE MARTINEZ"], category:"Subcontractor Expense" },
   { patterns:["7-ELEVEN"], category:"Meals & Entertainment" },
   { patterns:["LA HIDALGUENSE"], category:"Meals & Entertainment" },
+  { patterns:["NCDMV"], category:"Taxes & Licenses" },
+  { patterns:["CTOWN EXPRESS","CTOWNEXPRESS"], category:"Meals & Entertainment" },
+  { patterns:["CHILL N FILL"], category:"Vehicle - Fuel (Non-Production)" },
+  { patterns:["WAFFLE HOUSE","ORACL*WAFFLE"], category:"Meals & Entertainment" },
+  { patterns:["NATL GEN INS"], category:"Insurance" },
+  { patterns:["LA LUPITA"], category:"Meals & Entertainment" },
+  { patterns:["TACO DELI"], category:"Meals & Entertainment" },
+  { patterns:["EL TROPICO"], category:"Meals & Entertainment" },
+  { patterns:["POLLO ROYAL"], category:"Meals & Entertainment" },
+  { patterns:["AMOCO"], category:"Vehicle - Fuel (Non-Production)" },
+  { patterns:["CHINA BUFFET"], category:"Meals & Entertainment" },
+  { patterns:["FLAMING GRILL"], category:"Meals & Entertainment" },
+  { patterns:["DAERO GROCERY"], category:"Meals & Entertainment" },
+  { patterns:["SQ *PG FINANCIAL"], category:"Legal & Professional Services" },
 ];
 const DEPOSIT_CATEGORIES    = ["Income - Services","Other Income","Loan Proceeds","Owner Investment","Transfer In","Refund Received","ASK TO CLIENT"];
 // ── CAMBIO 5: WITHDRAWAL_CATEGORIES — nueva lista limpia ──
@@ -1014,9 +1028,40 @@ export default function App() {
     updated[idx] = { ...updated[idx], category, level:"RESOLVED" };
     setTransactions(updated);
     if (learn && learnKey) {
-      const nl = { ...(clientData.learnedMerchants||{}), [learnKey]:category };
-      const nd = { ...clientData, learnedMerchants:nl };
-      setClientData(nd); ss(clientId,nd);
+      // Extraer merchant limpio
+      let cleanKey = learnKey;
+      if (cleanKey.toUpperCase().includes("CHECKCARD")) {
+        cleanKey = cleanKey
+          .replace(/CHECKCARD\s+\d{4}\s*/i, '')
+          .replace(/\s+\d+\s+[A-Z]{2}\s*$/i, '')
+          .replace(/\s+(PURCHASE|MOBILE|ONLINE|WEB|PPD|CCD|ACH|CKCD\s+\d+).*$/i, '')
+          .replace(/\s{2,}/g, ' ')
+          .trim()
+          .split(' ').slice(0, 3).join(' ')
+          .toUpperCase();
+      } else if (!cleanKey.toUpperCase().includes("ZELLE")) {
+        cleanKey = cleanKey
+          .replace(/\s+\d{2}\/\d{2}.*$/i, '')
+          .replace(/\s+(PURCHASE|MOBILE|ONLINE|WEB|PPD|CCD|ACH).*$/i, '')
+          .replace(/\s+[A-Z]{2}\s*$/i, '')
+          .replace(/\s{2,}/g, ' ')
+          .trim()
+          .split(' ').slice(0, 3).join(' ')
+          .toUpperCase();
+      }
+      // No guardar si cleanKey es inválido o ya existe en MERCHANT_DICT
+      const alreadyKnown = cleanKey.length >= 3 && MERCHANT_DICT.some(entry =>
+        entry.patterns.some(p => cleanKey.includes(p.toUpperCase()) || p.toUpperCase().includes(cleanKey))
+      );
+      if (cleanKey.length < 3 || alreadyKnown) {
+        // Aplicar categoría sin guardar en memoria
+        const nd = { ...clientData };
+        setClientData(nd);
+      } else {
+        const nl = { ...(clientData.learnedMerchants||{}), [cleanKey]:category };
+        const nd = { ...clientData, learnedMerchants:nl };
+        setClientData(nd); ss(clientId,nd);
+      }
     }
     if (currentAsk+1<askQueue.length) setCurrentAsk(currentAsk+1);
     else setScreen("review");

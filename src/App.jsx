@@ -359,6 +359,11 @@ const MERCHANT_DICT = [
   { patterns:["DDA B/P PIE"], category:"Insurance" },
   { patterns:["DDA B/P TOTAL"], category:"Telephone & Internet" },
   { patterns:["IPAY BILL PAY"], category:"Bank Fees" },
+  // ── CHENTILLO CONSTRUCTION (BofA) ──
+  { patterns:["PORT FHF191"], category:"Materials" },
+  { patterns:["VICENTE MARTINEZ"], category:"Subcontractor Expense" },
+  { patterns:["7-ELEVEN"], category:"Meals & Entertainment" },
+  { patterns:["LA HIDALGUENSE"], category:"Meals & Entertainment" },
 ];
 const DEPOSIT_CATEGORIES    = ["Income - Services","Other Income","Loan Proceeds","Owner Investment","Transfer In","Refund Received","ASK TO CLIENT"];
 // ── CAMBIO 5: WITHDRAWAL_CATEGORIES — nueva lista limpia ──

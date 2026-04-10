@@ -1125,16 +1125,17 @@ export default function App() {
     }
 
     // ── Construir secciones HTML ──
+    const detailBtn = (cat) => `<button onclick="openDetail('${cat.replace(/&/g,'&amp;')}')" class="detail-btn">🔍</button>`;
     const incomeRows = Object.entries(incomeDetail).map(([cat,amt]) =>
-      `<tr><td class="cat">${cat}</td><td class="amt green">$${fmt2(amt)}</td></tr>`).join("");
+      `<tr><td class="cat">${cat}</td><td class="amt green" style="display:flex;justify-content:space-between;align-items:center"><span>$${fmt2(amt)}</span>${detailBtn(cat)}</td></tr>`).join("");
     const cogsRows = Object.entries(cogsDetail).map(([cat,amt]) =>
-      `<tr><td class="cat">${cat}</td><td class="amt red">$${fmt2(amt)}</td></tr>`).join("");
+      `<tr><td class="cat">${cat}</td><td class="amt red" style="display:flex;justify-content:space-between;align-items:center"><span>$${fmt2(amt)}</span>${detailBtn(cat)}</td></tr>`).join("");
     const opexRows = Object.entries(opexDetail).map(([cat,amt]) =>
-      `<tr><td class="cat">${cat}</td><td class="amt red">$${fmt2(amt)}</td></tr>`).join("");
+      `<tr><td class="cat">${cat}</td><td class="amt red" style="display:flex;justify-content:space-between;align-items:center"><span>$${fmt2(amt)}</span>${detailBtn(cat)}</td></tr>`).join("");
     const otherIncRows = Object.entries(otherIncDetail).map(([cat,amt]) =>
-      `<tr><td class="cat">${cat}</td><td class="amt green">$${fmt2(amt)}</td></tr>`).join("");
+      `<tr><td class="cat">${cat}</td><td class="amt green" style="display:flex;justify-content:space-between;align-items:center"><span>$${fmt2(amt)}</span>${detailBtn(cat)}</td></tr>`).join("");
     const otherExpRows = Object.entries(otherExpDetail).map(([cat,amt]) =>
-      `<tr><td class="cat">${cat}</td><td class="amt red">$${fmt2(amt)}</td></tr>`).join("");
+      `<tr><td class="cat">${cat}</td><td class="amt red" style="display:flex;justify-content:space-between;align-items:center"><span>$${fmt2(amt)}</span>${detailBtn(cat)}</td></tr>`).join("");
 
     const personalRows = PERSONAL_CATS.map(cat => {
       const txs = transactions.filter(r => r.category === cat);
@@ -1152,6 +1153,33 @@ export default function App() {
     const today2 = new Date().toLocaleDateString("es-MX", {day:"2-digit",month:"long",year:"numeric"});
     const periodStart = balances[0]?.period_start || "";
     const periodEnd   = balances[0]?.period_end || "";
+
+    const emojiMap = {'Income - Services':'💰','Other Income':'💰','Refund Received':'💵','Materials':'🏗️','Subcontractor Expense':'👷','COGS - Fuel (Production)':'⛽','Payroll & Wages':'💼','Payroll Tax':'🏛️','Legal & Professional Services':'⚖️','Licenses & Permits':'📋','Advertising & Marketing':'📣','Bank Fees':'🏦','Donations':'🙏','Insurance':'🛡️','Loan Payment':'💳','Meals & Entertainment':'🍽️','Office Supplies':'📎','Operating Expenses - Delivery & Postage':'📮','Operating Expenses - Parking':'🅿️','Operating Expenses - Supplies':'📦','Personal Payment':'👤','Pharmacy':'💊','Rent & Lease':'🏠','Repairs & Maintenance':'🔨','Software & Subscriptions':'💻','Taxes & Licenses':'📋','Telephone & Internet':'📱','Transfer Out':'🔄','Transfer In':'🔄','Travel & Transportation':'✈️','Uniforms':'👔','Utilities':'💡','Vehicle - Fuel (Non-Production)':'⛽','Vehicle - Maintenance':'🔧','Owner Draw':'👤','ASK TO CLIENT':'❓'};
+    const detailPages = {};
+    [...new Set(transactions.map(r=>r.category))].filter(Boolean).forEach(cat => {
+      const txs = transactions.filter(r => r.category === cat);
+      if (!txs.length) return;
+      const catTotal = txs.reduce((s,r) => s + Math.abs(parseFloat(r.amount)||0), 0);
+      const catCount = txs.length;
+      const catAvg = catTotal / catCount;
+      const isDep = txs[0]?.type === 'DEPOSIT';
+      const pctBase = isDep ? (totalIncome + totalOtherInc) : (totalCOGS + totalOpex + totalOtherExp);
+      const catPct = pctBase > 0 ? ((catTotal / pctBase) * 100).toFixed(1) : '0.0';
+      const emoji = emojiMap[cat] || '📊';
+      const sorted = [...txs].sort((a,b) => {
+        const [ma,da,ya] = (a.date||'').split('/').map(Number);
+        const [mb,db,yb] = (b.date||'').split('/').map(Number);
+        return new Date(ya||0,(ma||1)-1,da||0) - new Date(yb||0,(mb||1)-1,db||0);
+      });
+      const txRows = sorted.map((r,i) => {
+        const amt = Math.abs(parseFloat(r.amount)||0);
+        const cl = r.type==='DEPOSIT' ? '#166534' : '#991b1b';
+        const sg = r.type==='DEPOSIT' ? '+' : '-';
+        return `<tr style="background:${i%2===0?'#fff':'#f8fafc'}"><td style="padding:10px 20px;font-size:12px;color:#64748b;border-bottom:1px solid #f1f5f9">${fmtDate(r.date)}</td><td style="padding:10px 20px;font-size:12px;border-bottom:1px solid #f1f5f9">${r.concept}</td><td style="padding:10px 20px;font-size:13px;font-weight:600;text-align:right;color:${cl};border-bottom:1px solid #f1f5f9">${sg}$${fmt2(amt)}</td></tr>`;
+      }).join('');
+      detailPages[cat] = `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Detalle - ${cat}</title><style>@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'DM Sans',system-ui,sans-serif;background:#f0f4f8;color:#1a1a1a;padding:32px;font-size:13px}.no-print{background:#1a56db;color:#fff;padding:10px 18px;border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}.wrapper{max-width:780px;margin:0 auto}.header{background:linear-gradient(135deg,#0f1f4b 0%,#1a56db 100%);color:#fff;padding:28px 32px;border-radius:16px 16px 0 0}.header h1{font-size:22px;font-weight:700;margin-bottom:4px}.header .meta{font-size:12px;opacity:0.75;display:flex;gap:24px;flex-wrap:wrap;margin-top:8px}.body{background:#fff;border-radius:0 0 16px 16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)}.kpis{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #e2e8f0}.kpi{padding:18px 20px;border-right:1px solid #e2e8f0}.kpi:last-child{border-right:none}.kpi .lbl{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}.kpi .val{font-size:20px;font-weight:700}table{width:100%;border-collapse:collapse}th{background:#0f1f4b;color:#fff;padding:10px 20px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:left}th:last-child{text-align:right}.total-row td{padding:12px 20px;font-weight:700;font-size:14px;background:#f0f4ff;border-top:2px solid #1a56db}.footer{text-align:center;font-size:10px;color:#94a3b8;margin-top:16px}tr:hover td{background:#f0f4ff !important}@media print{body{background:#fff;padding:16px}.no-print{display:none}.body{box-shadow:none}}</style></head><body><div class="no-print"><span>💡 Para guardar como PDF: Archivo → Imprimir → Guardar como PDF</span><button onclick="window.print()" style="background:#fff;color:#1a56db;border:none;border-radius:6px;padding:6px 18px;font-weight:700;cursor:pointer;font-size:12px">🖨️ PDF</button></div><div class="wrapper"><div class="header"><h1>${emoji} ${cat}</h1><div class="meta"><span>👤 ${clientData?.name||""}</span><span>🏦 ${bankInfo?.bank_name||""}</span><span>📅 ${periodStart} — ${periodEnd}</span></div></div><div class="body"><div class="kpis"><div class="kpi"><div class="lbl">Total</div><div class="val" style="color:${isDep?'#166534':'#991b1b'}">$${fmt2(catTotal)}</div></div><div class="kpi"><div class="lbl">Transacciones</div><div class="val">${catCount}</div></div><div class="kpi"><div class="lbl">Promedio</div><div class="val" style="color:#1a56db">$${fmt2(catAvg)}</div></div><div class="kpi"><div class="lbl">% del Total</div><div class="val" style="color:#1a56db">${catPct}%</div></div></div><table><thead><tr><th>Fecha</th><th>Concepto</th><th style="text-align:right">Monto</th></tr></thead><tbody>${txRows}<tr class="total-row"><td colspan="2">TOTAL ${cat.toUpperCase()}</td><td style="text-align:right;color:#1a56db">$${fmt2(catTotal)}</td></tr></tbody></table></div><div class="footer">Generado por el Agente de Mau Bautista · V&amp;M Bookkeeping Group LLC</div></div></body></html>`;
+    });
+    const detailPagesJson = JSON.stringify(detailPages).replace(/<\//g, '<\\/');
 
     const html = `<!DOCTYPE html>
 <html lang="es">
@@ -1198,6 +1226,8 @@ export default function App() {
   .spacer{height:8px;background:#f0f4f8}
   .personal-header td{background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 20px}
   .footer{text-align:center;font-size:10px;color:#94a3b8;margin-top:16px;padding-bottom:8px}
+  .detail-btn{background:rgba(26,86,219,0.15);border:1px solid rgba(26,86,219,0.4);color:#1a56db;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:700;transition:all 0.15s}
+  .detail-btn:hover{background:#1a56db;color:#fff}
   @media print{
     body{background:#fff;padding:16px}
     .no-print{display:none}
@@ -1309,6 +1339,15 @@ function setLang(lang) {
   document.getElementById('btn-en').style.border = lang === 'en' ? 'none' : '1px solid rgba(255,255,255,0.4)';
   document.getElementById('btn-es').style.border = lang === 'es' ? 'none' : '1px solid rgba(255,255,255,0.4)';
 }
+
+var DETAIL_PAGES = ${detailPagesJson};
+function openDetail(cat) {
+  var h = DETAIL_PAGES[cat];
+  if (!h) return;
+  var w = window.open('', '_blank');
+  w.document.write(h);
+  w.document.close();
+}
 </script>
 <div class="wrapper">
   <div class="header">
@@ -1361,6 +1400,39 @@ function setLang(lang) {
 </body>
 </html>`;
 
+    const win = window.open("", "_blank");
+    win.document.write(html);
+    win.document.close();
+  }
+  function downloadCategoryDetail(cat) {
+    if (!cat) return;
+    const txs = transactions.filter(r => r.category === cat);
+    if (!txs.length) return;
+    const catTotal = txs.reduce((s,r) => s + Math.abs(parseFloat(r.amount)||0), 0);
+    const catCount = txs.length;
+    const catAvg = catTotal / catCount;
+    const isDep = txs[0]?.type === 'DEPOSIT';
+    const fmt2 = (n) => Number(n||0).toFixed(2);
+    const totalInc = transactions.filter(r=>r.type==="DEPOSIT").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+    const totalExp = transactions.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
+    const pctBase = isDep ? totalInc : totalExp;
+    const catPct = pctBase > 0 ? ((catTotal / pctBase) * 100).toFixed(1) : '0.0';
+    const emojiMap = {'Income - Services':'💰','Other Income':'💰','Refund Received':'💵','Materials':'🏗️','Subcontractor Expense':'👷','COGS - Fuel (Production)':'⛽','Payroll & Wages':'💼','Payroll Tax':'🏛️','Legal & Professional Services':'⚖️','Licenses & Permits':'📋','Advertising & Marketing':'📣','Bank Fees':'🏦','Donations':'🙏','Insurance':'🛡️','Loan Payment':'💳','Meals & Entertainment':'🍽️','Office Supplies':'📎','Operating Expenses - Delivery & Postage':'📮','Operating Expenses - Parking':'🅿️','Operating Expenses - Supplies':'📦','Personal Payment':'👤','Pharmacy':'💊','Rent & Lease':'🏠','Repairs & Maintenance':'🔨','Software & Subscriptions':'💻','Taxes & Licenses':'📋','Telephone & Internet':'📱','Transfer Out':'🔄','Transfer In':'🔄','Travel & Transportation':'✈️','Uniforms':'👔','Utilities':'💡','Vehicle - Fuel (Non-Production)':'⛽','Vehicle - Maintenance':'🔧','Owner Draw':'👤','ASK TO CLIENT':'❓'};
+    const emoji = emojiMap[cat] || '📊';
+    const periodStart = balances[0]?.period_start || "";
+    const periodEnd   = balances[0]?.period_end || "";
+    const sorted = [...txs].sort((a,b) => {
+      const [ma,da,ya] = (a.date||'').split('/').map(Number);
+      const [mb,db,yb] = (b.date||'').split('/').map(Number);
+      return new Date(ya||0,(ma||1)-1,da||0) - new Date(yb||0,(mb||1)-1,db||0);
+    });
+    const txRows = sorted.map((r,i) => {
+      const amt = Math.abs(parseFloat(r.amount)||0);
+      const cl = r.type==='DEPOSIT' ? '#166534' : '#991b1b';
+      const sg = r.type==='DEPOSIT' ? '+' : '-';
+      return `<tr style="background:${i%2===0?'#fff':'#f8fafc'}"><td style="padding:10px 20px;font-size:12px;color:#64748b;border-bottom:1px solid #f1f5f9">${fmtDate(r.date)}</td><td style="padding:10px 20px;font-size:12px;border-bottom:1px solid #f1f5f9">${r.concept}</td><td style="padding:10px 20px;font-size:13px;font-weight:600;text-align:right;color:${cl};border-bottom:1px solid #f1f5f9">${sg}$${fmt2(amt)}</td></tr>`;
+    }).join('');
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Detalle - ${cat}</title><style>@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'DM Sans',system-ui,sans-serif;background:#f0f4f8;color:#1a1a1a;padding:32px;font-size:13px}.no-print{background:#1a56db;color:#fff;padding:10px 18px;border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}.wrapper{max-width:780px;margin:0 auto}.header{background:linear-gradient(135deg,#0f1f4b 0%,#1a56db 100%);color:#fff;padding:28px 32px;border-radius:16px 16px 0 0}.header h1{font-size:22px;font-weight:700;margin-bottom:4px}.header .meta{font-size:12px;opacity:0.75;display:flex;gap:24px;flex-wrap:wrap;margin-top:8px}.body{background:#fff;border-radius:0 0 16px 16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)}.kpis{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #e2e8f0}.kpi{padding:18px 20px;border-right:1px solid #e2e8f0}.kpi:last-child{border-right:none}.kpi .lbl{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}.kpi .val{font-size:20px;font-weight:700}table{width:100%;border-collapse:collapse}th{background:#0f1f4b;color:#fff;padding:10px 20px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:left}th:last-child{text-align:right}.total-row td{padding:12px 20px;font-weight:700;font-size:14px;background:#f0f4ff;border-top:2px solid #1a56db}.footer{text-align:center;font-size:10px;color:#94a3b8;margin-top:16px}tr:hover td{background:#f0f4ff !important}@media print{body{background:#fff;padding:16px}.no-print{display:none}.body{box-shadow:none}}</style></head><body><div class="no-print"><span>💡 Para guardar como PDF: Archivo → Imprimir → Guardar como PDF</span><button onclick="window.print()" style="background:#fff;color:#1a56db;border:none;border-radius:6px;padding:6px 18px;font-weight:700;cursor:pointer;font-size:12px">🖨️ PDF</button></div><div class="wrapper"><div class="header"><h1>${emoji} ${cat}</h1><div class="meta"><span>👤 ${clientData?.name||""}</span><span>🏦 ${bankInfo?.bank_name||""}</span><span>📅 ${periodStart} — ${periodEnd}</span></div></div><div class="body"><div class="kpis"><div class="kpi"><div class="lbl">Total</div><div class="val" style="color:${isDep?'#166534':'#991b1b'}">$${fmt2(catTotal)}</div></div><div class="kpi"><div class="lbl">Transacciones</div><div class="val">${catCount}</div></div><div class="kpi"><div class="lbl">Promedio</div><div class="val" style="color:#1a56db">$${fmt2(catAvg)}</div></div><div class="kpi"><div class="lbl">% del Total</div><div class="val" style="color:#1a56db">${catPct}%</div></div></div><table><thead><tr><th>Fecha</th><th>Concepto</th><th style="text-align:right">Monto</th></tr></thead><tbody>${txRows}<tr class="total-row"><td colspan="2">TOTAL ${cat.toUpperCase()}</td><td style="text-align:right;color:#1a56db">$${fmt2(catTotal)}</td></tr></tbody></table></div><div class="footer">Generado por el Agente de Mau Bautista · V&amp;M Bookkeeping Group LLC</div></div></body></html>`;
     const win = window.open("", "_blank");
     win.document.write(html);
     win.document.close();

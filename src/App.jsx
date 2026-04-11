@@ -724,6 +724,11 @@ MSU FEDERAL CREDIT UNION format — extract from each sub-account's OWN LEDGER (
   * total_withdrawals: sum of ALL negative transaction amounts — use absolute value (positive number)
   * period_start and period_end: from the statement period shown on page 1
 - If a sub-account section is not present in this PDF portion, still include the object with 0 values.
+- CRITICAL: The "Ending Balance" is ONLY the line explicitly labeled "Ending Balance"
+  at the very bottom of each sub-account's ledger.
+  Do NOT use any intermediate daily balance as the ending balance.
+  The real Ending Balance for SMALL BUSINESS CHECKING is the LAST balance
+  shown before the "Cleared Check Summary" table.
 DEFAULT: Look for Beginning Balance, Total Deposits, Total Withdrawals, Ending Balance in any summary table.
 If beginning_balance or ending_balance are not shown, use 0.
 Respond ONLY with valid JSON array. No markdown. No explanation.

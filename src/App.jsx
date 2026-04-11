@@ -381,6 +381,18 @@ const MERCHANT_DICT = [
   { patterns:["FLAMING GRILL"], category:"Meals & Entertainment" },
   { patterns:["DAERO GROCERY"], category:"Meals & Entertainment" },
   { patterns:["SQ *PG FINANCIAL"], category:"Legal & Professional Services" },
+  // ── MSU FEDERAL CREDIT UNION (El Chaparrito) ──
+  { patterns:["SAVER TRANSFER OUT"], category:"Transfer Out" },
+  { patterns:["SAVER DIVIDEND"], category:"Other Income" },
+  { patterns:["IMMA CU SERVICE"], category:"Other Income" },
+  { patterns:["IMMA TRANSFER OUT"], category:"Transfer Out" },
+  { patterns:["IMMA TRANSFER IN"], category:"Transfer In" },
+  { patterns:["IMMA DIVIDEND TIERED"], category:"Other Income" },
+  { patterns:["CINERGY METRONET","ACH CINERGY"], category:"Utilities" },
+  { patterns:["ACH TOAST"], category:"Software & Subscriptions" },
+  { patterns:["STOP PAY FEE"], category:"Bank Fees" },
+  { patterns:["BKCD AND LQ MERCH"], category:"Other Income" },
+  { patterns:["EYEMART"], category:"Meals & Entertainment" },
 ];
 const DEPOSIT_CATEGORIES    = ["Income - Services","Other Income","Loan Proceeds","Owner Investment","Transfer In","Refund Received","ASK TO CLIENT"];
 // ── CAMBIO 5: WITHDRAWAL_CATEGORIES — nueva lista limpia ──
@@ -432,8 +444,11 @@ function detectTransfer(concept) {
   return { category: cat, level:"TRANSFER", enrichedConcept: label };
 }
 function detectCheck(concept) {
-  const upper = concept.toUpperCase();
-  if (upper.startsWith("[CHECKING]") || upper.startsWith("[SAVER]") || upper.startsWith("[IMMA]")) return null;
+  let upper = concept.toUpperCase();
+  if (upper.startsWith("[CHECKING]") || upper.startsWith("[SAVER]") || upper.startsWith("[IMMA]")) {
+    concept = concept.slice(concept.indexOf("] ") + 2);
+    upper = concept.toUpperCase();
+  }
   if (upper.includes("CHECKCARD")) return null;
   if (upper.includes("CHECK - CARD") || upper.includes("CHECK-CARD")) return null;
   if (upper.includes("DEBIT CARD") || upper.includes("POS #") || upper.startsWith("POS ")) return null;

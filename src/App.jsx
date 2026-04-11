@@ -432,7 +432,7 @@ function detectCheck(concept) {
   const upper = concept.toUpperCase();
   if (upper.includes("CHECKCARD")) return null;
   if (upper.includes("CHECK - CARD") || upper.includes("CHECK-CARD")) return null;
-  if (upper.includes("DEBIT CARD") || upper.includes("POS #")) return null;
+  if (upper.includes("DEBIT CARD") || upper.includes("POS #") || upper.startsWith("POS ")) return null;
   if (!upper.includes("CHECK") && !upper.match(/\bCHK\b/) && !upper.match(/\bCK#?\b/) && !upper.includes("DRAFT")) return null;
   const numMatch = concept.match(/(?:CHECK|CHK|CK#?|DRAFT)\s*#?\s*(\d+)/i);
   const checkNum = numMatch ? numMatch[1] : null;

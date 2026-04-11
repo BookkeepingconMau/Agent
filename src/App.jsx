@@ -966,7 +966,7 @@ export default function App() {
       const extractedWith = allRowsSoFar.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
       const withDiff = bankWith - extractedWith;
       const depDiff  = bankDep  - extractedDep;
-      if (withDiff > 50) {
+      if (withDiff > 50 && bankId !== "msu_federal_credit_union") {
         setP(`⚡ Agente 2A: Buscando cheques faltantes ($${withDiff.toFixed(0)})...`, 52);
         const checkRows = await extractCheckSummary(b64, bankId);
         const newCheckRows = checkRows.filter(cr => {
@@ -984,7 +984,7 @@ export default function App() {
       const newExtWith = allRowsUpdated.filter(r=>r.type==="WITHDRAWAL").reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
       const remDepDiff  = bankDep  - newExtDep;
       const remWithDiff = bankWith - newExtWith;
-      if (remDepDiff > 50 || remWithDiff > 50) {
+      if ((remDepDiff > 50 || remWithDiff > 50) && bankId !== "msu_federal_credit_union") {
         setP(`⚡ Agente 2B: Buscando transacciones adicionales ($${Math.max(remDepDiff,remWithDiff).toFixed(0)})...`, 63);
         const secondRows = await extractTransactionsSecondPass(b64, remDepDiff > 0 ? remDepDiff : 0, remWithDiff > 0 ? remWithDiff : 0, allRows, bankId);
         const newRows = secondRows.filter(sr =>

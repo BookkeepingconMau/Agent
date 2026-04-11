@@ -634,6 +634,11 @@ UNIVERSAL CRITICAL RULES:
   if (bankId === "msu_federal_credit_union") {
     const seenNums = new Set();
     return rows.filter(row => {
+      // Filtrar filas sin prefijo — vienen de páginas de resumen (Withdrawals and Other Charges, etc.)
+      if (!row.concept.startsWith("[CHECKING]") &&
+          !row.concept.startsWith("[SAVER]") &&
+          !row.concept.startsWith("[IMMA]")) return false;
+      // Deduplicar drafts/cheques por número
       const upper = row.concept.toUpperCase();
       const m = upper.match(/(?:CHECK\s*#?|DRAFT\s*)(\d{3,6})/);
       if (m) {

@@ -149,6 +149,9 @@ MSU FCU STATEMENT STRUCTURE — CRITICAL RULES:
 5. DRAFTS: Lines like "Draft 5472" are WITHDRAWALS. Use concept "[CHECKING] CHECK #5472".
 
 6. CLEARED CHECK SUMMARY table: DO NOT extract — already captured as Draft lines above.
+   Also: DO NOT extract from "Withdrawals and Other Charges" section — already captured above.
+   DO NOT extract from "Deposits and Other Credits" section — already captured above.
+   These summary sections appear on pages 9-10 and will create DUPLICATES. Skip them entirely.
 
 7. SUMMARY PAGES ("Withdrawals and Other Charges" / "Deposits and Other Credits"):
    DO NOT extract from these — they are summaries and will create duplicates.

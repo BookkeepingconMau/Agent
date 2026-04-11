@@ -597,7 +597,8 @@ UNIVERSAL CRITICAL RULES:
       const col4 = parts[3].trim().toUpperCase();
       if (col4 === "CHECKING" || col4 === "SAVER" || col4 === "IMMA") {
         account = col4;
-        concept = parts.slice(4).join(",").trim().replace(/^"|"$/g,"");
+        concept = parts.slice(4).join(",").trim().replace(/^"|"$/g,"")
+          .replace(/^\[CHECKING\]\s*/,"").replace(/^\[SAVER\]\s*/,"").replace(/^\[IMMA\]\s*/,"");
       } else {
         concept = parts.slice(3).join(",").trim().replace(/^"|"$/g,"");
         if (concept.startsWith("[CHECKING]"))      { account = "CHECKING"; concept = concept.slice(10).trim(); }

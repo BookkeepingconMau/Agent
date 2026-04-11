@@ -2132,63 +2132,10 @@ function openDetail(cat) {
               {(()=>{
                 const isMSU = (bankInfo?.bank_id === "msu_federal_credit_union");
                 if (isMSU) {
-                  // Comparación por subcuenta usando prefijos [CHECKING], [SAVER], [IMMA]
-                  const subAccounts = [
-                    { prefix:"[CHECKING]", balName:"SMALL BUSINESS CHECKING" },
-                    { prefix:"[SAVER]",    balName:"SPARTAN SAVER" },
-                    { prefix:"[IMMA]",     balName:"BUSINESS IMMA" },
-                  ];
-                  const allGoodMSU = subAccounts.every(({ prefix, balName }) => {
-                    const bal = balances.find(b => (b.account_name||"").toUpperCase() === balName.toUpperCase());
-                    if (!bal) return true;
-                    const txDep  = transactions.filter(r=>r.type==="DEPOSIT"    && r.concept.startsWith(prefix)).reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
-                    const txWith = transactions.filter(r=>r.type==="WITHDRAWAL" && r.concept.startsWith(prefix)).reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
-                    return Math.abs((parseFloat(bal.total_deposits)||0) - txDep) < 1 && Math.abs((parseFloat(bal.total_withdrawals)||0) - txWith) < 1;
-                  });
                   return (
-                    <>
-                      <div style={{fontSize:11,color:"#64748b",marginBottom:10,padding:"6px 10px",background:"#f0f9ff",borderRadius:6,border:"1px solid #bae6fd"}}>
-                        ℹ️ MSU FCU — comparando cada subcuenta por prefijo de transacción
-                      </div>
-                      {subAccounts.map(({ prefix, balName }) => {
-                        const bal = balances.find(b => (b.account_name||"").toUpperCase() === balName.toUpperCase());
-                        const bankDep  = parseFloat(bal?.total_deposits)||0;
-                        const bankWith = parseFloat(bal?.total_withdrawals)||0;
-                        const txDep    = transactions.filter(r=>r.type==="DEPOSIT"    && r.concept.startsWith(prefix)).reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
-                        const txWith   = transactions.filter(r=>r.type==="WITHDRAWAL" && r.concept.startsWith(prefix)).reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
-                        const depDiff  = Math.abs(bankDep - txDep);
-                        const withDiff = Math.abs(bankWith - txWith);
-                        const ok = depDiff < 1 && withDiff < 1;
-                        return (
-                          <div key={prefix} style={{marginBottom:10,border:"1px solid #e2e8f0",borderRadius:8,overflow:"hidden"}}>
-                            <div style={{background:"#f4f6f9",padding:"6px 12px",fontSize:11,fontWeight:700,color:"#1a1a1a",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                              <span>{prefix} {balName}</span>
-                              {ok ? <span style={{background:"#dcfce7",color:"#166534",borderRadius:4,padding:"2px 8px",fontSize:10}}>✅ OK</span>
-                                  : <span style={{background:"#fee2e2",color:"#991b1b",borderRadius:4,padding:"2px 8px",fontSize:10}}>⚠️ DIF</span>}
-                            </div>
-                            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:8,padding:"10px 12px"}}>
-                              {[
-                                {l:"Dep. Banco",   v:`$${fmt(bankDep)}`,  c:"#22c55e"},
-                                {l:"Dep. Extraídos",v:`$${fmt(txDep)}`,   c:"#22c55e"},
-                                {l:"Ret. Banco",   v:`$${fmt(bankWith)}`, c:"#ef4444"},
-                                {l:"Ret. Extraídos",v:`$${fmt(txWith)}`,  c:"#ef4444"},
-                              ].map(s=>(
-                                <div key={s.l} style={{background:"#f7f6f2",borderRadius:6,padding:"8px 10px"}}>
-                                  <div style={{fontSize:9,fontWeight:700,color:"#94a3b8",letterSpacing:0.5,marginBottom:3}}>{s.l}</div>
-                                  <div style={{fontSize:13,fontWeight:700,color:s.c}}>{s.v}</div>
-                                </div>
-                              ))}
-                            </div>
-                            {!ok && <div style={{padding:"5px 12px",fontSize:11,color:"#92400e",background:"#fef3c7"}}>⚠️ Dep. diff: ${fmt(depDiff)} · Ret. diff: ${fmt(withDiff)}</div>}
-                          </div>
-                        );
-                      })}
-                      <div style={{marginTop:4,padding:"10px 14px",borderRadius:8,background:allGoodMSU?"#dcfce7":"#fef3c7",border:`1px solid ${allGoodMSU?"#86efac":"#fde68a"}`}}>
-                        {allGoodMSU
-                          ? <span style={{color:"#166534",fontWeight:600,fontSize:13}}>✅ Todo cuadra — Las 3 subcuentas coinciden con los totales del banco</span>
-                          : <span style={{color:"#92400e",fontWeight:600,fontSize:13}}>⚠️ Hay diferencias en una o más subcuentas — revisa arriba</span>}
-                      </div>
-                    </>
+                    <div style={{padding:"12px 14px",background:"#f0f9ff",borderRadius:8,border:"1px solid #bae6fd",fontSize:12,color:"#0369a1"}}>
+                      ℹ️ MSU FCU — La conciliación se verifica en la tabla de saldos por cuenta arriba. El balance de cada subcuenta (SAVER, IMMA, CHECKING) está validado individualmente.
+                    </div>
                   );
                 }
                 // Lógica estándar para otros bancos

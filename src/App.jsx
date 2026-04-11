@@ -430,6 +430,7 @@ function detectTransfer(concept) {
 }
 function detectCheck(concept) {
   const upper = concept.toUpperCase();
+  if (upper.startsWith("[CHECKING]") || upper.startsWith("[SAVER]") || upper.startsWith("[IMMA]")) return null;
   if (upper.includes("CHECKCARD")) return null;
   if (upper.includes("CHECK - CARD") || upper.includes("CHECK-CARD")) return null;
   if (upper.includes("DEBIT CARD") || upper.includes("POS #") || upper.startsWith("POS ")) return null;

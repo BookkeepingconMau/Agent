@@ -595,7 +595,7 @@ UNIVERSAL CRITICAL RULES:
       const date   = parts[1].trim();
       const amount = parts[2].trim();
 
-      let account = "CHECKING";
+      let account = "";
       let concept = "";
 
       const col4 = parts[3].trim().toUpperCase();
@@ -618,7 +618,7 @@ UNIVERSAL CRITICAL RULES:
 
       if ((type==="DEPOSIT"||type==="WITHDRAWAL") && date && amount && concept) {
         const prefixMap = { CHECKING:"[CHECKING]", SAVER:"[SAVER]", IMMA:"[IMMA]" };
-        const prefix = prefixMap[account] || "[CHECKING]";
+        const prefix = prefixMap[account] || "";
         rows.push({ type, date, amount, concept: `${prefix} ${concept}`, category:"", level:"" });
       }
       return;
@@ -912,17 +912,6 @@ export default function App() {
       }
     }
     const rows = await extractTransactions(b64, bankId, continuationHint);
-    if (isMSUFCU && currentSplitMode && currentPartNum > 1) {
-      const defaultPrefix = lastPrefix || "[CHECKING]";
-      rows.forEach(row => {
-        const hasPrefix = row.concept.startsWith("[CHECKING]") ||
-                          row.concept.startsWith("[SAVER]") ||
-                          row.concept.startsWith("[IMMA]");
-        if (!hasPrefix) {
-          row.concept = `${defaultPrefix} ${row.concept}`;
-        }
-      });
-    }
     setP(`✅ ${rows.length} transacciones encontradas`, 35);
 
     // ── AGENT 2: Extract balances ──

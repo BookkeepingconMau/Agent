@@ -996,7 +996,14 @@ export default function App() {
     const categorized = allRows.map(row => {
       const isDeposit = row.type==="DEPOSIT";
       const result = categorize(row.concept, row.amount, isDeposit, clientData.businessType, clientData.learnedMerchants||{});
-      return { ...row, concept: result.enrichedConcept||row.concept, category:result.category, level:result.level, reason:result.reason||"", payee:result.payee||null, checkNum:result.checkNum||null };
+      const prefixMatch = row.concept.match(/^\[(CHECKING|SAVER|IMMA)\]\s*/);
+      const prefix = prefixMatch ? prefixMatch[0] : "";
+      const finalConcept = result.enrichedConcept
+        ? (prefix && !result.enrichedConcept.startsWith(prefix.trim())
+            ? prefix.trim() + " " + result.enrichedConcept
+            : result.enrichedConcept)
+        : row.concept;
+      return { ...row, concept: finalConcept, category:result.category, level:result.level, reason:result.reason||"", payee:result.payee||null, checkNum:result.checkNum||null };
     });
     setP("✅ Categorización completada", 85);
     let finalTransactions = categorized;

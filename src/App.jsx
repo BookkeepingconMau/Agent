@@ -1193,7 +1193,7 @@ export default function App() {
       opinionColor = "#166534";
     } else if (marginPct >= 20) {
       opinion = `👍 Buen mes. Margen neto del ${marginPct}%. Hay oportunidad de mejorar reduciendo gastos operativos que representan el ${opexPct}% de los ingresos.`;
-      opinionColor = "#1a56db";
+      opinionColor = "#16a34a";
     } else if (marginPct >= 0) {
       opinion = `⚠️ Margen neto bajo (${marginPct}%). El negocio es rentable pero ajustado. Revisar gastos operativos (${opexPct}% de ingresos) para mejorar la utilidad.`;
       opinionColor = "#92400e";
@@ -1255,7 +1255,7 @@ export default function App() {
         const sg = r.type==='DEPOSIT' ? '+' : '-';
         return `<tr style="background:${i%2===0?'#fff':'#f8fafc'}"><td style="padding:10px 20px;font-size:12px;color:#64748b;border-bottom:1px solid #f1f5f9">${fmtDate(r.date)}</td><td style="padding:10px 20px;font-size:12px;border-bottom:1px solid #f1f5f9">${r.concept}</td><td style="padding:10px 20px;font-size:13px;font-weight:600;text-align:right;color:${cl};border-bottom:1px solid #f1f5f9">${sg}$${fmt2(amt)}</td></tr>`;
       }).join('');
-      detailPages[cat] = `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Detalle - ${cat}</title><style>@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'DM Sans',system-ui,sans-serif;background:#f0f4f8;color:#1a1a1a;padding:32px;font-size:13px}.no-print{background:#1a56db;color:#fff;padding:10px 18px;border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}.wrapper{max-width:780px;margin:0 auto}.header{background:linear-gradient(135deg,#0f1f4b 0%,#1a56db 100%);color:#fff;padding:28px 32px;border-radius:16px 16px 0 0}.header h1{font-size:22px;font-weight:700;margin-bottom:4px}.header .meta{font-size:12px;opacity:0.75;display:flex;gap:24px;flex-wrap:wrap;margin-top:8px}.body{background:#fff;border-radius:0 0 16px 16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)}.kpis{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #e2e8f0}.kpi{padding:18px 20px;border-right:1px solid #e2e8f0}.kpi:last-child{border-right:none}.kpi .lbl{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}.kpi .val{font-size:20px;font-weight:700}table{width:100%;border-collapse:collapse}th{background:#0f1f4b;color:#fff;padding:10px 20px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:left}th:last-child{text-align:right}.total-row td{padding:12px 20px;font-weight:700;font-size:14px;background:#f0f4ff;border-top:2px solid #1a56db}.footer{text-align:center;font-size:10px;color:#94a3b8;margin-top:16px}tr:hover td{background:#f0f4ff !important}@media print{body{background:#fff;padding:16px}.no-print{display:none}.body{box-shadow:none}}</style></head><body><div class="no-print"><span>💡 Para guardar como PDF: Archivo → Imprimir → Guardar como PDF</span><button onclick="window.print()" style="background:#fff;color:#1a56db;border:none;border-radius:6px;padding:6px 18px;font-weight:700;cursor:pointer;font-size:12px">🖨️ PDF</button></div><div class="wrapper"><div class="header"><h1>${emoji} ${cat}</h1><div class="meta"><span>👤 ${clientData?.name||""}</span><span>🏦 ${bankInfo?.bank_name||""}</span><span>📅 ${periodStart} — ${periodEnd}</span></div></div><div class="body"><div class="kpis"><div class="kpi"><div class="lbl">Total</div><div class="val" style="color:${isDep?'#166534':'#991b1b'}">$${fmt2(catTotal)}</div></div><div class="kpi"><div class="lbl">Transacciones</div><div class="val">${catCount}</div></div><div class="kpi"><div class="lbl">Promedio</div><div class="val" style="color:#1a56db">$${fmt2(catAvg)}</div></div><div class="kpi"><div class="lbl">% del Total</div><div class="val" style="color:#1a56db">${catPct}%</div></div></div><table><thead><tr><th>Fecha</th><th>Concepto</th><th style="text-align:right">Monto</th></tr></thead><tbody>${txRows}<tr class="total-row"><td colspan="2">TOTAL ${cat.toUpperCase()}</td><td style="text-align:right;color:#1a56db">$${fmt2(catTotal)}</td></tr></tbody></table></div><div class="footer">Generado por el Agente de Mau Bautista · V&amp;M Bookkeeping Group LLC</div></div></body></html>`;
+      detailPages[cat] = `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Detalle - ${cat}</title><style>@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Nunito','DM Sans',system-ui,sans-serif;background:#f0fdf4;color:#1a1a1a;padding:32px;font-size:13px}.no-print{background:#16a34a;color:#fff;padding:10px 18px;border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}.wrapper{max-width:780px;margin:0 auto}.header{background:linear-gradient(135deg,#14532d 0%,#16a34a 100%);color:#fff;padding:28px 32px;border-radius:16px 16px 0 0}.header h1{font-size:22px;font-weight:800;margin-bottom:4px}.header .meta{font-size:12px;opacity:0.75;display:flex;gap:24px;flex-wrap:wrap;margin-top:8px}.body{background:#fff;border-radius:0 0 16px 16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)}.kpis{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #e2e8f0}.kpi{padding:18px 20px;border-right:1px solid #e2e8f0}.kpi:last-child{border-right:none}.kpi .lbl{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}.kpi .val{font-size:20px;font-weight:700}table{width:100%;border-collapse:collapse}th{background:#14532d;color:#fff;padding:10px 20px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:left}th:last-child{text-align:right}.total-row td{padding:12px 20px;font-weight:700;font-size:14px;background:#f0fdf4;border-top:2px solid #16a34a}.footer{text-align:center;font-size:10px;color:#94a3b8;margin-top:16px}tr:hover td{background:#f0fdf4 !important}@media print{body{background:#fff;padding:16px}.no-print{display:none}.body{box-shadow:none}}</style></head><body><div class="no-print"><span>💡 Para guardar como PDF: Archivo → Imprimir → Guardar como PDF</span><button onclick="window.print()" style="background:#fff;color:#16a34a;border:none;border-radius:6px;padding:6px 18px;font-weight:700;cursor:pointer;font-size:12px">🖨️ PDF</button></div><div class="wrapper"><div class="header"><h1>${emoji} ${cat}</h1><div class="meta"><span>👤 ${clientData?.name||""}</span><span>🏦 ${bankInfo?.bank_name||""}</span><span>📅 ${periodStart} — ${periodEnd}</span></div></div><div class="body"><div class="kpis"><div class="kpi"><div class="lbl">Total</div><div class="val" style="color:${isDep?'#166534':'#991b1b'}">$${fmt2(catTotal)}</div></div><div class="kpi"><div class="lbl">Transacciones</div><div class="val">${catCount}</div></div><div class="kpi"><div class="lbl">Promedio</div><div class="val" style="color:#16a34a">$${fmt2(catAvg)}</div></div><div class="kpi"><div class="lbl">% del Total</div><div class="val" style="color:#16a34a">${catPct}%</div></div></div><table><thead><tr><th>Fecha</th><th>Concepto</th><th style="text-align:right">Monto</th></tr></thead><tbody>${txRows}<tr class="total-row"><td colspan="2">TOTAL ${cat.toUpperCase()}</td><td style="text-align:right;color:#16a34a">$${fmt2(catTotal)}</td></tr></tbody></table></div><div class="footer">Generado por el Agente · PG Financial Group LLC</div></div></body></html>`;
     });
     const detailPagesJson = JSON.stringify(detailPages).replace(/<\//g, '<\\/');
 
@@ -1265,14 +1265,14 @@ export default function App() {
 <meta charset="UTF-8"/>
 <title>P&L — ${clientData?.name || ""}</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'DM Sans',system-ui,sans-serif;background:#f0f4f8;color:#1a1a1a;padding:32px;font-size:13px}
-  .no-print{background:#1a56db;color:#fff;padding:10px 18px;border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
-  .no-print button{background:#fff;color:#1a56db;border:none;border-radius:6px;padding:6px 18px;font-weight:700;cursor:pointer;font-size:12px}
+  body{font-family:'Nunito','DM Sans',system-ui,sans-serif;background:#f0fdf4;color:#1a1a1a;padding:32px;font-size:13px}
+  .no-print{background:#16a34a;color:#fff;padding:10px 18px;border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
+  .no-print button{background:#fff;color:#16a34a;border:none;border-radius:6px;padding:6px 18px;font-weight:700;cursor:pointer;font-size:12px}
   .wrapper{max-width:780px;margin:0 auto}
-  .header{background:linear-gradient(135deg,#0f1f4b 0%,#1a56db 100%);color:#fff;padding:28px 32px;border-radius:16px 16px 0 0}
-  .header h1{font-size:22px;font-weight:700;letter-spacing:-0.5px;margin-bottom:4px}
+  .header{background:linear-gradient(135deg,#14532d 0%,#16a34a 100%);color:#fff;padding:28px 32px;border-radius:16px 16px 0 0}
+  .header h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px}
   .header .meta{font-size:12px;opacity:0.75;display:flex;gap:24px;flex-wrap:wrap;margin-top:8px}
   .header .meta span{display:flex;align-items:center;gap:4px}
   .opinion{background:#fff;border-left:4px solid ${opinionColor};padding:14px 18px;margin:0;font-size:13px;color:${opinionColor};font-weight:500;line-height:1.5}
@@ -1284,28 +1284,28 @@ export default function App() {
   .kpi .val{font-size:20px;font-weight:700}
   .kpi .val.green{color:#166534}
   .kpi .val.red{color:#991b1b}
-  .kpi .val.blue{color:#1a56db}
+  .kpi .val.blue{color:#16a34a}
   .kpi .val.neutral{color:#1a1a1a}
   table{width:100%;border-collapse:collapse}
-  .section-header td{background:#0f1f4b;color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 20px}
+  .section-header td{background:#14532d;color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 20px}
   .section-sub td{background:#f7f8fb;font-size:11px;color:#64748b;padding:6px 20px;text-transform:uppercase;letter-spacing:0.5px}
   tr.detail td{padding:8px 20px;border-bottom:1px solid #f1f5f9}
-  tr.detail:hover td{background:#f8faff}
+  tr.detail:hover td{background:#f0fdf4}
   .cat{text-align:left}
   .amt{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
   .amt.green{color:#166534}
   .amt.red{color:#dc2626}
-  .total-row td{padding:10px 20px;font-weight:700;font-size:13px;background:#f0f4ff;border-top:2px solid #1a56db}
-  .total-row .amt{color:#1a56db}
+  .total-row td{padding:10px 20px;font-weight:700;font-size:13px;background:#f0fdf4;border-top:2px solid #16a34a}
+  .total-row .amt{color:#16a34a}
   .subtotal-row td{padding:8px 20px;font-weight:600;background:#fafafa;border-top:1px solid #e2e8f0;color:#64748b}
-  .highlight-row td{padding:14px 20px;font-size:15px;font-weight:700;background:#0f1f4b;color:#fff}
+  .highlight-row td{padding:14px 20px;font-size:15px;font-weight:700;background:#14532d;color:#fff}
   .highlight-row .amt{color:#22c55e}
   .highlight-row .amt.loss{color:#f87171}
-  .spacer{height:8px;background:#f0f4f8}
+  .spacer{height:8px;background:#f0fdf4}
   .personal-header td{background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 20px}
   .footer{text-align:center;font-size:10px;color:#94a3b8;margin-top:16px;padding-bottom:8px}
-  .detail-btn{background:rgba(26,86,219,0.15);border:1px solid rgba(26,86,219,0.4);color:#1a56db;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:700;transition:all 0.15s}
-  .detail-btn:hover{background:#1a56db;color:#fff}
+  .detail-btn{background:rgba(22,163,74,0.15);border:1px solid rgba(22,163,74,0.4);color:#16a34a;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:700;transition:all 0.15s}
+  .detail-btn:hover{background:#16a34a;color:#fff}
   @media print{
     body{background:#fff;padding:16px}
     .no-print{display:none}
@@ -1317,8 +1317,8 @@ export default function App() {
 <div class="no-print">
   <span class="print-tip">💡 Para guardar como PDF: Archivo → Imprimir → Guardar como PDF</span>
   <div style="display:flex;gap:8px;align-items:center">
-    <button id="btn-es" onclick="setLang('es')" style="background:#fff;color:#1a56db;border:none;border-radius:6px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:12px">🇲🇽 ES</button>
-    <button id="btn-en" onclick="setLang('en')" style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.4);border-radius:6px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:12px">🇺🇸 EN</button>
+    <button id="btn-es" onclick="setLang('es')" style="background:#fff;color:#16a34a;border:none;border-radius:6px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:12px">🇲🇽 ES</button>
+    <button id="btn-en" onclick="setLang('en')" style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(134,239,172,0.6);border-radius:6px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:12px">🇺🇸 EN</button>
     <button onclick="window.print()" style="background:#22c55e;color:#fff;border:none;border-radius:6px;padding:6px 18px;font-weight:700;cursor:pointer;font-size:12px">🖨️ PDF</button>
   </div>
 </div>
@@ -1411,11 +1411,11 @@ function setLang(lang) {
   });
   // Botones activos
   document.getElementById('btn-es').style.background = lang === 'es' ? '#fff' : 'rgba(255,255,255,0.2)';
-  document.getElementById('btn-es').style.color = lang === 'es' ? '#1a56db' : '#fff';
+  document.getElementById('btn-es').style.color = lang === 'es' ? '#16a34a' : '#fff';
   document.getElementById('btn-en').style.background = lang === 'en' ? '#fff' : 'rgba(255,255,255,0.2)';
-  document.getElementById('btn-en').style.color = lang === 'en' ? '#1a56db' : '#fff';
-  document.getElementById('btn-en').style.border = lang === 'en' ? 'none' : '1px solid rgba(255,255,255,0.4)';
-  document.getElementById('btn-es').style.border = lang === 'es' ? 'none' : '1px solid rgba(255,255,255,0.4)';
+  document.getElementById('btn-en').style.color = lang === 'en' ? '#16a34a' : '#fff';
+  document.getElementById('btn-en').style.border = lang === 'en' ? 'none' : '1px solid rgba(134,239,172,0.6)';
+  document.getElementById('btn-es').style.border = lang === 'es' ? 'none' : '1px solid rgba(134,239,172,0.6)';
 }
 
 var DETAIL_PAGES = ${detailPagesJson};
@@ -1466,14 +1466,14 @@ function openDetail(cat) {
       <tr class="highlight-row"><td class="cat"><span id="lbl-net">UTILIDAD NETA</span></td><td class="amt ${netProfit < 0 ? 'loss' : ''}">$${fmt2(netProfit)} <span style="font-size:12px;opacity:0.7">(${marginPct}%)</span></td></tr>
     </table>
     ${totalPersonal > 0 ? `
-    <div style="height:16px;background:#f0f4f8"></div>
+    <div style="height:16px;background:#f0fdf4"></div>
     <table>
       <tr class="personal-header"><td colspan="2" id="sec-personal">⚠️ Movimientos Personales y No Empresariales</td></tr>
       ${personalRows}
       <tr class="total-row"><td class="cat" id="tot-personal">TOTAL MOVIMIENTOS PERSONALES</td><td class="amt" style="color:#92400e">$${fmt2(totalPersonal)}</td></tr>
     </table>` : ""}
   </div>
-  <div class="footer">Generado por el Agente de Mau Bautista · V&amp;M Bookkeeping Group LLC</div>
+  <div class="footer">Generado por el Agente · PG Financial Group LLC</div>
 </div>
 </body>
 </html>`;
@@ -1510,7 +1510,7 @@ function openDetail(cat) {
       const sg = r.type==='DEPOSIT' ? '+' : '-';
       return `<tr style="background:${i%2===0?'#fff':'#f8fafc'}"><td style="padding:10px 20px;font-size:12px;color:#64748b;border-bottom:1px solid #f1f5f9">${fmtDate(r.date)}</td><td style="padding:10px 20px;font-size:12px;border-bottom:1px solid #f1f5f9">${r.concept}</td><td style="padding:10px 20px;font-size:13px;font-weight:600;text-align:right;color:${cl};border-bottom:1px solid #f1f5f9">${sg}$${fmt2(amt)}</td></tr>`;
     }).join('');
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Detalle - ${cat}</title><style>@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'DM Sans',system-ui,sans-serif;background:#f0f4f8;color:#1a1a1a;padding:32px;font-size:13px}.no-print{background:#1a56db;color:#fff;padding:10px 18px;border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}.wrapper{max-width:780px;margin:0 auto}.header{background:linear-gradient(135deg,#0f1f4b 0%,#1a56db 100%);color:#fff;padding:28px 32px;border-radius:16px 16px 0 0}.header h1{font-size:22px;font-weight:700;margin-bottom:4px}.header .meta{font-size:12px;opacity:0.75;display:flex;gap:24px;flex-wrap:wrap;margin-top:8px}.body{background:#fff;border-radius:0 0 16px 16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)}.kpis{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #e2e8f0}.kpi{padding:18px 20px;border-right:1px solid #e2e8f0}.kpi:last-child{border-right:none}.kpi .lbl{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}.kpi .val{font-size:20px;font-weight:700}table{width:100%;border-collapse:collapse}th{background:#0f1f4b;color:#fff;padding:10px 20px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:left}th:last-child{text-align:right}.total-row td{padding:12px 20px;font-weight:700;font-size:14px;background:#f0f4ff;border-top:2px solid #1a56db}.footer{text-align:center;font-size:10px;color:#94a3b8;margin-top:16px}tr:hover td{background:#f0f4ff !important}@media print{body{background:#fff;padding:16px}.no-print{display:none}.body{box-shadow:none}}</style></head><body><div class="no-print"><span>💡 Para guardar como PDF: Archivo → Imprimir → Guardar como PDF</span><button onclick="window.print()" style="background:#fff;color:#1a56db;border:none;border-radius:6px;padding:6px 18px;font-weight:700;cursor:pointer;font-size:12px">🖨️ PDF</button></div><div class="wrapper"><div class="header"><h1>${emoji} ${cat}</h1><div class="meta"><span>👤 ${clientData?.name||""}</span><span>🏦 ${bankInfo?.bank_name||""}</span><span>📅 ${periodStart} — ${periodEnd}</span></div></div><div class="body"><div class="kpis"><div class="kpi"><div class="lbl">Total</div><div class="val" style="color:${isDep?'#166534':'#991b1b'}">$${fmt2(catTotal)}</div></div><div class="kpi"><div class="lbl">Transacciones</div><div class="val">${catCount}</div></div><div class="kpi"><div class="lbl">Promedio</div><div class="val" style="color:#1a56db">$${fmt2(catAvg)}</div></div><div class="kpi"><div class="lbl">% del Total</div><div class="val" style="color:#1a56db">${catPct}%</div></div></div><table><thead><tr><th>Fecha</th><th>Concepto</th><th style="text-align:right">Monto</th></tr></thead><tbody>${txRows}<tr class="total-row"><td colspan="2">TOTAL ${cat.toUpperCase()}</td><td style="text-align:right;color:#1a56db">$${fmt2(catTotal)}</td></tr></tbody></table></div><div class="footer">Generado por el Agente de Mau Bautista · V&amp;M Bookkeeping Group LLC</div></div></body></html>`;
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Detalle - ${cat}</title><style>@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Nunito','DM Sans',system-ui,sans-serif;background:#f0fdf4;color:#1a1a1a;padding:32px;font-size:13px}.no-print{background:#16a34a;color:#fff;padding:10px 18px;border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}.wrapper{max-width:780px;margin:0 auto}.header{background:linear-gradient(135deg,#14532d 0%,#16a34a 100%);color:#fff;padding:28px 32px;border-radius:16px 16px 0 0}.header h1{font-size:22px;font-weight:800;margin-bottom:4px}.header .meta{font-size:12px;opacity:0.75;display:flex;gap:24px;flex-wrap:wrap;margin-top:8px}.body{background:#fff;border-radius:0 0 16px 16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)}.kpis{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #e2e8f0}.kpi{padding:18px 20px;border-right:1px solid #e2e8f0}.kpi:last-child{border-right:none}.kpi .lbl{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}.kpi .val{font-size:20px;font-weight:700}table{width:100%;border-collapse:collapse}th{background:#14532d;color:#fff;padding:10px 20px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:left}th:last-child{text-align:right}.total-row td{padding:12px 20px;font-weight:700;font-size:14px;background:#f0fdf4;border-top:2px solid #16a34a}.footer{text-align:center;font-size:10px;color:#94a3b8;margin-top:16px}tr:hover td{background:#f0fdf4 !important}@media print{body{background:#fff;padding:16px}.no-print{display:none}.body{box-shadow:none}}</style></head><body><div class="no-print"><span>💡 Para guardar como PDF: Archivo → Imprimir → Guardar como PDF</span><button onclick="window.print()" style="background:#fff;color:#16a34a;border:none;border-radius:6px;padding:6px 18px;font-weight:700;cursor:pointer;font-size:12px">🖨️ PDF</button></div><div class="wrapper"><div class="header"><h1>${emoji} ${cat}</h1><div class="meta"><span>👤 ${clientData?.name||""}</span><span>🏦 ${bankInfo?.bank_name||""}</span><span>📅 ${periodStart} — ${periodEnd}</span></div></div><div class="body"><div class="kpis"><div class="kpi"><div class="lbl">Total</div><div class="val" style="color:${isDep?'#166534':'#991b1b'}">$${fmt2(catTotal)}</div></div><div class="kpi"><div class="lbl">Transacciones</div><div class="val">${catCount}</div></div><div class="kpi"><div class="lbl">Promedio</div><div class="val" style="color:#16a34a">$${fmt2(catAvg)}</div></div><div class="kpi"><div class="lbl">% del Total</div><div class="val" style="color:#16a34a">${catPct}%</div></div></div><table><thead><tr><th>Fecha</th><th>Concepto</th><th style="text-align:right">Monto</th></tr></thead><tbody>${txRows}<tr class="total-row"><td colspan="2">TOTAL ${cat.toUpperCase()}</td><td style="text-align:right;color:#16a34a">$${fmt2(catTotal)}</td></tr></tbody></table></div><div class="footer">Generado por el Agente · PG Financial Group LLC</div></div></body></html>`;
     const win = window.open("", "_blank");
     win.document.write(html);
     win.document.close();
@@ -1555,7 +1555,7 @@ function openDetail(cat) {
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Segoe UI',Arial,sans-serif;color:#1a1a1a;padding:28px;font-size:12px}
-  .header{background:#0f1f4b;color:#fff;padding:20px 24px;border-radius:10px;margin-bottom:20px}
+  .header{background:#14532d;color:#fff;padding:20px 24px;border-radius:10px;margin-bottom:20px}
   .header h1{font-size:20px;margin-bottom:3px}
   .header p{font-size:11px;opacity:0.7}
   .cards{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
@@ -1584,9 +1584,9 @@ function openDetail(cat) {
 </style>
 </head>
 <body>
-  <div class="no-print" style="background:#1a56db;color:#fff;padding:10px 16px;border-radius:8px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+  <div class="no-print" style="background:#16a34a;color:#fff;padding:10px 16px;border-radius:8px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
     <span class="print-tip">💡 Para guardar como PDF: Archivo → Imprimir → Guardar como PDF</span>
-    <button onclick="window.print()" style="background:#fff;color:#1a56db;border:none;border-radius:6px;padding:6px 16px;font-weight:700;cursor:pointer;font-size:12px">🖨️ Imprimir / Guardar PDF</button>
+    <button onclick="window.print()" style="background:#fff;color:#16a34a;border:none;border-radius:6px;padding:6px 16px;font-weight:700;cursor:pointer;font-size:12px">🖨️ Imprimir / Guardar PDF</button>
   </div>
   <div class="header">
     <h1>📋 Reporte de Duplicados</h1>
@@ -1599,7 +1599,7 @@ function openDetail(cat) {
     <div class="card"><div class="lbl">Total transacciones</div><div class="val">${transactions.length}</div></div>
   </div>
   ${rowsHtml}
-  <div class="footer">Reporte generado por el Agente de Mau Bautista · V&M Bookkeeping Group LLC</div>
+  <div class="footer">Reporte generado por el Agente · PG Financial Group LLC</div>
 </body>
 </html>`;
     const win = window.open("", "_blank");
@@ -1654,25 +1654,25 @@ function openDetail(cat) {
   const totalWithdrawalsAmt = withdrawals.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0);
   const categoriesWithCount = [...new Set(transactions.map(r => r.category))].filter(c => c && c !== "").sort().map(c => ({ cat: c, count: transactions.filter(r => r.category === c).length }));
   const S = {
-    app:{minHeight:"100vh",background:"#05080f",fontFamily:"'DM Sans',system-ui,sans-serif",color:"#1a1a1a",position:"relative"},
+    app:{minHeight:"100vh",background:"#030d06",fontFamily:"'Nunito','DM Sans',system-ui,sans-serif",color:"#1a1a1a",position:"relative"},
     page:{maxWidth:1320,margin:"0 auto",padding:"44px 36px",position:"relative",zIndex:1},
-    h1:{fontSize:32,fontWeight:700,letterSpacing:"-0.5px",marginBottom:8,color:"#ffffff"},
+    h1:{fontSize:32,fontWeight:800,letterSpacing:"-0.5px",marginBottom:8,color:"#ffffff"},
     sub:{color:"#94a3b8",fontSize:15},
     card:{background:"rgba(255,255,255,0.97)",borderRadius:16,border:"1px solid #e2e8f0",padding:28,marginBottom:18},
     btn:{padding:"11px 24px",borderRadius:10,border:"none",cursor:"pointer",fontSize:14,fontWeight:600,transition:"all 0.15s"},
-    btnPrimary:{background:"#0f1f4b",color:"#fff"},
-    btnGold:{background:"#1a56db",color:"#fff"},
-    btnOutline:{background:"#1a56db",color:"#ffffff",border:"1px solid #1a56db"},
+    btnPrimary:{background:"#14532d",color:"#fff"},
+    btnGold:{background:"#16a34a",color:"#fff"},
+    btnOutline:{background:"#16a34a",color:"#ffffff",border:"1px solid #16a34a"},
     input:{width:"100%",padding:"12px 16px",borderRadius:10,border:"1px solid #ddd",fontSize:15,outline:"none",fontFamily:"inherit"},
     label:{fontSize:12,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:7,display:"block"},
   };
   const levelColor = l => ({
     HARD:    {bg:"#dcfce7",color:"#166534"},
-    MEMORY:  {bg:"#dbeafe",color:"#1e40af"},
+    MEMORY:  {bg:"#dcfce7",color:"#1e40af"},
     BUSINESS:{bg:"#f3e8ff",color:"#6b21a8"},
-    RESOLVED:{bg:"#e8f0fe",color:"#1e40af"},
+    RESOLVED:{bg:"#dcfce7",color:"#1e40af"},
     TRANSFER:{bg:"#e0f2fe",color:"#0369a1"},
-    CHECK:   {bg:"#dbeafe",color:"#1e40af"},
+    CHECK:   {bg:"#dcfce7",color:"#1e40af"},
   }[l] || {bg:"#fee2e2",color:"#991b1b"});
   const KNOWN_BANKS = Object.keys(BANK_PROMPTS).filter(k => k !== "default");
   return (
@@ -1680,26 +1680,26 @@ function openDetail(cat) {
       <div style={{position:"fixed",bottom:20,right:24,zIndex:1000,opacity:0.85,transition:"opacity 0.2s"}}
         onMouseEnter={e=>e.currentTarget.style.opacity=1}
         onMouseLeave={e=>e.currentTarget.style.opacity=0.85}>
-        <img src="/logo-mau.png" alt="Mau Bautista" onClick={()=>setShowDevModal(true)} style={{width:120,height:"auto",filter:"brightness(1.1)",cursor:"pointer"}} />
+        <img src="/logo-pg.png" alt="Silvya — PG Financial Group LLC" onClick={()=>setShowDevModal(true)} style={{width:120,height:"auto",filter:"brightness(1.1)",cursor:"pointer"}} />
       </div>
       <style>{`
-        body{background:#05080f}
-        .bg-star{position:fixed;border-radius:50%;background:#ffffff;pointer-events:none;z-index:0;box-shadow:0 0 4px 1px rgba(255,255,255,0.4)}
+        body{background:#030d06}
+        .bg-star{position:fixed;border-radius:50%;background:#ffffff;pointer-events:none;z-index:0;box-shadow:0 0 4px 1px rgba(134,239,172,0.6)}
         .bg-s1{animation:twinkle1 3s ease-in-out infinite}
         .bg-s2{animation:twinkle2 4.5s ease-in-out infinite}
         .bg-s3{animation:twinkle3 2.5s ease-in-out infinite}
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
         button:hover{opacity:0.85}
-        input:focus{border-color:#1a56db!important;box-shadow:0 0 0 3px rgba(26,86,219,0.12)}
-        .cc:hover{background:#f8faff!important;border-color:#1a56db!important;cursor:pointer}
+        input:focus{border-color:#16a34a!important;box-shadow:0 0 0 3px rgba(22,163,74,0.12)}
+        .cc:hover{background:#f0fdf4!important;border-color:#16a34a!important;cursor:pointer}
         .btype{padding:8px 12px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-family:inherit;font-size:12px;transition:all 0.15s;color:#1a1a1a}
-        .btype:hover,.btype.sel{border-color:#1a56db;background:#f0f4ff;font-weight:600}
+        .btype:hover,.btype.sel{border-color:#16a34a;background:#f0fdf4;font-weight:600}
         .drop{border:2px dashed #e2e8f0;border-radius:12px;padding:48px 28px;text-align:center;cursor:pointer;transition:all 0.2s}
-        .drop:hover,.drop.over{border-color:#1a56db;background:#f0f4ff}
+        .drop:hover,.drop.over{border-color:#16a34a;background:#f0fdf4}
         .ropt{padding:8px 13px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-size:12px;font-family:inherit;transition:all 0.15s;color:#1a1a1a}
-        .ropt:hover{border-color:#1a56db;background:#f0f4ff}
-        .tr:hover{background:#f8faff}
+        .ropt:hover{border-color:#16a34a;background:#f0fdf4}
+        .tr:hover{background:#f0fdf4}
         ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#ddd;border-radius:2px}
         @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
         @keyframes twinkle1{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.2;transform:scale(0.8)}}
@@ -1715,12 +1715,12 @@ function openDetail(cat) {
       {/* ── HOME ── */}
       {screen==="home"&&(
         <div style={S.page}>
-          <div style={{marginBottom:24,background:"#000008",borderRadius:20,padding:"36px 40px",display:"flex",alignItems:"center",gap:24,flexWrap:"wrap",position:"relative",overflow:"hidden"}}>
-            <div style={{position:"absolute",inset:0,borderRadius:20,background:"radial-gradient(ellipse at 20% 50%,rgba(26,86,219,0.15) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(99,102,241,0.1) 0%,transparent 50%)"}} />
-            <img src="/mau-agent.jpeg" alt="Mau Bautista IA" style={{width:140,height:140,objectFit:"cover",borderRadius:"50%",border:"4px solid rgba(255,255,255,0.3)",flexShrink:0,position:"relative",zIndex:1}} />
+          <div style={{marginBottom:24,background:"#001a06",borderRadius:20,padding:"36px 40px",display:"flex",alignItems:"center",gap:24,flexWrap:"wrap",position:"relative",overflow:"hidden"}}>
+            <div style={{position:"absolute",inset:0,borderRadius:20,background:"radial-gradient(ellipse at 20% 50%,rgba(22,163,74,0.15) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(99,102,241,0.1) 0%,transparent 50%)"}} />
+            <img src="/silvya-agent.jpeg" alt="Silvya — PG Financial Group LLC" style={{width:140,height:140,objectFit:"cover",borderRadius:"50%",border:"4px solid rgba(255,255,255,0.3)",flexShrink:0,position:"relative",zIndex:1}} />
             <div style={{position:"relative",zIndex:1}}>
-              <div style={{fontFamily:"'Playfair Display',serif",fontSize:28,fontWeight:700,color:"#fff",marginBottom:6}}>Bienvenido al Agente de Mau Bautista</div>
-              <div style={{color:"rgba(255,255,255,0.7)",fontSize:15,marginBottom:10}}>Tu bookkeeper inteligente</div>
+              <div style={{fontFamily:"'Nunito','DM Sans',system-ui,sans-serif",fontSize:28,fontWeight:800,color:"#fff",marginBottom:6}}>Bienvenida al Agente de Silvya</div>
+              <div style={{color:"rgba(255,255,255,0.7)",fontSize:15,marginBottom:10}}>PG Financial Group LLC</div>
               <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                 {["14 tipos de negocio","350+ merchants",`${KNOWN_BANKS.length} bancos conocidos`,"Memoria persistente"].map(t=>(
                   <span key={t} style={{background:"rgba(255,255,255,0.15)",color:"#fff",borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:600}}>{t}</span>
@@ -1785,7 +1785,7 @@ function openDetail(cat) {
           </div>
           <div style={S.card}>
             {/* Split mode */}
-            <div style={{marginBottom:16,padding:"12px 16px",background:"rgba(26,86,219,0.1)",borderRadius:10,border:"1px solid rgba(26,86,219,0.3)"}}>
+            <div style={{marginBottom:16,padding:"12px 16px",background:"rgba(22,163,74,0.1)",borderRadius:10,border:"1px solid rgba(22,163,74,0.3)"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                 <div>
                   <div style={{fontSize:13,fontWeight:700,color:"#1a1a1a"}}>📄 Modo PDF Dividido</div>
@@ -1798,7 +1798,7 @@ function openDetail(cat) {
                   clearSplitCache();
                 }}
                   style={{padding:"6px 16px",borderRadius:20,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,
-                    background:splitMode?"#1a56db":"#e2e8f0",color:splitMode?"#fff":"#64748b",transition:"all 0.2s"}}>
+                    background:splitMode?"#16a34a":"#e2e8f0",color:splitMode?"#fff":"#64748b",transition:"all 0.2s"}}>
                   {splitMode ? "✅ ON" : "OFF"}
                 </button>
               </div>
@@ -1818,9 +1818,9 @@ function openDetail(cat) {
                           width:28,height:28,borderRadius:"50%",
                           display:"flex",alignItems:"center",justifyContent:"center",
                           fontSize:11,fontWeight:700,
-                          background: isDone && !isCurrent ? "#22c55e" : isCurrent ? "#1a56db" : "#e2e8f0",
+                          background: isDone && !isCurrent ? "#22c55e" : isCurrent ? "#16a34a" : "#e2e8f0",
                           color: isDone || isCurrent ? "#fff" : "#94a3b8",
-                          border: isCurrent ? "2px solid #1a56db" : isDone ? "2px solid #16a34a" : "2px solid transparent",
+                          border: isCurrent ? "2px solid #16a34a" : isDone ? "2px solid #16a34a" : "2px solid transparent",
                           cursor: isDone ? "pointer" : "default",
                           position:"relative",
                         }}>
@@ -1860,7 +1860,7 @@ function openDetail(cat) {
               onDrop={e=>{e.preventDefault();setDragOver(false);const f=e.dataTransfer.files[0];if(f?.type==="application/pdf")setFile(f)}}
               onClick={()=>fileRef.current.click()}>
               <div style={{fontSize:36,marginBottom:10}}>📄</div>
-              {file?(<><div style={{fontWeight:600,color:"#1a56db"}}>{file.name}</div><div style={{color:"#94a3b8",fontSize:12,marginTop:3}}>{(file.size/1024).toFixed(0)} KB</div></>)
+              {file?(<><div style={{fontWeight:600,color:"#16a34a"}}>{file.name}</div><div style={{color:"#94a3b8",fontSize:12,marginTop:3}}>{(file.size/1024).toFixed(0)} KB</div></>)
                    :(<><div style={{fontWeight:500,color:"#1a1a1a"}}>Arrastra el bank statement aquí</div><div style={{color:"#64748b",fontSize:12,marginTop:3}}>o click · Solo PDF bancario digital</div></>)}
               <input ref={fileRef} type="file" accept=".pdf" style={{display:"none"}} onChange={e=>{const f=e.target.files[0];if(f)setFile(f)}} />
             </div>
@@ -1918,7 +1918,7 @@ function openDetail(cat) {
               <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                 {Object.entries(clientData.learnedMerchants).map(([k,v])=>(
                   <div key={k} style={{background:"#f4f6f9",border:"1px solid #e2e8f0",borderRadius:6,padding:"3px 9px",fontSize:11}}>
-                    <span style={{fontWeight:700,color:"#1a1a1a"}}>{k}</span> → <span style={{color:"#1a56db"}}>{v}</span>
+                    <span style={{fontWeight:700,color:"#1a1a1a"}}>{k}</span> → <span style={{color:"#16a34a"}}>{v}</span>
                   </div>
                 ))}
               </div>
@@ -1930,26 +1930,26 @@ function openDetail(cat) {
       {screen==="extracting"&&(()=>{
         const FRASES = [
           "☕ Puedes ir por un café... déjame trabajar a mí.",
-          "🤓 Mientras trabajo, ¿qué te parece estar aprendiendo con Mau?",
+          "🤓 Analizando cada transacción con precisión...",
           "💡 Dato curioso: esto antes te tomaba 3 horas. Ahora... unos segundos.",
-          "🚀 Mau dice: 'El que automatiza primero, gana primero.'",
+          "🚀 Silvya dice: 'La tecnología es tu mejor aliada.'",
           "🧠 Estoy leyendo cada línea del estado de cuenta. Tú relájate.",
           "📊 Bookkeeping inteligente. Así se hace en el siglo 21.",
           "🎯 Categorías, saldos, cheques... nada se me escapa.",
-          "😎 Tranquilo, yo soy más rápido que cualquier contador manual.",
+          "😎 Tranquila, soy más precisa que cualquier contador manual.",
           "💰 Cada centavo importa. Por eso los cuento todos.",
-          "🌮 ¿Ya comiste? Yo trabajo mejor que tú con hambre.",
+          "🌮 Cada centavo en su lugar — así se hace el bookkeeping.",
           "🏗️ Construyendo tu reporte... ladrillo por ladrillo.",
           "⚡ Si esto fuera manual, ya ibas en la página 2. Yo voy en la 14.",
-          "🎓 Mau enseña, yo aprendo, tú ganas. Equipo perfecto.",
-          "📱 Puedes revisar Instagram... ya yo me encargo aquí.",
-          "🤝 Mientras yo analizo, piensa en tu próximo cliente.",
+          "🎓 PG Financial Group — precisión en cada número.",
+          "📱 Puedes revisar tus mensajes... ya yo me encargo aquí.",
+          "🤝 Mientras yo analizo, piensa en tu siguiente cliente.",
         ];
         return (
-        <div style={{position:"fixed",inset:0,background:"#05080f",zIndex:999,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+        <div style={{position:"fixed",inset:0,background:"#030d06",zIndex:999,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
           <style>{`
             @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
-            @keyframes robotGlow{0%,100%{box-shadow:0 0 40px rgba(26,86,219,0.6),0 0 80px rgba(26,86,219,0.3)}50%{box-shadow:0 0 60px rgba(26,86,219,1),0 0 120px rgba(26,86,219,0.6)}}
+            @keyframes robotGlow{0%,100%{box-shadow:0 0 40px rgba(22,163,74,0.6),0 0 80px rgba(22,163,74,0.3)}50%{box-shadow:0 0 60px rgba(22,163,74,1),0 0 120px rgba(22,163,74,0.6)}}
             @keyframes dotPulse{0%,100%{transform:scale(1);opacity:0.5}50%{transform:scale(1.4);opacity:1}}
             @keyframes matrixRain{0%{transform:translateY(-100%);opacity:1}100%{transform:translateY(100vh);opacity:0}}
             @keyframes fadePhrase{0%{opacity:0;transform:translateY(8px)}15%{opacity:1;transform:translateY(0)}85%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-8px)}}
@@ -1958,17 +1958,17 @@ function openDetail(cat) {
           `}</style>
           <div style={{position:"absolute",inset:0,overflow:"hidden",opacity:0.05}}>
             {[0,1,2,3,4,5,6,7,8,9].map((i)=>(
-              <div key={i} style={{position:"absolute",left:`${i*10+2}%`,top:0,fontSize:11,color:"#1a56db",fontFamily:"monospace",lineHeight:1.6,animation:`matrixRain ${3+i*0.3}s linear infinite`,animationDelay:`${i*0.2}s`}}>
+              <div key={i} style={{position:"absolute",left:`${i*10+2}%`,top:0,fontSize:11,color:"#16a34a",fontFamily:"monospace",lineHeight:1.6,animation:`matrixRain ${3+i*0.3}s linear infinite`,animationDelay:`${i*0.2}s`}}>
                 {"10110100101101001011010010110100101".split("").map((c,j)=><div key={j}>{c}</div>)}
               </div>
             ))}
           </div>
           <div className="robot-float robot-glow" style={{borderRadius:"50%",position:"relative",marginBottom:28}}>
-            <img src="/mau-agent.jpeg" alt="Mau Agent" style={{width:180,height:180,objectFit:"cover",borderRadius:"50%",border:"4px solid #1a56db",display:"block"}} />
-            <div style={{position:"absolute",inset:-12,borderRadius:"50%",border:"2px solid rgba(26,86,219,0.4)",borderTopColor:"#1a56db",animation:"spin 3s linear infinite"}} />
-            <div style={{position:"absolute",inset:-24,borderRadius:"50%",border:"1px solid rgba(26,86,219,0.2)",borderBottomColor:"#1a56db",animation:"spin 5s linear infinite reverse"}} />
+            <img src="/silvya-agent.jpeg" alt="Silvya Agent" style={{width:180,height:180,objectFit:"cover",borderRadius:"50%",border:"4px solid #16a34a",display:"block"}} />
+            <div style={{position:"absolute",inset:-12,borderRadius:"50%",border:"2px solid rgba(22,163,74,0.4)",borderTopColor:"#16a34a",animation:"spin 3s linear infinite"}} />
+            <div style={{position:"absolute",inset:-24,borderRadius:"50%",border:"1px solid rgba(22,163,74,0.2)",borderBottomColor:"#16a34a",animation:"spin 5s linear infinite reverse"}} />
           </div>
-          <h2 style={{fontSize:26,fontWeight:700,color:"#ffffff",marginBottom:6,fontFamily:"'Playfair Display',serif",textShadow:"0 0 20px rgba(26,86,219,0.5)"}}>
+          <h2 style={{fontSize:26,fontWeight:800,color:"#ffffff",marginBottom:6,fontFamily:"'Nunito','DM Sans',system-ui,sans-serif",textShadow:"0 0 20px rgba(22,163,74,0.5)"}}>
             Procesando Statement...
           </h2>
           <FraseRotativa frases={FRASES} />
@@ -1977,7 +1977,7 @@ function openDetail(cat) {
               <div style={{
                 height:"100%",
                 width:`${progress.pct}%`,
-                background:"linear-gradient(90deg,#1a56db,#22c55e)",
+                background:"linear-gradient(90deg,#16a34a,#22c55e)",
                 borderRadius:20,
                 transition:"width 0.12s linear"
               }} />
@@ -1991,7 +1991,7 @@ function openDetail(cat) {
           </div>
           <div style={{display:"flex",gap:10}}>
             {[0,1,2,3,4].map(i=>(
-              <div key={i} style={{width:10,height:10,borderRadius:"50%",background:"#1a56db",animation:`dotPulse 1s ease-in-out infinite`,animationDelay:`${i*0.15}s`,boxShadow:"0 0 8px #1a56db"}} />
+              <div key={i} style={{width:10,height:10,borderRadius:"50%",background:"#16a34a",animation:`dotPulse 1s ease-in-out infinite`,animationDelay:`${i*0.15}s`,boxShadow:"0 0 8px #16a34a"}} />
             ))}
           </div>
         </div>
@@ -2011,7 +2011,7 @@ function openDetail(cat) {
               </p>
               {splitMode && (
                 <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
-                  <button style={{...S.btn,background:"#1a56db",color:"#fff",fontSize:11,padding:"5px 14px"}} onClick={()=>setScreen("upload")}>
+                  <button style={{...S.btn,background:"#16a34a",color:"#fff",fontSize:11,padding:"5px 14px"}} onClick={()=>setScreen("upload")}>
                     ➕ Agregar Parte {splitPartNum}
                   </button>
                   <button
@@ -2024,7 +2024,7 @@ function openDetail(cat) {
               )}
             </div>
             <div style={{display:"flex",gap:8}}>
-              <button style={{...S.btn,...S.btnOutline,fontSize:12,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
+              <button style={{...S.btn,...S.btnOutline,fontSize:12,color:"#fff",background:"#16a34a",borderColor:"#16a34a"}} onClick={()=>setScreen(askQueue.length>0?"resolve":"review")}>
                 Saltar →
               </button>
               <button style={{...S.btn,...S.btnGold}} onClick={()=>{
@@ -2069,7 +2069,7 @@ function openDetail(cat) {
                   ⚠️ <strong>Banco no encontrado en la biblioteca.</strong> Se procesó con el modo genérico — puede haber diferencias.
                   <br/>
                   <span style={{fontSize:11,marginTop:4,display:"block"}}>
-                    📌 Para mejorar la precisión: notifica a Mau con el nombre del banco <strong>"{bankInfo.bank_name}"</strong> para agregarlo a la biblioteca.
+                    📌 Para mejorar la precisión: notifica a Silvya con el nombre del banco <strong>"{bankInfo.bank_name}"</strong> para agregarlo a la biblioteca.
                   </span>
                 </div>
               )}
@@ -2095,7 +2095,7 @@ function openDetail(cat) {
           </div>
           {balances.length>0 ? (
             <div style={{...S.card,padding:0,overflow:"hidden"}}>
-              <div style={{background:"#0f1f4b",color:"#fff",padding:"10px 16px",fontSize:12,fontWeight:700,letterSpacing:1}}>
+              <div style={{background:"#14532d",color:"#fff",padding:"10px 16px",fontSize:12,fontWeight:700,letterSpacing:1}}>
                 📊 CONCILIACIÓN POR CUENTA
               </div>
               <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr 1fr 1fr 1fr 80px",padding:"8px 16px",background:"#f7f6f2",borderBottom:"1px solid #e2e8f0"}}>
@@ -2199,7 +2199,7 @@ function openDetail(cat) {
             </div>
           )}
           <div style={{display:"flex",justifyContent:"flex-end",marginTop:16,gap:10}}>
-            <button style={{...S.btn,...S.btnOutline,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>setScreen("upload")}>← Volver</button>
+            <button style={{...S.btn,...S.btnOutline,color:"#fff",background:"#16a34a",borderColor:"#16a34a"}} onClick={()=>setScreen("upload")}>← Volver</button>
             <button style={{...S.btn,...S.btnGold,fontSize:14,padding:"10px 28px"}} onClick={()=>{
               const _cb = balances.filter(b=>(b.account_name||"").toUpperCase().includes("CHECKING"));
               const _cmp = _cb.length > 0 ? _cb : balances;
@@ -2281,7 +2281,7 @@ function openDetail(cat) {
                 {l:"Diferencia actual",   v:`$${fmt(currentDiff)}`,  c:"#ef4444"},
                 {l:"Marcado a eliminar",  v:`$${fmt(markedAmt)}`,    c:"#f59e0b"},
                 {l:"Diferencia restante", v:`$${fmt(Math.abs(afterDiff))}`, c:Math.abs(afterDiff)<1?"#22c55e":"#ef4444"},
-                {l:"Transacciones",       v:`${markedCount} selec.`, c:"#1a56db"},
+                {l:"Transacciones",       v:`${markedCount} selec.`, c:"#16a34a"},
               ].map(s=>(
                 <div key={s.l} style={{...S.card,flex:1,minWidth:140,marginBottom:0,padding:"12px 16px"}}>
                   <div style={{fontSize:10,fontWeight:700,color:"#94a3b8",letterSpacing:1,marginBottom:4}}>{s.l}</div>
@@ -2301,7 +2301,7 @@ function openDetail(cat) {
             ) : (
               <>
                 <div style={{...S.card,padding:0,overflow:"hidden",marginBottom:14}}>
-                  <div style={{background:"#0f1f4b",color:"#fff",padding:"10px 16px",fontSize:12,fontWeight:700,letterSpacing:1,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div style={{background:"#14532d",color:"#fff",padding:"10px 16px",fontSize:12,fontWeight:700,letterSpacing:1,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                     <span>📋 CONCEPTOS DUPLICADOS ({dupConcepts.length} grupos)</span>
                     <div style={{display:"flex",gap:8}}>
                       <button onClick={()=>downloadDupReport(dupConcepts, groups)}
@@ -2404,10 +2404,10 @@ function openDetail(cat) {
           <div style={S.page}>
             <div style={{marginBottom:20,display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
               <div><h1 style={S.h1}>Resolver Ambigüedades</h1><p style={S.sub}>{currentAsk+1} de {askQueue.length}</p></div>
-              <button style={{...S.btn,...S.btnOutline,fontSize:12,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>setScreen("review")}>Saltar todos →</button>
+              <button style={{...S.btn,...S.btnOutline,fontSize:12,color:"#fff",background:"#16a34a",borderColor:"#16a34a"}} onClick={()=>setScreen("review")}>Saltar todos →</button>
             </div>
             <div style={{height:4,background:"#e2e8f0",borderRadius:2,marginBottom:22,overflow:"hidden"}}>
-              <div style={{height:"100%",background:"#1a56db",width:`${(currentAsk/askQueue.length)*100}%`,transition:"width 0.3s"}} />
+              <div style={{height:"100%",background:"#16a34a",width:`${(currentAsk/askQueue.length)*100}%`,transition:"width 0.3s"}} />
             </div>
             <div style={S.card}>
               <div style={{background:"#f4f6f9",borderRadius:8,padding:14,marginBottom:16}}>
@@ -2458,19 +2458,19 @@ function openDetail(cat) {
                 </div>
               </div>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
-                <button style={{...S.btn,...S.btnOutline,fontSize:11,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>{if(currentAsk+1<askQueue.length)setCurrentAsk(currentAsk+1);else setScreen("review");}}>Dejar como ASK TO CLIENT</button>
+                <button style={{...S.btn,...S.btnOutline,fontSize:11,color:"#fff",background:"#16a34a",borderColor:"#16a34a"}} onClick={()=>{if(currentAsk+1<askQueue.length)setCurrentAsk(currentAsk+1);else setScreen("review");}}>Dejar como ASK TO CLIENT</button>
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
                   <button
                     disabled={currentAsk===0}
                     onClick={()=>setCurrentAsk(currentAsk-1)}
-                    style={{...S.btn,fontSize:13,padding:"6px 14px",background:currentAsk===0?"#e2e8f0":"#0f1f4b",color:currentAsk===0?"#aaa":"#fff",border:"none",cursor:currentAsk===0?"not-allowed":"pointer"}}>
+                    style={{...S.btn,fontSize:13,padding:"6px 14px",background:currentAsk===0?"#e2e8f0":"#14532d",color:currentAsk===0?"#aaa":"#fff",border:"none",cursor:currentAsk===0?"not-allowed":"pointer"}}>
                     ← Anterior
                   </button>
                   <span style={{fontSize:11,color:"#bbb",minWidth:80,textAlign:"center"}}>{currentAsk+1} / {askQueue.length}</span>
                   <button
                     disabled={currentAsk+1>=askQueue.length}
                     onClick={()=>setCurrentAsk(currentAsk+1)}
-                    style={{...S.btn,fontSize:13,padding:"6px 14px",background:currentAsk+1>=askQueue.length?"#e2e8f0":"#0f1f4b",color:currentAsk+1>=askQueue.length?"#aaa":"#fff",border:"none",cursor:currentAsk+1>=askQueue.length?"not-allowed":"pointer"}}>
+                    style={{...S.btn,fontSize:13,padding:"6px 14px",background:currentAsk+1>=askQueue.length?"#e2e8f0":"#14532d",color:currentAsk+1>=askQueue.length?"#aaa":"#fff",border:"none",cursor:currentAsk+1>=askQueue.length?"not-allowed":"pointer"}}>
                     Siguiente →
                   </button>
                 </div>
@@ -2505,7 +2505,7 @@ function openDetail(cat) {
               <button style={{...S.btn,background:"#edf2f7",color:"#1a1a1a",fontSize:11,padding:"6px 12px"}} onClick={()=>setScreen("reconcile")}>⚖️ Conciliación</button>
             </div>
             <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
-              <div style={{display:"flex",gap:0,alignItems:"center",border:"1px solid #1a56db",borderRadius:10,overflow:"hidden",background:"#fff"}}>
+              <div style={{display:"flex",gap:0,alignItems:"center",border:"1px solid #16a34a",borderRadius:10,overflow:"hidden",background:"#fff"}}>
                 <select value={selectedCat} onChange={e=>setSelectedCat(e.target.value)}
                   style={{padding:"7px 10px",border:"none",fontSize:11,fontFamily:"inherit",color:"#1a1a1a",background:"transparent",cursor:"pointer",outline:"none",maxWidth:220,minWidth:160}}>
                   <option value="">— Elegir categoría —</option>
@@ -2514,13 +2514,13 @@ function openDetail(cat) {
                   ))}
                 </select>
                 <button onClick={()=>downloadByCategory(selectedCat)} disabled={!selectedCat}
-                  style={{padding:"7px 14px",border:"none",borderLeft:"1px solid #1a56db",cursor:selectedCat?"pointer":"not-allowed",fontSize:11,fontWeight:700,
-                    background:selectedCat?"#1a56db":"#94a3b8",color:"#fff",fontFamily:"inherit",transition:"all 0.15s",whiteSpace:"nowrap"}}>
+                  style={{padding:"7px 14px",border:"none",borderLeft:"1px solid #16a34a",cursor:selectedCat?"pointer":"not-allowed",fontSize:11,fontWeight:700,
+                    background:selectedCat?"#16a34a":"#94a3b8",color:"#fff",fontFamily:"inherit",transition:"all 0.15s",whiteSpace:"nowrap"}}>
                   ⬇ Por Categoría
                 </button>
               </div>
-              <button style={{...S.btn,...S.btnOutline,fontSize:11,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>downloadWave("DEPOSIT")}>⬇ Wave DEPOSITS</button>
-              <button style={{...S.btn,...S.btnOutline,fontSize:11,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>downloadWave("WITHDRAWAL")}>⬇ Wave WITHDRAWALS</button>
+              <button style={{...S.btn,...S.btnOutline,fontSize:11,color:"#fff",background:"#16a34a",borderColor:"#16a34a"}} onClick={()=>downloadWave("DEPOSIT")}>⬇ Wave DEPOSITS</button>
+              <button style={{...S.btn,...S.btnOutline,fontSize:11,color:"#fff",background:"#16a34a",borderColor:"#16a34a"}} onClick={()=>downloadWave("WITHDRAWAL")}>⬇ Wave WITHDRAWALS</button>
               <button style={{...S.btn,...S.btnPrimary,fontSize:11}} onClick={downloadCSV}>⬇ CSV Completo</button>
               <button style={{...S.btn,background:"#166534",color:"#fff",fontSize:11,fontWeight:700}} onClick={downloadPnL}>📊 P&L + Personales</button>
               <button style={{...S.btn,...S.btnGold}} onClick={finalize}>✓ Finalizar</button>
@@ -2540,7 +2540,7 @@ function openDetail(cat) {
           )}
           {checkReportRows.length>0&&(
             <div style={{...S.card,padding:0,overflow:"hidden",marginBottom:12}}>
-              <div style={{background:"#0f1f4b",color:"#fff",padding:"8px 14px",fontSize:11,fontWeight:700,letterSpacing:1}}>
+              <div style={{background:"#14532d",color:"#fff",padding:"8px 14px",fontSize:11,fontWeight:700,letterSpacing:1}}>
                 📋 REPORTE DE CHEQUES ({checks.length} cheques · Total: ${fmt(checks.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0))})
               </div>
               <div>
@@ -2552,12 +2552,12 @@ function openDetail(cat) {
                     <div key={name} className="tr" style={{display:"grid",gridTemplateColumns:"1fr 80px 110px",padding:"9px 14px",borderBottom:"1px solid #edf2f7",alignItems:"center"}}>
                       <div style={{fontWeight:600,fontSize:13}}>{name}</div>
                       <div style={{fontSize:13,color:"#666",textAlign:"center"}}>{data.count}</div>
-                      <div style={{fontSize:13,fontWeight:700,color:"#1a56db",textAlign:"right"}}>${fmt(data.total)}</div>
+                      <div style={{fontSize:13,fontWeight:700,color:"#16a34a",textAlign:"right"}}>${fmt(data.total)}</div>
                     </div>
                   ))}
                 </div>
-                <div style={{padding:"8px 14px",background:"#e8f0fe",display:"flex",justifyContent:"flex-end",gap:8,alignItems:"center"}}>
-                  <span style={{fontSize:11,color:"#1a56db",fontWeight:600}}>Total en cheques:</span>
+                <div style={{padding:"8px 14px",background:"#dcfce7",display:"flex",justifyContent:"flex-end",gap:8,alignItems:"center"}}>
+                  <span style={{fontSize:11,color:"#16a34a",fontWeight:600}}>Total en cheques:</span>
                   <span style={{fontSize:15,fontWeight:700,color:"#92400e"}}>${fmt(checks.reduce((s,r)=>s+Math.abs(parseFloat(r.amount)||0),0))}</span>
                 </div>
               </div>
@@ -2575,7 +2575,7 @@ function openDetail(cat) {
             {bankInfo?.bank_name ? ` · 🏦 ${bankInfo.bank_name}` : ""}
           </p>
           <div style={{display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap",marginTop:20}}>
-            <button style={{...S.btn,...S.btnOutline,color:"#fff",background:"#1a56db",borderColor:"#1a56db"}} onClick={()=>{setFile(null);setTransactions([]);setBalances([]);setBankInfo(null);setScreen("upload")}}>Otro PDF</button>
+            <button style={{...S.btn,...S.btnOutline,color:"#fff",background:"#16a34a",borderColor:"#16a34a"}} onClick={()=>{setFile(null);setTransactions([]);setBalances([]);setBankInfo(null);setScreen("upload")}}>Otro PDF</button>
             <button style={{...S.btn,...S.btnPrimary}} onClick={()=>{setFile(null);setTransactions([]);setBalances([]);setBankInfo(null);setScreen("home")}}>Dashboard</button>
           </div>
         </div>
@@ -2601,7 +2601,7 @@ function openDetail(cat) {
         return (
           <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}
             onClick={()=>setShowDevModal(false)}>
-            <div style={{background:"#0f1f4b",border:"1px solid #1a56db",borderRadius:16,padding:28,maxWidth:640,width:"100%",maxHeight:"80vh",overflow:"hidden",display:"flex",flexDirection:"column"}}
+            <div style={{background:"#14532d",border:"1px solid #16a34a",borderRadius:16,padding:28,maxWidth:640,width:"100%",maxHeight:"80vh",overflow:"hidden",display:"flex",flexDirection:"column"}}
               onClick={e=>e.stopPropagation()}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
                 <div>
@@ -2611,7 +2611,7 @@ function openDetail(cat) {
                 <button onClick={()=>setShowDevModal(false)}
                   style={{background:"transparent",border:"none",color:"#94a3b8",fontSize:20,cursor:"pointer",lineHeight:1}}>✕</button>
               </div>
-              <div style={{background:"#020a1a",borderRadius:10,padding:16,flex:1,overflowY:"auto",fontFamily:"monospace",fontSize:12,color:"#22c55e",lineHeight:1.8,whiteSpace:"pre-wrap",border:"1px solid rgba(26,86,219,0.3)"}}>
+              <div style={{background:"#052e16",borderRadius:10,padding:16,flex:1,overflowY:"auto",fontFamily:"monospace",fontSize:12,color:"#22c55e",lineHeight:1.8,whiteSpace:"pre-wrap",border:"1px solid rgba(22,163,74,0.3)"}}>
                 {fullCode}
               </div>
               <div style={{display:"flex",gap:8,marginTop:14,justifyContent:"flex-end"}}>
@@ -2625,7 +2625,7 @@ function openDetail(cat) {
                     setTimeout(()=>setCopied(false),2000);
                   }}
                   style={{padding:"8px 20px",borderRadius:8,border:"none",cursor:"pointer",fontSize:13,fontWeight:700,
-                    background:copied?"#22c55e":"#1a56db",color:"#fff",transition:"all 0.2s"}}>
+                    background:copied?"#22c55e":"#16a34a",color:"#fff",transition:"all 0.2s"}}>
                   {copied ? "✅ Copiado!" : "📋 Copiar código"}
                 </button>
               </div>
@@ -2690,13 +2690,13 @@ function AnimatedPct({ target }) {
   }, [target]);
   return (
     <span style={{
-      color:"#1a56db",
+      color:"#16a34a",
       fontSize:22,
       fontWeight:700,
       fontFamily:"monospace",
       minWidth:56,
       textAlign:"right",
-      textShadow:"0 0 12px rgba(26,86,219,0.6)"
+      textShadow:"0 0 12px rgba(22,163,74,0.6)"
     }}>
       {display}%
     </span>

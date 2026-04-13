@@ -380,7 +380,7 @@ const MERCHANT_DICT = [
   { patterns:["CHINA BUFFET"], category:"Meals & Entertainment" },
   { patterns:["FLAMING GRILL"], category:"Meals & Entertainment" },
   { patterns:["DAERO GROCERY"], category:"Meals & Entertainment" },
-  { patterns:["SQ *PG FINANCIAL"], category:"Legal & Professional Services" },
+  { patterns:["CASILLAS BOOKKEEPING","CASILLAS TAXES"], category:"Legal & Professional Services" },
   // ── MSU FEDERAL CREDIT UNION (El Chaparrito) ──
   { patterns:["SAVER TRANSFER OUT"], category:"Transfer Out" },
   { patterns:["SAVER DIVIDEND"], category:"Other Income" },
@@ -1255,7 +1255,7 @@ export default function App() {
         const sg = r.type==='DEPOSIT' ? '+' : '-';
         return `<tr style="background:${i%2===0?'#fff':'#f8fafc'}"><td style="padding:10px 20px;font-size:12px;color:#64748b;border-bottom:1px solid #f1f5f9">${fmtDate(r.date)}</td><td style="padding:10px 20px;font-size:12px;border-bottom:1px solid #f1f5f9">${r.concept}</td><td style="padding:10px 20px;font-size:13px;font-weight:600;text-align:right;color:${cl};border-bottom:1px solid #f1f5f9">${sg}$${fmt2(amt)}</td></tr>`;
       }).join('');
-      detailPages[cat] = `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Detalle - ${cat}</title><style>@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Nunito','DM Sans',system-ui,sans-serif;background:#f0fdf4;color:#1a1a1a;padding:32px;font-size:13px}.no-print{background:#16a34a;color:#fff;padding:10px 18px;border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}.wrapper{max-width:780px;margin:0 auto}.header{background:linear-gradient(135deg,#14532d 0%,#16a34a 100%);color:#fff;padding:28px 32px;border-radius:16px 16px 0 0}.header h1{font-size:22px;font-weight:800;margin-bottom:4px}.header .meta{font-size:12px;opacity:0.75;display:flex;gap:24px;flex-wrap:wrap;margin-top:8px}.body{background:#fff;border-radius:0 0 16px 16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)}.kpis{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #e2e8f0}.kpi{padding:18px 20px;border-right:1px solid #e2e8f0}.kpi:last-child{border-right:none}.kpi .lbl{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}.kpi .val{font-size:20px;font-weight:700}table{width:100%;border-collapse:collapse}th{background:#14532d;color:#fff;padding:10px 20px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:left}th:last-child{text-align:right}.total-row td{padding:12px 20px;font-weight:700;font-size:14px;background:#f0fdf4;border-top:2px solid #16a34a}.footer{text-align:center;font-size:10px;color:#94a3b8;margin-top:16px}tr:hover td{background:#f0fdf4 !important}@media print{body{background:#fff;padding:16px}.no-print{display:none}.body{box-shadow:none}}</style></head><body><div class="no-print"><span>💡 Para guardar como PDF: Archivo → Imprimir → Guardar como PDF</span><button onclick="window.print()" style="background:#fff;color:#16a34a;border:none;border-radius:6px;padding:6px 18px;font-weight:700;cursor:pointer;font-size:12px">🖨️ PDF</button></div><div class="wrapper"><div class="header"><h1>${emoji} ${cat}</h1><div class="meta"><span>👤 ${clientData?.name||""}</span><span>🏦 ${bankInfo?.bank_name||""}</span><span>📅 ${periodStart} — ${periodEnd}</span></div></div><div class="body"><div class="kpis"><div class="kpi"><div class="lbl">Total</div><div class="val" style="color:${isDep?'#166534':'#991b1b'}">$${fmt2(catTotal)}</div></div><div class="kpi"><div class="lbl">Transacciones</div><div class="val">${catCount}</div></div><div class="kpi"><div class="lbl">Promedio</div><div class="val" style="color:#16a34a">$${fmt2(catAvg)}</div></div><div class="kpi"><div class="lbl">% del Total</div><div class="val" style="color:#16a34a">${catPct}%</div></div></div><table><thead><tr><th>Fecha</th><th>Concepto</th><th style="text-align:right">Monto</th></tr></thead><tbody>${txRows}<tr class="total-row"><td colspan="2">TOTAL ${cat.toUpperCase()}</td><td style="text-align:right;color:#16a34a">$${fmt2(catTotal)}</td></tr></tbody></table></div><div class="footer">Generado por el Agente · PG Financial Group LLC</div></div></body></html>`;
+      detailPages[cat] = `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Detalle - ${cat}</title><style>@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Nunito','DM Sans',system-ui,sans-serif;background:#f0fdf4;color:#1a1a1a;padding:32px;font-size:13px}.no-print{background:#16a34a;color:#fff;padding:10px 18px;border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}.wrapper{max-width:780px;margin:0 auto}.header{background:linear-gradient(135deg,#14532d 0%,#16a34a 100%);color:#fff;padding:28px 32px;border-radius:16px 16px 0 0}.header h1{font-size:22px;font-weight:800;margin-bottom:4px}.header .meta{font-size:12px;opacity:0.75;display:flex;gap:24px;flex-wrap:wrap;margin-top:8px}.body{background:#fff;border-radius:0 0 16px 16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)}.kpis{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #e2e8f0}.kpi{padding:18px 20px;border-right:1px solid #e2e8f0}.kpi:last-child{border-right:none}.kpi .lbl{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}.kpi .val{font-size:20px;font-weight:700}table{width:100%;border-collapse:collapse}th{background:#14532d;color:#fff;padding:10px 20px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:left}th:last-child{text-align:right}.total-row td{padding:12px 20px;font-weight:700;font-size:14px;background:#f0fdf4;border-top:2px solid #16a34a}.footer{text-align:center;font-size:10px;color:#94a3b8;margin-top:16px}tr:hover td{background:#f0fdf4 !important}@media print{body{background:#fff;padding:16px}.no-print{display:none}.body{box-shadow:none}}</style></head><body><div class="no-print"><span>💡 Para guardar como PDF: Archivo → Imprimir → Guardar como PDF</span><button onclick="window.print()" style="background:#fff;color:#16a34a;border:none;border-radius:6px;padding:6px 18px;font-weight:700;cursor:pointer;font-size:12px">🖨️ PDF</button></div><div class="wrapper"><div class="header"><h1>${emoji} ${cat}</h1><div class="meta"><span>👤 ${clientData?.name||""}</span><span>🏦 ${bankInfo?.bank_name||""}</span><span>📅 ${periodStart} — ${periodEnd}</span></div></div><div class="body"><div class="kpis"><div class="kpi"><div class="lbl">Total</div><div class="val" style="color:${isDep?'#166534':'#991b1b'}">$${fmt2(catTotal)}</div></div><div class="kpi"><div class="lbl">Transacciones</div><div class="val">${catCount}</div></div><div class="kpi"><div class="lbl">Promedio</div><div class="val" style="color:#16a34a">$${fmt2(catAvg)}</div></div><div class="kpi"><div class="lbl">% del Total</div><div class="val" style="color:#16a34a">${catPct}%</div></div></div><table><thead><tr><th>Fecha</th><th>Concepto</th><th style="text-align:right">Monto</th></tr></thead><tbody>${txRows}<tr class="total-row"><td colspan="2">TOTAL ${cat.toUpperCase()}</td><td style="text-align:right;color:#16a34a">$${fmt2(catTotal)}</td></tr></tbody></table></div><div class="footer">Generado por el Agente · Casillas Bookkeeping & Taxes</div></div></body></html>`;
     });
     const detailPagesJson = JSON.stringify(detailPages).replace(/<\//g, '<\\/');
 
@@ -1473,7 +1473,7 @@ function openDetail(cat) {
       <tr class="total-row"><td class="cat" id="tot-personal">TOTAL MOVIMIENTOS PERSONALES</td><td class="amt" style="color:#92400e">$${fmt2(totalPersonal)}</td></tr>
     </table>` : ""}
   </div>
-  <div class="footer">Generado por el Agente · PG Financial Group LLC</div>
+  <div class="footer">Generado por el Agente · Casillas Bookkeeping & Taxes</div>
 </div>
 </body>
 </html>`;
@@ -1510,7 +1510,7 @@ function openDetail(cat) {
       const sg = r.type==='DEPOSIT' ? '+' : '-';
       return `<tr style="background:${i%2===0?'#fff':'#f8fafc'}"><td style="padding:10px 20px;font-size:12px;color:#64748b;border-bottom:1px solid #f1f5f9">${fmtDate(r.date)}</td><td style="padding:10px 20px;font-size:12px;border-bottom:1px solid #f1f5f9">${r.concept}</td><td style="padding:10px 20px;font-size:13px;font-weight:600;text-align:right;color:${cl};border-bottom:1px solid #f1f5f9">${sg}$${fmt2(amt)}</td></tr>`;
     }).join('');
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Detalle - ${cat}</title><style>@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Nunito','DM Sans',system-ui,sans-serif;background:#f0fdf4;color:#1a1a1a;padding:32px;font-size:13px}.no-print{background:#16a34a;color:#fff;padding:10px 18px;border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}.wrapper{max-width:780px;margin:0 auto}.header{background:linear-gradient(135deg,#14532d 0%,#16a34a 100%);color:#fff;padding:28px 32px;border-radius:16px 16px 0 0}.header h1{font-size:22px;font-weight:800;margin-bottom:4px}.header .meta{font-size:12px;opacity:0.75;display:flex;gap:24px;flex-wrap:wrap;margin-top:8px}.body{background:#fff;border-radius:0 0 16px 16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)}.kpis{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #e2e8f0}.kpi{padding:18px 20px;border-right:1px solid #e2e8f0}.kpi:last-child{border-right:none}.kpi .lbl{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}.kpi .val{font-size:20px;font-weight:700}table{width:100%;border-collapse:collapse}th{background:#14532d;color:#fff;padding:10px 20px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:left}th:last-child{text-align:right}.total-row td{padding:12px 20px;font-weight:700;font-size:14px;background:#f0fdf4;border-top:2px solid #16a34a}.footer{text-align:center;font-size:10px;color:#94a3b8;margin-top:16px}tr:hover td{background:#f0fdf4 !important}@media print{body{background:#fff;padding:16px}.no-print{display:none}.body{box-shadow:none}}</style></head><body><div class="no-print"><span>💡 Para guardar como PDF: Archivo → Imprimir → Guardar como PDF</span><button onclick="window.print()" style="background:#fff;color:#16a34a;border:none;border-radius:6px;padding:6px 18px;font-weight:700;cursor:pointer;font-size:12px">🖨️ PDF</button></div><div class="wrapper"><div class="header"><h1>${emoji} ${cat}</h1><div class="meta"><span>👤 ${clientData?.name||""}</span><span>🏦 ${bankInfo?.bank_name||""}</span><span>📅 ${periodStart} — ${periodEnd}</span></div></div><div class="body"><div class="kpis"><div class="kpi"><div class="lbl">Total</div><div class="val" style="color:${isDep?'#166534':'#991b1b'}">$${fmt2(catTotal)}</div></div><div class="kpi"><div class="lbl">Transacciones</div><div class="val">${catCount}</div></div><div class="kpi"><div class="lbl">Promedio</div><div class="val" style="color:#16a34a">$${fmt2(catAvg)}</div></div><div class="kpi"><div class="lbl">% del Total</div><div class="val" style="color:#16a34a">${catPct}%</div></div></div><table><thead><tr><th>Fecha</th><th>Concepto</th><th style="text-align:right">Monto</th></tr></thead><tbody>${txRows}<tr class="total-row"><td colspan="2">TOTAL ${cat.toUpperCase()}</td><td style="text-align:right;color:#16a34a">$${fmt2(catTotal)}</td></tr></tbody></table></div><div class="footer">Generado por el Agente · PG Financial Group LLC</div></div></body></html>`;
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Detalle - ${cat}</title><style>@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Nunito','DM Sans',system-ui,sans-serif;background:#f0fdf4;color:#1a1a1a;padding:32px;font-size:13px}.no-print{background:#16a34a;color:#fff;padding:10px 18px;border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}.wrapper{max-width:780px;margin:0 auto}.header{background:linear-gradient(135deg,#14532d 0%,#16a34a 100%);color:#fff;padding:28px 32px;border-radius:16px 16px 0 0}.header h1{font-size:22px;font-weight:800;margin-bottom:4px}.header .meta{font-size:12px;opacity:0.75;display:flex;gap:24px;flex-wrap:wrap;margin-top:8px}.body{background:#fff;border-radius:0 0 16px 16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)}.kpis{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #e2e8f0}.kpi{padding:18px 20px;border-right:1px solid #e2e8f0}.kpi:last-child{border-right:none}.kpi .lbl{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}.kpi .val{font-size:20px;font-weight:700}table{width:100%;border-collapse:collapse}th{background:#14532d;color:#fff;padding:10px 20px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:left}th:last-child{text-align:right}.total-row td{padding:12px 20px;font-weight:700;font-size:14px;background:#f0fdf4;border-top:2px solid #16a34a}.footer{text-align:center;font-size:10px;color:#94a3b8;margin-top:16px}tr:hover td{background:#f0fdf4 !important}@media print{body{background:#fff;padding:16px}.no-print{display:none}.body{box-shadow:none}}</style></head><body><div class="no-print"><span>💡 Para guardar como PDF: Archivo → Imprimir → Guardar como PDF</span><button onclick="window.print()" style="background:#fff;color:#16a34a;border:none;border-radius:6px;padding:6px 18px;font-weight:700;cursor:pointer;font-size:12px">🖨️ PDF</button></div><div class="wrapper"><div class="header"><h1>${emoji} ${cat}</h1><div class="meta"><span>👤 ${clientData?.name||""}</span><span>🏦 ${bankInfo?.bank_name||""}</span><span>📅 ${periodStart} — ${periodEnd}</span></div></div><div class="body"><div class="kpis"><div class="kpi"><div class="lbl">Total</div><div class="val" style="color:${isDep?'#166534':'#991b1b'}">$${fmt2(catTotal)}</div></div><div class="kpi"><div class="lbl">Transacciones</div><div class="val">${catCount}</div></div><div class="kpi"><div class="lbl">Promedio</div><div class="val" style="color:#16a34a">$${fmt2(catAvg)}</div></div><div class="kpi"><div class="lbl">% del Total</div><div class="val" style="color:#16a34a">${catPct}%</div></div></div><table><thead><tr><th>Fecha</th><th>Concepto</th><th style="text-align:right">Monto</th></tr></thead><tbody>${txRows}<tr class="total-row"><td colspan="2">TOTAL ${cat.toUpperCase()}</td><td style="text-align:right;color:#16a34a">$${fmt2(catTotal)}</td></tr></tbody></table></div><div class="footer">Generado por el Agente · Casillas Bookkeeping & Taxes</div></div></body></html>`;
     const win = window.open("", "_blank");
     win.document.write(html);
     win.document.close();
@@ -1599,7 +1599,7 @@ function openDetail(cat) {
     <div class="card"><div class="lbl">Total transacciones</div><div class="val">${transactions.length}</div></div>
   </div>
   ${rowsHtml}
-  <div class="footer">Reporte generado por el Agente · PG Financial Group LLC</div>
+  <div class="footer">Reporte generado por el Agente · Casillas Bookkeeping & Taxes</div>
 </body>
 </html>`;
     const win = window.open("", "_blank");
@@ -1677,11 +1677,6 @@ function openDetail(cat) {
   const KNOWN_BANKS = Object.keys(BANK_PROMPTS).filter(k => k !== "default");
   return (
     <div style={S.app}>
-      <div style={{position:"fixed",bottom:20,right:24,zIndex:1000,opacity:0.85,transition:"opacity 0.2s"}}
-        onMouseEnter={e=>e.currentTarget.style.opacity=1}
-        onMouseLeave={e=>e.currentTarget.style.opacity=0.85}>
-        <img src="/logo-pg.png" alt="Silvya — PG Financial Group LLC" onClick={()=>setShowDevModal(true)} style={{width:120,height:"auto",filter:"brightness(1.1)",cursor:"pointer"}} />
-      </div>
       <style>{`
         body{background:#030d06}
         .bg-star{position:fixed;border-radius:50%;background:#ffffff;pointer-events:none;z-index:0;box-shadow:0 0 4px 1px rgba(134,239,172,0.6)}
@@ -1717,10 +1712,10 @@ function openDetail(cat) {
         <div style={S.page}>
           <div style={{marginBottom:24,background:"#001a06",borderRadius:20,padding:"36px 40px",display:"flex",alignItems:"center",gap:24,flexWrap:"wrap",position:"relative",overflow:"hidden"}}>
             <div style={{position:"absolute",inset:0,borderRadius:20,background:"radial-gradient(ellipse at 20% 50%,rgba(22,163,74,0.15) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(99,102,241,0.1) 0%,transparent 50%)"}} />
-            <img src="/silvya-agent.jpeg" alt="Silvya — PG Financial Group LLC" style={{width:140,height:140,objectFit:"cover",borderRadius:"50%",border:"4px solid rgba(255,255,255,0.3)",flexShrink:0,position:"relative",zIndex:1}} />
+            <img src="/leonor-agent.jpeg" alt="Leonor — Casillas Bookkeeping & Taxes" style={{width:140,height:140,objectFit:"cover",borderRadius:"50%",border:"4px solid rgba(255,255,255,0.3)",flexShrink:0,position:"relative",zIndex:1}} />
             <div style={{position:"relative",zIndex:1}}>
-              <div style={{fontFamily:"'Nunito','DM Sans',system-ui,sans-serif",fontSize:28,fontWeight:800,color:"#fff",marginBottom:6}}>Bienvenida al Agente de Silvya</div>
-              <div style={{color:"rgba(255,255,255,0.7)",fontSize:15,marginBottom:10}}>PG Financial Group LLC</div>
+              <div style={{fontFamily:"'Nunito','DM Sans',system-ui,sans-serif",fontSize:28,fontWeight:800,color:"#fff",marginBottom:6}}>Bienvenida al Agente de Leonor</div>
+              <div style={{color:"rgba(255,255,255,0.7)",fontSize:15,marginBottom:10}}>Casillas Bookkeeping & Taxes</div>
               <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                 {["14 tipos de negocio","350+ merchants",`${KNOWN_BANKS.length} bancos conocidos`,"Memoria persistente"].map(t=>(
                   <span key={t} style={{background:"rgba(255,255,255,0.15)",color:"#fff",borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:600}}>{t}</span>
@@ -1932,7 +1927,7 @@ function openDetail(cat) {
           "☕ Puedes ir por un café... déjame trabajar a mí.",
           "🤓 Analizando cada transacción con precisión...",
           "💡 Dato curioso: esto antes te tomaba 3 horas. Ahora... unos segundos.",
-          "🚀 Silvya dice: 'La tecnología es tu mejor aliada.'",
+          "🚀 Leonor dice: 'La tecnología es tu mejor aliada.'",
           "🧠 Estoy leyendo cada línea del estado de cuenta. Tú relájate.",
           "📊 Bookkeeping inteligente. Así se hace en el siglo 21.",
           "🎯 Categorías, saldos, cheques... nada se me escapa.",
@@ -1941,7 +1936,7 @@ function openDetail(cat) {
           "🌮 Cada centavo en su lugar — así se hace el bookkeeping.",
           "🏗️ Construyendo tu reporte... ladrillo por ladrillo.",
           "⚡ Si esto fuera manual, ya ibas en la página 2. Yo voy en la 14.",
-          "🎓 PG Financial Group — precisión en cada número.",
+          "🎓 Casillas Bookkeeping — precisión en cada número.",
           "📱 Puedes revisar tus mensajes... ya yo me encargo aquí.",
           "🤝 Mientras yo analizo, piensa en tu siguiente cliente.",
         ];
@@ -1964,7 +1959,7 @@ function openDetail(cat) {
             ))}
           </div>
           <div className="robot-float robot-glow" style={{borderRadius:"50%",position:"relative",marginBottom:28}}>
-            <img src="/silvya-agent.jpeg" alt="Silvya Agent" style={{width:180,height:180,objectFit:"cover",borderRadius:"50%",border:"4px solid #16a34a",display:"block"}} />
+            <img src="/leonor-agent.jpeg" alt="Leonor Agent" style={{width:180,height:180,objectFit:"cover",borderRadius:"50%",border:"4px solid #16a34a",display:"block"}} />
             <div style={{position:"absolute",inset:-12,borderRadius:"50%",border:"2px solid rgba(22,163,74,0.4)",borderTopColor:"#16a34a",animation:"spin 3s linear infinite"}} />
             <div style={{position:"absolute",inset:-24,borderRadius:"50%",border:"1px solid rgba(22,163,74,0.2)",borderBottomColor:"#16a34a",animation:"spin 5s linear infinite reverse"}} />
           </div>
@@ -2069,7 +2064,7 @@ function openDetail(cat) {
                   ⚠️ <strong>Banco no encontrado en la biblioteca.</strong> Se procesó con el modo genérico — puede haber diferencias.
                   <br/>
                   <span style={{fontSize:11,marginTop:4,display:"block"}}>
-                    📌 Para mejorar la precisión: notifica a Silvya con el nombre del banco <strong>"{bankInfo.bank_name}"</strong> para agregarlo a la biblioteca.
+                    📌 Para mejorar la precisión: notifica a Leonor con el nombre del banco <strong>"{bankInfo.bank_name}"</strong> para agregarlo a la biblioteca.
                   </span>
                 </div>
               )}

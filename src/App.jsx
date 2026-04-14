@@ -188,6 +188,21 @@ MERCURY BANK STATEMENT STRUCTURE:
 5. DEPOSITS positive. WITHDRAWALS negative.
 6. Do NOT extract summary lines or balance lines — only actual transactions.
 OUTPUT: Raw CSV — TYPE,DATE,AMOUNT,CONCEPT. No headers. No markdown.`,
+  citibank: `You are a STRICT extraction agent for CITIBANK statements.
+CITIBANK STATEMENT STRUCTURE:
+1. CHECKING ACTIVITY section: Each transaction has Date | Description | Amount Subtracted | Amount Added | Balance
+   - Amount Added = DEPOSIT (positive)
+   - Amount Subtracted = WITHDRAWAL (negative)
+2. SAVINGS ACTIVITY section: Same format — extract all transfers.
+3. Extract ALL: ACH Electronic Credit/Debit, Debit Card Purchase, Debit PIN Purchase,
+   Mobile Purchase, Bill Payment, Instant Payment Credit, Transfer From/To, Deposits.
+4. "Total Subtracted/Added" lines are summary rows — NOT transactions, skip them.
+5. "This page has been intentionally left blank" — skip entirely.
+6. Fees section at the top (Monthly Service Fee, ATM Fee) — skip if shown as "Waived",
+   extract only if actually charged with a dollar amount.
+7. Dates format: MM/DD — convert to MM/DD/YYYY using the statement year.
+DEPOSITS positive. WITHDRAWALS negative.
+OUTPUT: Raw CSV — TYPE,DATE,AMOUNT,CONCEPT. No headers. No markdown.`,
   default: `You are a STRICT bank statement extraction agent.
 Extract ALL transactions: deposits, withdrawals, checks, fees, transfers.
 DEPOSITS positive. WITHDRAWALS negative.
@@ -393,6 +408,15 @@ const MERCHANT_DICT = [
   { patterns:["STOP PAY FEE"], category:"Bank Fees" },
   { patterns:["BKCD AND LQ MERCH"], category:"Other Income" },
   { patterns:["EYEMART"], category:"Meals & Entertainment" },
+  // ── CITIBANK (James Alfaro · electrical) ──
+  { patterns:["CAMPBELL PROPERTY MANAGEMENT"], category:"Rent & Lease" },
+  { patterns:["NEMOS EXPRESS CAR WASH"], category:"Vehicle - Maintenance" },
+  { patterns:["XXSOCIAL SECURITY"], category:"Other Income" },
+  { patterns:["APPLECARD GSBANK"], category:"Loan Payment" },
+  { patterns:["SYNCHRONY BANK CC"], category:"Loan Payment" },
+  { patterns:["AFFIRM INC"], category:"Loan Payment" },
+  { patterns:["DISCOVER E-PAYMENT"], category:"Loan Payment" },
+  { patterns:["FLORIDA POWER & LIGHT"], category:"Utilities" },
 ];
 const DEPOSIT_CATEGORIES    = ["Income - Services","Other Income","Loan Proceeds","Owner Investment","Transfer In","Refund Received","ASK TO CLIENT"];
 // ── CAMBIO 5: WITHDRAWAL_CATEGORIES — nueva lista limpia ──
@@ -557,6 +581,7 @@ To identify bank_id use these clues:
 - "Chase" or "JPMorgan Chase" or "chase.com" → "chase"
 - "MSU Federal Credit Union" or "MSUFCU" or "msufcu.org" or "MSU FCU" or "1-800-MSU-4YOU" → "msu_federal_credit_union"
 - "Mercury" or "mercury.com" or "Mercury Bank" → "mercury_bank"
+- "Citibank" or "CITIBANK" or "citi.com" or "Citibank N.A." → "citibank"
 - Any other bank → "unknown"
 Respond ONLY with valid JSON. No markdown. No explanation.
 Example: {"bank_name":"Mabrey Bank","bank_id":"mabrey_bank","total_pages":16,"period_start":"02/02/2026","period_end":"03/01/2026","total_deposits":75616.02,"total_withdrawals":86217.03}`;

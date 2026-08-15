@@ -431,6 +431,41 @@ const MERCHANT_DICT = [\
   \{ patterns:["AFFIRM INC"], category:"Loan Payment" \},\
   \{ patterns:["DISCOVER E-PAYMENT"], category:"Loan Payment" \},\
   \{ patterns:["FLORIDA POWER & LIGHT"], category:"Utilities" \},\
+  // -- PROVEEDORES DE CONCRETO / READY-MIX --\
+  \{ patterns:["DOLESE"], category:"Materials" \},\
+  \{ patterns:["MARTIN MARIETTA"], category:"Materials" \},\
+  \{ patterns:["VULCAN MATERIALS"], category:"Materials" \},\
+  \{ patterns:["CEMEX"], category:"Materials" \},\
+  \{ patterns:["QUIKRETE"], category:"Materials" \},\
+  \{ patterns:["SAKRETE"], category:"Materials" \},\
+  \{ patterns:["WHITE CAP","HD SUPPLY WHITE CAP"], category:"Materials" \},\
+  \{ patterns:["SUTHERLANDS"], category:"Materials" \},\
+  // \uc0鑲 鑲  ARVEST BANK / DEER CONCRETE (construction) 鑲 鑲 \
+  \{ patterns:["W/D FROM DDA"], category:"Owner Draw" \},\
+  \{ patterns:["SURCHARGE REF"], category:"Bank Fees" \},\
+  \{ patterns:["ATM USAGE FEE"], category:"Bank Fees" \},\
+  \{ patterns:["SERVICE CHARGE"], category:"Bank Fees" \},\
+  \{ patterns:["MAXWELL OKC"], category:"Refund Received" \},\
+  \{ patterns:["GM FINANCIAL","GMF PYMT"], category:"Loan Payment" \},\
+  \{ patterns:["JPMORGAN CHASE EXT"], category:"Loan Payment" \},\
+  \{ patterns:["US TREAS TAX"], category:"Taxes & Licenses" \},\
+  \{ patterns:["AMTRUST NA"], category:"Insurance" \},\
+  \{ patterns:["NATIONAL GENERAL PAYMENT"], category:"Insurance" \},\
+  \{ patterns:["APPLE.COM/BILL"], category:"Software & Subscriptions" \},\
+  \{ patterns:["PIKEPASS"], category:"Travel & Transportation" \},\
+  \{ patterns:["MULTI SERVICIOS"], category:"Materials" \},\
+  \{ patterns:["JIM NORTON"], category:"Vehicle - Maintenance" \},\
+  \{ patterns:["BASS PRO"], category:"Personal Payment" \},\
+  \{ patterns:["ACADEMY SPORTS"], category:"Personal Payment" \},\
+  \{ patterns:["ALO-YOGA","ALO YOGA"], category:"Personal Payment" \},\
+  \{ patterns:["SCHEELS"], category:"Uniforms" \},\
+  \{ patterns:["DR ANDREAS CHIROPRACTIC"], category:"Pharmacy" \},\
+  \{ patterns:["JOY MART"], category:"Meals & Entertainment" \},\
+  \{ patterns:["MARISCOS EL VIEJON"], category:"Meals & Entertainment" \},\
+  \{ patterns:["SUPERMERCADOS MORELOS"], category:"Meals & Entertainment" \},\
+  \{ patterns:["FERIA LATINA"], category:"Meals & Entertainment" \},\
+  \{ patterns:["LAS AMERICAS SUPERM"], category:"Meals & Entertainment" \},\
+  \{ patterns:["DOMINO'S","DOMINO"], category:"Meals & Entertainment" \},\
 ];\
 const DEPOSIT_CATEGORIES    = ["Income - Services","Other Income","Loan Proceeds","Owner Investment","Transfer In","Refund Received","ASK TO CLIENT"];\
 // \uc0\u9472 \u9472  CAMBIO 5: WITHDRAWAL_CATEGORIES \'97 nueva lista limpia \u9472 \u9472 \
@@ -520,6 +555,21 @@ function dedupeChecksByNumber(rows) \{\
     return true;\
   \});\
 \}\
+function detectATMByAddress(concept, amount) \{\
+  const c = concept.trim().toUpperCase();\
+  // Detecta conceptos que son direcciones de cajero autom\'e1tico:\
+  // "12910 E 21ST STREET", "3108 S 129TH E AVE", "9701 E 31ST", "1234 MAIN ST"\
+  const isAddress =\
+    /^\\d\{2,6\}\\s+[NSEW]\\s+\\d+(ST|ND|RD|TH)\\b/.test(c) ||\
+    /^\\d\{2,6\}\\s+[NSEW]\\s+[A-Z]+\\s+(ST|AVE|AVENUE|STREET|BLVD|RD|ROAD|DR|DRIVE|HWY)\\b/.test(c) ||\
+    /^\\d\{2,6\}\\s+[A-Z]+\\s+(ST|AVE|AVENUE|STREET|BLVD|RD|ROAD|DR|DRIVE|HWY)\\b/.test(c);\
+  if (!isAddress) return null;\
+  const amt = Math.abs(parseFloat(amount) || 0);\
+  // Montos peque\'f1os = surcharge / comisi\'f3n del cajero. Montos mayores = retiro del due\'f1o.\
+  return amt < 10\
+    ? \{ category:"Bank Fees", level:"HARD" \}\
+    : \{ category:"Owner Draw", level:"HARD" \};\
+\}\
 function categorize(concept, amount, isDeposit, businessType, learnedMerchants) \{\
   const upper = concept.toUpperCase();\
   const amt   = Math.abs(parseFloat(amount) || 0);\
@@ -545,6 +595,10 @@ function categorize(concept, amount, isDeposit, businessType, learnedMerchants) 
     if (upper.includes("ZELLE") && upper.includes("TRANSFER IN")) return \{ category:"ASK TO CLIENT", level:"ASK", reason:"Zelle recibido \'97 \'bfIncome o Owner Investment?" \};\
     if (amt >= 1000) return \{ category:"Income - Services", level:"HARD" \};\
     if (upper.includes("DEPOSIT") && !upper.includes("ACH")) return \{ category:"ASK TO CLIENT", level:"ASK", reason:"Dep\'f3sito no identificado" \};\
+  \}\
+  if (!isDeposit) \{\
+    const atmAddr = detectATMByAddress(concept, amount);\
+    if (atmAddr) return atmAddr;\
   \}\
   if (upper.includes("ATM CASH") || upper.includes("ATM W/D") || upper.includes("CUSTOMER WITHDRAWAL")) \{\
     return \{ category:"ASK TO CLIENT", level:"ASK", reason:"ATM \'97 \'bfOwner Draw o gasto en efectivo?" \};\
